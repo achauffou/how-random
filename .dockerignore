@@ -1,0 +1,6 @@
+# Ignore everything when building the image:
+*
+
+# Except for the files with additional R and TeX packages:
+!.r_packages
+!.tex_packages
