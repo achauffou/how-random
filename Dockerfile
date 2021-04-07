@@ -30,8 +30,10 @@ RUN install2.r --error --skipinstalled -r $CRAN -n $NCPUS tinytex \
     dir = '/usr/local/TinyTeX', version = '2020.12', repo = I('"$CTAN_REPO"'))" \
   && echo "export PATH=$PATH" > /etc/environment \
   && apt-get update && apt-get install -y python3-pygments \
-  && echo 'options(tinytex.engine_args = "-shell-escape")' >> \
-    /usr/local/lib/R/etc/Rprofile.site \
+  && echo 'options(tinytex.engine = "lualatex")' >> /usr/local/lib/R/etc/Rprofile.site \
+  && echo 'options(tinytex.engine_args = "-shell-escape")' >> /usr/local/lib/R/etc/Rprofile.site \
+  && echo 'options(tinytex.bib_engine = "biber")' >> /usr/local/lib/R/etc/Rprofile.site \
+  && echo 'options(tinytex.compile.min_times = 2)' >> /usr/local/lib/R/etc/Rprofile.site \
   && chown -R root:staff /usr/local/TinyTeX \
   && chmod -R ugo+rwx /usr/local/TinyTeX
 

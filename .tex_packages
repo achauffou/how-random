@@ -1,4 +1,5 @@
 babel-english
+biber
 biblatex
 biblatex-apa
 caption
@@ -13,12 +14,12 @@ lineno
 listings
 marginnote
 marvosym
-minitoc
 minted
 multirow
 pdflscape
 ragged2e
 sidecap
+tex-gyre
 titlesec
 upquote
 wrapfig
