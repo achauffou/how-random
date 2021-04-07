@@ -1,0 +1,43 @@
+% ========================================
+% REFERENCES
+% Bibliography management settings
+% ========================================
+
+% CS QUOTE AND XPATCH PACKAGES
+\usepackage{csquotes,xpatch}
+
+% BIBLATEX
+% Load the biblatex package:
+% - backend: the database backend to use (biber, bibtex, bibtex8)
+% - style: bibliography <file>.bbx and citation <file>.cbx styles
+% - bibstyle: bibliography style (numeric, alphabetic, authoryear, authortitle, verbose, ...)
+% - citestyle: citation style (numeric, authoryear-comp, nature, apa, ...)
+% - natbib: load natbi compatibility modules
+% - sorting: sorting order of bibliography (nty, nyt, nyvt, anyvt, none, ...)
+% - sortcites: sort citations if multiple entry keys are passed to a citation command
+% - date: the basic format for dates
+% - isbn, url, doi, eprint, related: whether or not to print those fields
+% - nohashothers: use letters to remove ambiguity (2002a)
+% - use<name>: whether or not to use a specific field
+\usepackage[backend = biber,
+    bibstyle = authoryear,
+    citestyle = apa,
+    sorting = nty,
+    sortcites = true,
+    nohashothers = true,
+    giveninits=true,
+    natbib = true]{biblatex}
+
+% See the biblatex manual for more information on the many options of biblatex.
+% Use the field addendum to print additional text at the end of a reference.
+
+% Add bibliographical resources (possible to have multiple resources): 
+\addbibresource{references.bib}
+
+% Print bibliography:
+% To print a bibliography, use \printbibliography:
+
+% Possible parameters: title, keywords, heading=bibintoc, prenote, postnote, type, 
+
+% Important note on header/footer styles:
+% - For proper printing of content that does not have a section number (i.e. table of contents, bibliography), switch to the plain* style (\pagestyle{plain*})

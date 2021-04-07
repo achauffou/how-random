@@ -1,0 +1,52 @@
+% ========================================
+% ENCODING, FONTS AND LANGUAGES
+% Sets the input and font encoding, as well as language specific settings.
+% More info in the Languages section of Overleaf tutorial
+% ========================================
+
+
+% INPUT AND FONT ENCODING FOR PDFLATEX
+% Uncomment the lines below when using pdfLaTeX. Those set the input (file) encoding as well as the font encoding (default for latin languages is T1):
+% \usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
+
+
+% INPUT AND FONT ENCODING FOR XELATEX AND LUALATEX
+% When using XeLaTeX and LuaLaTeX, it is not necessary to use the inputenc and fontenc packages. Doing it should not cause much trouble (default for latin languages is T1):
+% \usepackage[T1]{fontenc}
+
+
+% FONTS
+% There are three main font types that you can use/switch in the document:
+% - rm: serif (roman) (command \textrm{}, switch command \rmfamily)
+% - sf: sans serif (command \textsf{}, switch command \sffamily)
+% - tt: typewriter (monospace) (command \texttt{}, switch command \ttfamily)
+
+% The fontspec package supports several fonts:
+% - List of supported fonts on overleaf: https://fr.overleaf.com/learn/latex/Questions/Which%20OTF%20or%20TTF%20fonts%20are%20supported%20via%20fontspec%3F
+% - Optional parameter silent suppresses harmless warnings when using language-specific fonts; those warning should no be meaninful for Latin type languages
+\usepackage[silent]{fontspec}
+
+
+% LANGUAGES
+% Babbel package to use language characters:
+% - You can set several languages in optional parameters (example: [main=english, french, german])
+% - You can import other languages by using the command \babelprovide[import]{<language>}
+% - The bidi option ensures that languages will use their default right-to-left or left-to-right convention
+\usepackage[main=english, bidi=default]{babel}
+
+% Language-specific fonts:
+% - The \babelfont[<language (optional)>]{<font type (rm, sf or tt)>}{<Font family>} can be used to specify the font family for a specific font type for one, more or all language(s)
+% - Other optional parameters for color and size can be passed (example: \babelfont{tt}[Color={0019D4}]{Courier New})
+\babelfont{rm}{TeX Gyre Termes}
+\babelfont{sf}{TeX Gyre Heros}
+\babelfont{tt}{TeX Gyre Cursor}
+
+% Default font:
+% - Set default font family (\rmdefault, \sfdefault or \ttdefault)
+\renewcommand{\familydefault}{\rmdefault}
+
+% Selecting languages:
+% - Use the \selectlanguage{<language>} command to switch the language in a document
+% - Use the command embedded in brackets to change language only between the bracket ({\selectlanguage{<language>} <text in other language>})
+% - Default sets the language to the main language

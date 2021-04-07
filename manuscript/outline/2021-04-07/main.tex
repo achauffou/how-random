@@ -1,0 +1,136 @@
+\documentclass[12pt]{article}
+
+% IMPORT PREAMBLE
+\usepackage{import}
+\import{_settings/}{00_preamble.tex}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+% Community composition - from species occurrences to networks of interactions:
+Co-occurring species that interact together form ecological communities.
+Biogeography studies species distributions to understand the turnover of species in communities across space and time \citep{Gaston2003}.
+However, community composition is not only affected by species turnover, but also interactions turnover \citep{Gravel2019,Graham2018}.
+Thus, ecological networks are useful tools to represent the structure of a community including both species and interactions.
+Over the past 20 years, ecologists have been investigating the patterns of local interaction networks and their underlying mechanisms.
+
+\begin{table}[tb]
+    \begin{small}
+    \centering
+    \begin{tabular}{p{0.45\textwidth}|p{0.5\textwidth}}
+        Process & References \\ \hline
+        Partners abundance & \citet{Olesen2008,Garcia2014,Donoso2017,Coux2021}\\
+        Preferential attachment & \citet{Amaral2000,Jordano2003,Olesen2008,Tylianakis2018,BramonMora2020}\\
+        Information filtering & \citet{Mossa2002}\\
+        Species traits: phenology, morphology, phylogeny & \citet{Burkle2013,Rohr2014,Jordano2016,Rominger2016,Hutchinson2017,Pires2020,Coux2021}\\
+        Interactions fitness: ecological neighbourhood, indirect effects, optimal diet theory, adaptive foraging & \citet{Pires2011,Aizen2012,Valdovinos2013,Donoso2017,Guimaraes2017,Levine2017}\\
+    \end{tabular}
+    \caption{Processes proposed to determine the existence of pairwise interactions between co-occurring species.}
+    \label{tab:processes}
+    \end{small}
+\end{table}
+
+% Initial focus on assembly rules:
+At first, most research focused on rules driving network assembly and degree distribution.
+Preferential attachment, a mechanism through which new species tend to interact more with species that have more existing interactions, was suggested to explain the power-law degree distribution and scale-free properties of interaction networks \citep{Watts1998,Amaral2000,Jordano2003,Tylianakis2018}.
+Phenology, morphology and information filtering were additionally suggested to cause truncation of the power-law distribution \citep{Mossa2002,Olesen2008}.
+
+% Studies on structural metrics:
+Investigating structural metrics across networks revealed common structural patterns such as modularity and nestedness \citep{Jordano2003,Bascompte2003,Gonzalez-Castro2012}.
+Abundance, species traits (phenology, morphology, phylogeny) and shared diet preferences are believed to drive such structural patterns \citep{Rohr2014,Hutchinson2017,Pires2011,Vazquez2009a,Poisot2015,Jordano2016}.
+However, these approaches often failed to predict pairwise interactions between two species despite correctly inferring structural metrics \citep{Vazquez2009a,Olito2015}.
+
+% Studies of pairwise interactions:
+More recently, studies of interactions turnover overcame these limitations using empirical observations and models of pairwise interaction probability \citep{Burkle2013,Rominger2016,Donoso2017,Guimaraes2017,Tylianakis2018,Pires2020}.
+Additionally, \citet{Bascompte2009} emphasized in a theoretical review the importance of seasonal dynamics, which were explicitly accounted for in other studies \citep{Valdovinos2013,Garcia2014,BramonMora2020}.
+
+% Main mechanisms and interaction fitness:
+Altogether, several recurring ecological processes are believed to determine the existence of pairwise interactions at local scale (Tab. \ref{tab:processes}).
+Abundance, phenotype, phenology and phylogeny are the most important ones \citep{Vazquez2009}.
+While the aforementioned mechanisms are species-specific, a growing body of literature suggests that interactions are themselves subjected to traits and fitness variations, that is variation in their rewarding potential.
+Consequently, ecological neighbourhood, indirect effects and adaptive foraging cause interactions to facilitate or impede each other \citep{Aizen2012,Donoso2017,Levine2017}.
+
+% Few studies study interaction turnover:
+However, little is known regarding the consistency of the processes and patterns observed at these local scale at broader scales.
+It can be questioned whether pairwise interactions observed in one location will tend to exist wherever the involved species co-occur.
+\citet{Fortuna2020} showed that the fidelity of interactions at global scale varies depending on the interaction type.
+Other factors, such as functional group, geographical origin and bioclimatic conditions might also influence the consistency (i.e. predictability at broad scale) of interactions.
+
+% Broader relevance:
+Studying the predictability of ecological interactions at a global scale could be insightful as first steps to (i) gain further knowledge on the underlying network wiring mechanisms, (ii) better integrate biogeographical and network ecology models together, and (iii) improve understanding of climate change impacts on ecosystem functioning.
+
+% (i) gain further knowledge on the underlying network wiring mechanisms:
+Models at a global scale can rely on limited information, mostly presence data, local static unweighted interaction networks and bioclimatic data.
+Therefore, there lacks information to discriminate some key processes driving interactions turnover.
+However, simple phenomenological models can be upgraded to account for more complex processes as data becomes available.
+Thus, such oversimplified models can be a first step in the direction of a global mechanistic understanding of network wiring.
+
+% (ii) better integrate biogeographical and network ecology models together:
+As highlighted by \citet{Fortuna2020}, network ecology often disregards the role of abiotic conditions.
+Most studies aim at modeling pairwise interactions with prior knowledge of species abundance.
+Only few studies integrate together questions of bioclimatic suitability and interactions wiring \citep{Graham2018,Gravel2019}.
+Simple phenomenological models of interactions could help bridging the gap between network ecology and biogeography.
+
+% (iii) improve understanding of climate change impacts on ecosystem functioning:
+A key motive to integrate together models of species occurrence and interactions is predictability.
+Ecologists thrive to understand the impacts of climate change on the functioning of ecological communities \citep{Parmesan2003}.
+Integrated models that provide scenarios of community composition changes under different climatic conditions could, in time, prove to be useful tools to achieve this goal.
+
+\section{Project Overview}
+\subsection{Overarching research questions}
+The goal of this project is to use simple phenomenological models to explore the consistency (i.e. predictability) of ecological interactions at broad spatial and temporal scales.
+The overarching research question is how consistent, loyal, predictable ecological interactions are.
+The answer to such question will lie somewhere in between perfect fidelity between interaction partner and fully opportunistic, random interactions.
+
+Several different factors might affect the position of species and interactions in this spectrum.
+Interaction type, functional group, species origin and ubiquity are examples of such factors.
+Thus, the second objective of this project will be to explore the role and importance of these factors.
+
+\subsection{Methodological outline}
+The main challenge of this project lies in the collection, aggregation and analysis of a large amount of data from various sources. The main steps and expected difficulties associated to them are outlined here:
+\begin{enumerate}
+    \item \textbf{Data collection:} Retrieval of data from various sources. Data include interaction networks across the globe (database: Web of Life, \cite{Fortuna2014}), species occurrence data (GBIF) and bioclimatic variables (WorldClim). A technical issue might be to ensure enough storage space and computing power to download (and subsequently treat) those data.
+    \item \textbf{Data cleaning:} Cleaning the data to ensure sufficient quality is a major challenge when dealing with extensive data sets from various sources \citep{Jetz2019}. In addition to the same technical challenges from data collection, this steps will require to resolve species names, formatting of data, merging data and removing erroneous outliers.
+    \item \textbf{Model design:} Prior to using the data, it will be necessary to build bayesian regression models that can answer the research questions. Definition of weakly informative priors and prior predictive simulations are required to ensure good understanding of the model behaviour.
+    \item \textbf{Model fitting:} This technical step will be challenging in terms of computational power. Depending on the amount of data and the model complexity, it might even be infeasible to run models on local computers with reasonable computing time. In such case, it is possible to resort to high performance clusters (i.e. ETH Euler, Google Compute Engines, etc).
+    \item \textbf{Results interpretation:} Interpreting the model results will require careful exploration of the results via posterior plots, statistics computation and sensitivity analysis.
+    \item \textbf{Manuscript preparation:} The last step will consist in writing a master thesis that provides a complete description of the project and its results. This step will be time consuming as it involves further research, presentation of results and corrections.
+\end{enumerate}
+
+\subsection{Possible extensions}
+The following list describes some possibilities to extend the project if there is time left:
+\begin{itemize}
+    \item Including more data to provide insight on different factors that might affect predictability, such as species trait and phylogeny
+    \item Extending the model to include other types of interactions
+    \item Improve the model and compare it against alternative model definitions that are based on stronger mechanistic assumptions
+\end{itemize}
+
+\subsection{Time constraints}
+Table \ref{tab:schedule} provides an approximate schedule for the main steps of the project. It is likely that these indicative deadline will change based on the difficulties met during the project. Their goal is to help deciding when to move on or dig deeper to avoid time issues towards the end of the project. It is especially important to keep aside enough time for the writing and correction process, which is a personal weakness.
+
+\begin{table}[tb]
+    \begin{small}
+    \centering
+    \begin{tabular}{p{0.25\textwidth}|p{0.7\textwidth}}
+        Indicative deadline & Tasks \\ \hline
+        31 April & Discuss/clarify outline, finish data collection, start cleaning \\
+        15 May & Finish data cleaning \\
+        30 May & Finish model preparation and prior predictive simulations \\
+        31 June & Finish data analysis, start interpretation and possible extensions \\
+        31 July & Finish all data analysis and results interpretation, start writing \\
+        20 August & Finish first draw and start corrections \\
+        $\sim$ 25 August & Presentation during lab meeting, get feedback from lab members \\
+        10 September & Finish corrections (last days saved as a buffer for corrections)\\ \hline
+        \textbf{16 September} & \textbf{Official final deadline}
+    \end{tabular}
+    \caption{Indicative deadlines for the MSc project.}
+    \label{tab:schedule}
+    \end{small}
+\end{table}
+
+\pagestyle{plain*}
+\printbibliography
+
+\end{document}

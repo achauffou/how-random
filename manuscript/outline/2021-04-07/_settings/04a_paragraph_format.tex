@@ -1,0 +1,58 @@
+% ========================================
+% PARAGRAPH FORMATTING
+% Settings formatting paragraphs
+% ========================================
+
+
+% INDENTATION
+% Comment the setting for default value. To start a paragraph with indentation, use the \noindent command.
+% \setlength{\parindent}{0em}
+
+% SPACING
+% Comment this line for default value. This value can be change in the middle of the document.
+% \setlength{\parskip}{0em}
+
+% LINESPREAD
+% Determines the spacing between lines:
+\linespread{1.3}
+
+% COLORS
+% The package color enables to use the commands \color{} and \pagecolor{} to change text and page color.
+\usepackage{xcolor}
+
+
+% LIST SETTINGS
+\usepackage{enumitem}
+
+% Less space between items:
+% - Use \begin{itemize}[noitemsep,nolistsep] for more compact lists.
+% - Uncomment those lines for compact lists everywhere
+\setlist{noitemsep}
+\setlist{nolistsep}
+    
+% Enumerate items style:
+% - Comment these lines to use the default enumerate items settings.
+% - The different item types are \alph, \Alph, \arabic, \roman, \Roman.
+% - Can also be used anywhere in the document to change these settings.
+% \renewcommand{\labelenumi}{\arabic{enumi}}
+% \renewcommand{\labelenumii}{\alph{enumii}}
+% \renewcommand{\labelenumiii}{\roman{enumiii}}
+% \renewcommand{\labelenumiv}{\Alph{enumiv}}
+
+
+% Change enumerate counter value:
+% - To change or reset the value of an enumerate counter in an enumerate environment, use the \setcounter{enumi}{0} command before the new item
+%  - The first parameter gives the level of the list to change (enumi to enumiv) and the number specify the new value of the counter (use 0 to start again from 1).
+
+% Itemize items style:
+% - Comment these lines to use the default item styles settings.
+% - The basic item styles are \textbullet, \textendash, \textasteriskcentered, \textperiodcentered.
+% - Math symbols can also be specified between $$ if the amssymb package is used.
+% - Can also be used anywhere in the document to change these settings.
+% \renewcommand{\labelitemi}{\textbullet}
+% \renewcommand{\labelitemii}{\textendash}
+% \renewcommand{\labelitemiii}{\textasteriskcentered}
+% \renewcommand{\labelitemiv}{\textperiodcentered}
+
+% Change one the style of one item of a list:
+% - To change one item style in a list, use \item[] instead of \item and specifiy the item between the brackets (add $ symbols if it is a math symbol).

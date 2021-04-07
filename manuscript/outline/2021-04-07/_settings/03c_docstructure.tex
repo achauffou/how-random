@@ -1,0 +1,49 @@
+% ========================================
+% DOCUMENT STRUCTURE
+% Set structure formatting for matters, chapters, sections
+% ========================================
+
+
+% MATTERS AND APPENDIX (BOOKS AND REPORTS)
+% For books and reports, the document can be divided into:
+% - \frontmatter: turns off chapter numbering and uses roman numerals for page numbers
+% - \mainmatter: turns on chapter numbering, resets page numbering and uses arabic numerals for page numbers
+% - \appendix: resets chapter numbering, uses letters for chapter numbers and doesn't fiddle with page numbering;
+% - \backmatter turns off chapter numbering and doesn't fiddle with page numbering.
+
+
+% TITLESEC
+% The titlesec package enables to change chapter/sections title format:
+% - More details in the package manual or at: https://fr.overleaf.com/learn/latex/Sections_and_chapters
+\usepackage[pagestyles]{titlesec}
+
+% TITLE FORMAT
+% To change the format a title, use the following command:
+% - \titleformat{<command>}[<shape>]{<format>}{<label>}{<sep>}{<before-code>}[<after-code>]
+% - <command> is the sectioning command to be redefined: \part, \chapter, \section, \subsection, \subsubsection, \paragraph or \subparagraph.
+% - <shape> is sectioning paragraph shape; possible values are: hang, block, display, runin, leftmargin, rightmargin, drop, wrap, frame.
+% - <format> is the format to be applied to the title, label, and text; for example \sffamily\Large\bfseries
+% - <label> specify sectioning label.
+% - <sep> is the horizontal separation between label and title body and it must be a length and not be empty.
+% - <before-code> is code preceding the title body.
+% - <after-code> is code following the title body.
+\titleformat{\chapter}[display]{\sffamily\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}{\sffamily\Large\bfseries}{}{0em}{}
+\titleformat{\subsection}{\sffamily\large\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\sffamily\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[runin]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titleformat{\subparagraph}[runin]{\normalfont\normalsize\bfseries}{\thesubparagraph}{1em}{}
+
+% TITLE SPACING
+% To change the spacing of a title, use the following command:
+% - \titlespacing{<command>}{<left>}{<before-sep>}{<after-sep>}
+% - <left> increases the left margin.
+% - <before-sep> is the vertical space before the title.
+% - <after-sep> is the separation between title and non-sectioning text.
+% - The starred version of this command (\titlespacing*) kills the indentation of the paragraph following the title. 
+\titlespacing*{\chapter} {0pt}{50pt}{40pt}
+\titlespacing*{\section} {0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+\titlespacing*{\subsection} {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing*{\paragraph} {0pt}{3.25ex plus 1ex minus .2ex}{1em}
+\titlespacing*{\subparagraph} {\parindent}{3.25ex plus 1ex minus .2ex}{1em}

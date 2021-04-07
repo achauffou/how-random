@@ -1,0 +1,100 @@
+% ========================================
+% CUSTOM BIBLIOGRAPHY OPTIONS
+% Bibliography management customized options
+% ========================================
+
+% % An excellent tutorial on customized biblatex: https://tex.stackexchange.com/questions/12806/guidelines-for-customizing-biblatex-styles
+
+% DECLARE FIELDS
+% \DeclareFieldFormat*{year}{#1\isdot}
+% \DeclareFieldFormat*{title}{#1\isdot}
+% \DeclareFieldFormat*{journaltitle}{#1\isdot}
+% \DeclareFieldFormat*{volume}{\textbf{#1}\isdot}
+% \DeclareFieldFormat*{pages}{#1\isdot}
+% \DeclareFieldFormat*{published}{#1\isdot}
+% \DeclareListFormat*{location}{#1}
+% \DeclareFieldFormat*{note}{#1\isdot}
+% \DeclareListFormat*{organization}{#1}
+% \DeclareFieldFormat*{addendum}{#1\isdot}
+% \DeclareFieldFormat*{url}{\url{#1}\isdot}
+
+
+% CUSTOM DRIVERS (reference style of an entry in the bibliography)
+% \DeclareBibliographyDriver{article}{%
+%   \printnames{author}%
+%   \newunit\newblock
+%   \newunit\newblock
+%   \printfield{year}%
+%   \newunit\newblock
+%   \printfield{title}%
+%   \newunit\newblock
+%   \printfield{journaltitle}%
+%   \newunit
+%   \printfield{volume}\setunit*{:}\printfield{pages}%
+%   \newunit\newblock
+%   \printfield{addendum}%
+%   \finentry}
+% \DeclareBibliographyDriver{manual}{%
+%   \printnames{author}%
+%   \newunit\newblock
+%   \printfield{year}%
+%   \newunit\newblock
+%   \printfield{title}%
+%   \newunit\newblock
+%   \printlist{organization}\setunit*{\addcomma\space}\printlist{location}
+%   \newunit\newblock
+%   \printfield{note}%
+%   \newunit\newblock
+%   \printfield{url}%
+%   \newunit\newblock
+%   \printfield{addendum}%
+%   \finentry}
+% \DeclareBibliographyDriver{book}{%
+%   \printnames{author}%
+%   \newunit\newblock
+%   \printfield{year}%
+%   \newunit\newblock
+%   \printfield{title}%
+%   \newunit\newblock
+%   \printfield{publisher}, \printfield{address}%
+%   \newunit\newblock
+%   \printfield{addendum}%
+%   \finentry}
+
+
+% UNITS AND BLOCKS IN REFERENCES ENTRIES
+% Punctuation between blocks and units in bibliography:
+% \renewcommand{\newblockpunct}{\adddot\ }
+% \renewcommand{\newunitpunct}{\ }
+
+
+% OTHER CUSTOM OPTIONS
+% Commands to be executed at the beginning of the bibliography to tweak the font parameters:
+% \renewcommand*{\bibfont}{\footnotesize}
+
+% Indentation starting from the second line:
+% \renewcommand{\bibhang}{2em}
+
+% Punctuation at the end of a bibliography entry:
+% \renewcommand{\finentrypunct}{\adddot}
+
+% Initials in bibliography:
+% \renewcommand{\bibinitperiod}{\adddot}
+% \renewcommand{\bibinitdelim}{ }
+% \renewcommand{\bibinithyphendelim}{}
+
+% Reversed names in bibliography:
+% \renewcommand{\revsdnamepunct}{}
+
+
+% OTHER CUSTOM OPTIONS FOR IN TEXT CITATIONS
+% See biblatex manual pages 120-...
+% Separation symbol between citations in cite commands:
+\renewcommand{\multicitedelim}{\addcomma\ }
+
+% Separation between the author name and the year in cite commands:
+\renewcommand{\nameyeardelim}{\ }
+
+% Separation between authors when there is only two:
+\let\ampersand\& % save ampersand for other uses
+\renewcommand*\&{and} % let \& yield 'and'

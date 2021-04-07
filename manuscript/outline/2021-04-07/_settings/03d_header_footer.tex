@@ -1,0 +1,30 @@
+% ========================================
+% HEADERS AND FOOTERS STYLE
+% Set styles for the header and footer
+% ========================================
+
+
+% TITLESEC
+% This template uses the titleps extension from the titlesec package.
+% - more details on the titleps package in its documentation
+
+% PLAIN PAGE STYLE
+% The page style to be used for the whole document (plain):
+% - Details on the manual of titleps (very easy to understand)
+\renewpagestyle{plain}[\sffamily\small]{
+    \sethead{\textbf{\thedoctitle}}{}{\thedocauthor}
+    \headrule
+    \setfoot{\textit{ETH Zürich, Plant Ecology Group}}{}{\thepage}
+} % odd
+\newpagestyle{plain*}[\sffamily\small]{
+    \sethead{\textbf{\thedoctitle}}{}{\thedocauthor}
+    \headrule
+    \setfoot{\textit{ETH Zürich, Plant Ecology Group}}{}{\thepage}
+} % odd
+\pagestyle{plain}
+
+% Important note:
+% - For proper printing of content that does not have a section number (i.e. table of contents, bibliography), switch to the plain* style (\pagestyle{plain*})
+
+% ADDITIONAL PAGE STYLES
+% You can define other page styles here with the \newpagestyle command. You can switch page style in the document with the command \pagestyle{<style name>} at any time.

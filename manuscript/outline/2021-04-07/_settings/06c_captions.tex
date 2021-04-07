@@ -1,0 +1,59 @@
+% ========================================
+% CAPTIONS
+% Figures and tables captions
+% ========================================
+
+% CAPTION PACKAGE
+% The caption and subcaption packages help to format captions of figures and subfigure. It offers several options to overwrite default LaTeX behaviours. Details available in the package manual.
+\usepackage{caption}
+\usepackage{subcaption}
+
+% CAPTION SEPARATORS
+% There are several caption separators available, including none, colon, period, space, quad, newline, endash.
+% To add other caption separators, use the \DeclareCaptionLabelSeparator{<name>}{<separator>} command:
+\DeclareCaptionLabelSeparator{bar}{ | }
+
+% CAPTION COLORS
+% Colors to use for caption label, text or both can be declared here:
+\DeclareCaptionFont{red}{\color{red}}
+\DeclareCaptionFont{green}{\color{green}}
+\DeclareCaptionFont{blue}{\color{blue}}
+
+% OTHER OPTIONS
+% Most options can be tweaked. Refer to the package manual to see how to tweak them.
+
+% CAPTION SETUP
+% Use the \captionsetup[<environment>]{<options>} command at any time to set options for captions formatting. Specific environments can be figure, table, subfigure. Several options are available including:
+% - format: plain, hang, ...
+% - indentation: indentation of line starting at second line of the caption
+% - labelformat: original, empty, simple, brace, parens
+% - labelsep: none, colon, period, space, quad, newline, endash (others can be added manually, see above)
+% - textformat: empty, simple, format
+% - justification: justified, centering, centerlast, centerfirst, raggedright, Raggedright, raggedleft
+% - singlelinecheck: true (automatically center caption if single line), false
+% - font, labelfont, textfont: many options including size names, two-letters text format names, color=<color> (must be declared; see above)
+% - font+=, label+=, textfont+=: font options to add to current ones
+% - margin, width, oneside, twoside, margin*=, minmargin, maxargin, parskip, hangindent
+% - style: predefined styles (base, default defined by caption package; additional can be declared)
+% - skip: vertical spacing between caption and figure/table
+% - position: assumed position of the caption (for space placement between caption and figure/table)
+% \captionsetup[figure]{labelfont=bf,labelsep=bar,font=small,position=below}
+% \captionsetup[table]{labelfont=bf,labelsep=bar,font=small,position=below}
+
+% CAPTION FOR LIST OF FIGURE AND TABLES
+% To modify the caption to use in the list of figures or tables, use an optional argument in the \caption command:
+% \caption[<list entry>]{<heading>}.
+
+% Using an empty option will remove the figure/table from the list of figures/tables:
+% \caption[]{A figure without list entry.}
+
+% UNNUMBERED CAPTION
+% Use \caption* to include a caption without number and that will not appear in the list of captions.
+
+% CAPTION OUTSIDE FLOATING ENVIRONMENT
+% To add a caption outside a floating environment, use the commands \captionof or \captionof*:
+% \captionof{<float type>}[<list entry>]{<heading>}
+
+% ADD CAPTION ENTRY IN THE LIST OF FIGURES/TABLES
+% To add manually a caption to the list of figures/tables, use \captionlistentry.
+\captionsetup[table]{labelfont=bf,labelsep=bar,font=small,position=below,justification=raggedright,singlelinecheck=false}

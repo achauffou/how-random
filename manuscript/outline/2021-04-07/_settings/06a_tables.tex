@@ -1,0 +1,47 @@
+% Tables settings:
+    % Insert a normal table:
+      \usepackage{tabularx}
+        % to insert a normal table, use the \begin{table}[h] command. Include caption,
+        % centering and label in this environment. Use then the \begin{tabularx}{}
+        % environment.
+        % Second attribute: the columns pattern, column can be l (left), c (center),
+        % r (right) or X (takes the width it wants)
+
+    % Insert a long table (recommended):
+      \usepackage{longtable}
+        % To include a longtable, do not embed in in a table environment. Use the
+        % \begin{longtable}[c]{} command.
+        % Parameter (table position): c (center), l (left) or r (right)
+        % Second attribute: column pattern, it is possible to use column can be
+        % l (left), c (center), r (right) or p (justify); column width can be set
+        % in brackets (p{2cm}); use | to include a line between the columns.
+        % Use also the following commands in the environment: \endfirsthead (caption
+        % before that), \endhead, \endfoot, \endlastfoot.
+
+    % Landscape table:
+      \usepackage{pdflscape}
+        % To include a longtable in a different page in landscape, embed it in the
+        % \begin{landscape} environment.
+
+    % Rule thickness, margin between border and text and height:
+      %\setlegth{\arrayrulewidth}{1mm}
+      %\setlength{\tabcolsep}{18pt}
+      \renewcommand{\arraystretch}{1.5}
+        % Comment these lines to use the default settings. Can be used in the middle
+        % of the document to change settings.
+
+    % Coloring rows:
+      % \usepackage[table]{xcolor}
+        % Use the command \rowcolors{nb}{green!80!yellow!50}{green!70!yellow!40}
+        % between braces that embed the tabularx right before the tabular definition
+        % To alternate row colors from line nb with the specified colors.
+        % Use \newcolumntype{s}{>{\columncolor[HTML]{AAACED}} p{3cm}} to declare a
+        % new column type s that follows these rules.
+        % Use \arrayrulecolor[HTML]{DB5800} to color the rules of the array.
+        % Use \cellcolor[HTML]{AA0044} to set the color of a cell.
+
+    % Toprule, midrule and bottomrule:
+      \usepackage{booktabs}
+
+    % Multiple rows merged cells:
+      \usepackage{multirow}

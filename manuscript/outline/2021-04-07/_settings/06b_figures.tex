@@ -1,0 +1,34 @@
+% Graphics and figures settings:
+    % Include graphics:
+      \usepackage{graphicx}
+        % To include an graphic, use the command \includegraphics[]{}.
+        % Attribute: the name of the image file (without the extension)
+        % Parameters for size: scale (number) or width (length), height (length)
+        % Parameters for the rotation: angle (angle in degrees)
+        % To set the width of the text, use width=\textwidth.
+
+    % Graphics folder path:
+      \graphicspath{{figures/}}
+        % Comment this lines to have the graphics in the same folder as the main file.
+        % It is possible to include more than one folder.
+
+    % Figures environment:
+        % Use the \begin{figure}[h] and \end{figure} for figure environment.
+        % Parameters: h (here), t (top), b (bottom), p (special page), ! (override)
+        % and H (force here)
+
+    % Centering figures:
+        % To center a figure, use the \centering command.
+
+    % Wrapfigure environment:
+      \usepackage{wrapfig}
+        % Use the \begin{wrapfigure}{l}{0.25\textwidth} and \end{wrapfigure} for
+        % wrapping a figure in the text.
+        % Attribute 2 (position): l (left) or r (right)
+        % Attribute 3 (width): length (use \textwidth for relative width)
+        
+    % Side caption:
+      \usepackage[rightcaption]{sidecap}
+        % Parameter: rightcaption, leftcaption, innercaption, outercaption
+        % To insert a figure with caption on the side, use the \begin{SCfigure}[0.5][h]
+        % environment. The first parameter is the relative width of the caption.

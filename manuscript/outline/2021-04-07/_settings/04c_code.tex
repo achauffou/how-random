@@ -1,0 +1,45 @@
+% ========================================
+% FOOTNOTES AND MARGIN NOTES
+% Options and packages for foot and margin rules
+% ========================================
+
+
+% CODE DISPLAYING
+% The verbatim environment enables to display code safely:
+% - Its starred version verbatim* also prints spaces
+% - The verb command has the same effect as verbatim within a paragraph
+
+
+% CODE HIGHLIGHTING
+\usepackage{minted}
+
+% The minted environment enables to highlight code:
+% - Argument: name of the programming language
+% - Additional parameters: frame, framesep, baselinestretch, bgcolor, fontsize, linenos, mathescape, rulecolor, showspaces
+% - example: \begin{minted}[frame=lines, framesep=2mm, baselinestretch=1.2, bgcolor=LightGray, fontsize=\footnotesize, linenos]{python} ... \end{minted}
+
+% The \inputminted can input code from a file:
+% - First argument: programming language
+% - Second argument: file name
+% - Optional parameter: firstline, lastline
+% - Example: \inputminted[firstline=2, lastline=12]{octave}{BitXorMatrix.m}
+
+% Inline code can be added in a paragraph with the \mint{<language>}|<code>| command.
+
+
+% CODE LISTING (recommended to use minted rather)
+\usepackage{listings}
+% The ltlistings environment enables to display code with language specific standard highlighting:
+% - Optional parameters: language, caption
+% - Example: \begin{lstlisting}[language=Python] ... \end{lstlisting}
+
+% The lstinputlisting command enables to display code from a file:
+% - Optional parameters: language, firstline, lastline
+% - Compulsory argument: name of the file to use
+% - Example: \lstinputlisting[language=Octave, firstline=2, lastline=12]{BitXorMatrix.m}
+
+% Styles can be applied to color code listings:
+% - Several examples/templates can be found online
+% - More details: https://fr.overleaf.com/learn/latex/Code_listing
+
+% A list of listings can be added in the document with the command \lstlistoflistings
