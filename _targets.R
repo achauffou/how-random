@@ -9,16 +9,33 @@ options(tinytex.engine_args = "-shell-escape")
 options(tinytex.bib_engine = "biber")
 options(tinytex.compile.min_times = 2)
 
+# Set options to load R packages listed in .r_packages if necessary -----
+tar_option_set(packages = readLines(".r_packages"))
+
 # Load all functions scripts in the code folder -----
 f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
 
-# Compile TeX manuscripts ======================================================
-list(
+# Read YAML configuration ======================================================
+read_YAML_config <- list(
+  tar_target(
+    config_file,
+    "config.yaml",
+    format = "file"
+  ),
+  tar_target(
+    config,
+    yaml::read_yaml(config_file)
+  ),
   tar_target(
     tex_folders_to_compile,
-    c("manuscript/outline/2021-04-07")
-  ),
+    config$tex_folders_to_compile
+  )
+)
+
+
+# Compile TeX manuscripts ======================================================
+compile_TeX_manuscripts <-list(
   tar_target(
     tex_source_files_to_watch,
     list.files(
@@ -38,3 +55,7 @@ list(
     pattern = map(tex_source_files_to_watch)
   )
 )
+
+
+# List all targets to make =====================================================
+list(read_YAML_config, compile_TeX_manuscripts)
