@@ -51,5 +51,6 @@ RUN tlmgr update --self \
 
 # Install additional R packages (listed in .r_packages):
 COPY .r_packages /home/rstudio/how-random/.r_packages
-RUN install2.r --error --skipinstalled -r $CRAN -n $NCPUS \
+RUN apt-get update && apt-get install -y build-essential libglpk40 \
+  && install2.r --error --skipinstalled -r $CRAN -n $NCPUS \
   $(cat /home/rstudio/how-random/.r_packages | tr '\n' ' ')
