@@ -18,8 +18,15 @@ RUN mkdir $CMDSTAN \
   && cd / \
   && rm cmdstan.tar.gz
 
-# Install cmdstanr 3.0.0 (2020-12-17):
-RUN R -e "devtools::install_github('stan-dev/cmdstanr@v0.3.0')" \
+# Install cmdstanr 3.0.0 (2020-12-17) and posterior 0.1.4 (2021-03-26):
+RUN mkdir posterior \
+  && install2.r --error --skipinstalled -r $CRAN -n $NCPUS abind checkmate tensorA distributional \
+  && wget -O posterior.tar.gz https://github.com/stan-dev/posterior/archive/refs/tags/v0.1.4.tar.gz \
+  && install2.r --error --skipinstalled -r NULL -n $NCPUS posterior.tar.gz \
+  && rm posterior.tar.gz \
+  && wget -O cmdstanr.tar.gz https://github.com/stan-dev/cmdstanr/archive/refs/tags/v0.3.0.tar.gz \
+  && install2.r --error --skipinstalled -r NULL -n $NCPUS cmdstanr.tar.gz \
+  && rm cmdstanr.tar.gz \
   && echo CMDSTAN=$CMDSTAN >> /usr/local/lib/R/etc/Renviron.site
 
 # Install TeX-Live final 2020 archive using TinyTeX:
