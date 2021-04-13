@@ -1,0 +1,5 @@
+# Use LF line-endings on repository and in working directory -----
+* text=auto eol=lf
+
+# Use system-specific line-endings for Dockerfile -----
+Dockerfile !eol
