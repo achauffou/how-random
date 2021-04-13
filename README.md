@@ -27,7 +27,7 @@ docker build -t how-random-image .
 ### 4. Run the docker container
 Any code from the project is meant to be run within a container based on the previously build docker image. To run a new docker container for the project, use the following command from the project root folder:
 ```
-docker run -d -e DISABLE_AUTH=true -p 8787:8787 -v $PWD:/home/rstudio/how-random --name how-random-container how-random-image
+docker run -d -e DISABLE_AUTH=true -p 8787:8787 -v ${PWD}:/home/rstudio/how-random --name how-random-container how-random-image
 ```
 *Note:* Linux users might need sudo privileges to use docker.
 
