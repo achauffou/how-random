@@ -1,4 +1,7 @@
 # R gitignore -----
+# Ignore _targets directory
+_targets/**
+
 # History files
 .Rhistory
 .Rapp.history
