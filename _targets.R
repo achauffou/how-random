@@ -8,6 +8,7 @@ library(magrittr)
 # Set R options -----
 QUIET_DOWNLOADS <- FALSE
 options(download.file.method = "curl")
+options(download.file.extra = "-L")
 options(tinytex.engine = "lualatex")
 options(tinytex.engine_args = "-shell-escape")
 options(tinytex.bib_engine = "biber")
