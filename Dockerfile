@@ -7,6 +7,9 @@ FROM rocker/tidyverse:4.0.3
 # Find out the number of cores available for the installation:
 ENV NCPUS=${NCPUS:-1}
 
+# Set wget as default methods to download files in R:
+RUN echo 'options(download.file.method = "wget")' >> /usr/local/lib/R/etc/Rprofile.site
+
 # Install additional apt packages listed in .apt_packages:
 COPY .apt_packages /home/rstudio/how-random/.apt_packages
 RUN apt-get update && apt-get install -y \
