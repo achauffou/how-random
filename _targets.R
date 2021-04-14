@@ -36,7 +36,8 @@ read_YAML_config <- list(
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
-  tar_target(wol_interaction_type, config$wol_interaction_type)
+  tar_target(wol_interaction_type, config$wol_interaction_type),
+  tar_target(worldclim_download_url, config$worldclim_download_url)
 )
 
 
@@ -72,11 +73,22 @@ download_ecoregions_data <- tar_target(
   format = "file"
 )
 
+# Climate data -----
+download_climate_data <- list(
+  tar_target(
+    worldclim_raw_archive,
+    download_from_url(worldclim_download_url, 
+                     "data/raw/worldclim_2-5.zip", download_date),
+    format = "file"
+  )
+)
+
 # List all download targets -----
 download_raw_data <- list(
   download_web_of_life_data,
   download_itis_data,
-  download_ecoregions_data
+  download_ecoregions_data,
+  download_climate_data
 )
 
 
