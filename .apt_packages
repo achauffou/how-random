@@ -1,0 +1,3 @@
+build-essential
+libglpk40
+python3-pygments

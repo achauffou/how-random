@@ -7,6 +7,11 @@ FROM rocker/tidyverse:4.0.3
 # Find out the number of cores available for the installation:
 ENV NCPUS=${NCPUS:-1}
 
+# Install additional apt packages listed in .apt_packages:
+COPY .apt_packages /home/rstudio/how-random/.apt_packages
+RUN apt-get update && apt-get install -y \
+  $(cat /home/rstudio/how-random/.apt_packages | tr '\n' ' ')
+
 # Install CMDSTAN 2.26.1 (2021-02-21):
 ENV CMDSTAN_REPO=https://github.com/stan-dev/cmdstan/releases/download/v2.26.1/cmdstan-2.26.1.tar.gz
 ENV CMDSTAN=/usr/local/cmdstan
@@ -36,7 +41,6 @@ RUN install2.r --error --skipinstalled -r $CRAN -n $NCPUS tinytex \
   && R -e "library(tinytex); tinytex::install_tinytex( \
     dir = '/usr/local/TinyTeX', version = '2020.12', repo = I('"$CTAN_REPO"'))" \
   && echo "export PATH=$PATH" > /etc/environment \
-  && apt-get update && apt-get install -y python3-pygments \
   && echo 'options(tinytex.engine = "lualatex")' >> /usr/local/lib/R/etc/Rprofile.site \
   && echo 'options(tinytex.engine_args = "-shell-escape")' >> /usr/local/lib/R/etc/Rprofile.site \
   && echo 'options(tinytex.bib_engine = "biber")' >> /usr/local/lib/R/etc/Rprofile.site \
@@ -51,6 +55,5 @@ RUN tlmgr update --self \
 
 # Install additional R packages (listed in .r_packages):
 COPY .r_packages /home/rstudio/how-random/.r_packages
-RUN apt-get update && apt-get install -y build-essential libglpk40 \
-  && install2.r --error --skipinstalled -r $CRAN -n $NCPUS \
+RUN install2.r --error --skipinstalled -r $CRAN -n $NCPUS \
   $(cat /home/rstudio/how-random/.r_packages | tr '\n' ' ')
