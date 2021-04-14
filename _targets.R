@@ -5,8 +5,9 @@ library(targets)
 # Load other crucial packages -----
 library(magrittr)
 
-# Set environment variables and options -----
-Sys.setenv(CMDSTAN="/usr/local/cmdstan")
+# Set R options -----
+QUIET_DOWNLOADS <- FALSE
+options(download.file.method = "curl")
 options(tinytex.engine = "lualatex")
 options(tinytex.engine_args = "-shell-escape")
 options(tinytex.bib_engine = "biber")
@@ -40,7 +41,7 @@ read_YAML_config <- list(
 # Web of life data -----
 download_web_of_life_data <- list(
   tar_target(
-    wol_networks_list, 
+    wol_networks_list,
     list_wol_networks(wol_interaction_type, download_date)
   ),
   tar_target(
@@ -57,16 +58,16 @@ compile_TeX_manuscripts <-list(
   tar_target(
     tex_source_files_to_watch,
     list.files(
-      path = tex_folders_to_compile, 
-      pattern = c(".*[tex|bib]$"), 
-      recursive = TRUE, 
+      path = tex_folders_to_compile,
+      pattern = c(".*[tex|bib]$"),
+      recursive = TRUE,
       full.names = TRUE
     ),
     format = "file",
     pattern = map(tex_folders_to_compile)
   ),
   tar_target(
-    compile_outline,
+    compile_tex_manuscripts,
     latexmk_from_path(
       grep("main.tex$", tex_source_files_to_watch, value = TRUE)[1]
     ),

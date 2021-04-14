@@ -4,7 +4,7 @@ download_from_url <- function(download_url, dest_file, download_date = NA) {
   dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
   
   # Download the file:
-  download.file(download_url, dest_file, quiet = TRUE)
+  download.file(download_url, dest_file, quiet = QUIET_DOWNLOADS)
   
   # Return invisibly the destination file:
   dest_file
@@ -73,5 +73,5 @@ download_wol_networks_raw_archive <- function(
     paste0("&species=", species) %>%
     paste0("&type=&data=&speciesrange=&interactionsrange=") %>% 
     paste0("&searchbox=&checked=") %>%
-    download_from_url(dest_file)
+    download_from_url(dest_file, download_date)
 }
