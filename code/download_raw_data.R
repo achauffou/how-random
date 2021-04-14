@@ -40,3 +40,29 @@ list_wol_networks <- function(interaction_type = "All", download_date = NA) {
     glue::glue_collapse() %>%
     rjson::fromJSON()
 }
+
+#' Download Web of Life networks raw data
+#' 
+download_wol_networks_raw_archive <- function(
+  networks_list, output_path, output_format = "csv", with_species_names = TRUE
+) {
+  # Prepare download url:
+  networks <- lapply(networks_list, function(x) x[['networkName']]) %>% 
+    unlist() %>% 
+    paste(collapse = ",")
+  species <- FALSE
+  if (with_species_names) {species <- "yes"}
+  
+  # Create directory where the archive should be stored:
+  dir.create(dirname(output_path), showWarnings = FALSE, recursive = TRUE)
+  
+  # Download data:
+  "http://www.web-of-life.es/map_download_fast2.php?" %>%
+    paste0("format=", output_format) %>%
+    paste0("&networks=", networks) %>%
+    paste0("&species=", species) %>%
+    paste0("&type=&data=&speciesrange=&interactionsrange=") %>% 
+    paste0("&searchbox=&checked=") %>%
+    download.file(output_path)
+  output_path
+}
