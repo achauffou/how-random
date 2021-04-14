@@ -2,6 +2,9 @@
 # Load targets package -----
 library(targets)
 
+# Load other crucial packages -----
+library(magrittr)
+
 # Set environment variables and options -----
 Sys.setenv(CMDSTAN="/usr/local/cmdstan")
 options(tinytex.engine = "lualatex")
@@ -27,12 +30,20 @@ read_YAML_config <- list(
     config,
     yaml::read_yaml(config_file)
   ),
-  tar_target(
-    tex_folders_to_compile,
-    config$tex_folders_to_compile
-  )
+  tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
+  tar_target(download_date, config$download_date),
+  tar_target(wol_interaction_type, config$wol_interaction_type)
 )
 
+
+# Download raw data ============================================================
+# Web of life data -----
+download_web_of_life_data <- list(
+  tar_target(
+    wol_networks_list, 
+    list_wol_networks(wol_interaction_type, download_date)
+  )
+)
 
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts <-list(
@@ -58,4 +69,8 @@ compile_TeX_manuscripts <-list(
 
 
 # List all targets to make =====================================================
-list(read_YAML_config, compile_TeX_manuscripts)
+list(
+  read_YAML_config, 
+  download_web_of_life_data,
+  compile_TeX_manuscripts
+)
