@@ -31,8 +31,9 @@ read_YAML_config <- list(
     config,
     yaml::read_yaml(config_file)
   ),
-  tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(download_date, config$download_date),
+  tar_target(itis_download_url, config$itis_download_url),
+  tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_interaction_type, config$wol_interaction_type)
 )
 
@@ -52,6 +53,21 @@ download_web_of_life_data <- list(
     format = "file"
   )
 )
+
+# ITIS database -----
+download_itis_data <- tar_target(
+  itis_raw_database,
+  download_from_url(itis_download_url, "data/raw/itis_sqlite.zip",
+                    download_date),
+  format = "file"
+)
+
+# List all download targets -----
+download_raw_data <- list(
+  download_web_of_life_data,
+  download_itis_data
+)
+
 
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts <-list(
@@ -76,9 +92,9 @@ compile_TeX_manuscripts <-list(
 )
 
 
-# List all targets to make =====================================================
+# List all project targets to make =============================================
 list(
-  read_YAML_config, 
-  download_web_of_life_data,
+  read_YAML_config,
+  download_raw_data,
   compile_TeX_manuscripts
 )
