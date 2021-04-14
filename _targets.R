@@ -32,6 +32,7 @@ read_YAML_config <- list(
     yaml::read_yaml(config_file)
   ),
   tar_target(download_date, config$download_date),
+  tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_interaction_type, config$wol_interaction_type)
@@ -56,16 +57,25 @@ download_web_of_life_data <- list(
 
 # ITIS database -----
 download_itis_data <- tar_target(
-  itis_raw_database,
+  itis_raw_archive,
   download_from_url(itis_download_url, "data/raw/itis_sqlite.zip",
                     download_date),
+  format = "file"
+)
+
+# Terrestrial ecoregions -----
+download_ecoregions_data <- tar_target(
+  ecoregions_raw_archive,
+  download_from_url(ecoregions_download_url, 
+                    "data/raw/terrestrial_ecoregions.zip", download_date),
   format = "file"
 )
 
 # List all download targets -----
 download_raw_data <- list(
   download_web_of_life_data,
-  download_itis_data
+  download_itis_data,
+  download_ecoregions_data
 )
 
 
