@@ -34,6 +34,8 @@ read_YAML_config <- list(
   ),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
+  tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
+  tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_interaction_type, config$wol_interaction_type),
@@ -79,6 +81,18 @@ download_climate_data <- list(
     worldclim_raw_archive,
     download_from_url(worldclim_download_url, 
                      "data/raw/worldclim_2-5.zip", download_date),
+    format = "file"
+  ),
+  tar_target(
+    envirem_bioclim_raw_archive,
+    download_from_url(envirem_bioclim_download_url, 
+                      "data/raw/envirem_bioclim_2-5.zip", download_date),
+    format = "file"
+  ),
+  tar_target(
+    envirem_topo_raw_archive,
+    download_from_url(envirem_topo_download_url, 
+                      "data/raw/envirem_topo_2-5.zip", download_date),
     format = "file"
   )
 )

@@ -1,5 +1,7 @@
 download_date: 2021-04-14
 ecoregions_download_url: http://maps.tnc.org/files/shp/terr-ecoregions-TNC.zip
+envirem_bioclim_download_url: https://deepblue.lib.umich.edu/data/downloads/ms35t870p?locale=en
+envirem_topo_download_url: https://deepblue.lib.umich.edu/data/downloads/37720c880?locale=en
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
