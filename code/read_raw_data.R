@@ -3,7 +3,8 @@
 #' 
 read_raw_wol_data <- function(file_path, format = "csv") {
   # Unzip the raw archive:
-  dir_path <- tempdir()
+  dir_path <- paste0(tempdir(), "/", 
+                     tools::file_path_sans_ext(basename(file_path)))
   unzip(file_path, exdir = dir_path)
   
   # Return invisibly a list with networks and metadata:
