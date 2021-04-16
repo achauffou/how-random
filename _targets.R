@@ -22,7 +22,7 @@ f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
 
 # Read YAML configuration ======================================================
-read_YAML_config <- list(
+read_YAML_config_targets <- list(
   tar_target(
     config_file,
     "config.yaml",
@@ -45,7 +45,7 @@ read_YAML_config <- list(
 
 # Download raw data ============================================================
 # Web of life data -----
-download_web_of_life_data <- list(
+download_web_of_life_data_targets <- list(
   tar_target(
     wol_download_list,
     download_wol_networks_list(wol_interaction_type, download_date)
@@ -60,7 +60,7 @@ download_web_of_life_data <- list(
 )
 
 # ITIS database -----
-download_itis_data <- tar_target(
+download_itis_data_targets <- tar_target(
   itis_raw_archive,
   download_from_url(itis_download_url, "data/raw/itis_sqlite.zip",
                     download_date),
@@ -68,7 +68,7 @@ download_itis_data <- tar_target(
 )
 
 # Terrestrial ecoregions -----
-download_ecoregions_data <- tar_target(
+download_ecoregions_data_targets <- tar_target(
   ecoregions_raw_archive,
   download_from_url(ecoregions_download_url, 
                     "data/raw/terrestrial_ecoregions.zip", download_date),
@@ -76,7 +76,7 @@ download_ecoregions_data <- tar_target(
 )
 
 # Climate data -----
-download_climate_data <- list(
+download_climate_data_targets <- list(
   tar_target(
     worldclim_raw_archive,
     download_from_url(worldclim_download_url, 
@@ -98,17 +98,17 @@ download_climate_data <- list(
 )
 
 # List all download targets -----
-download_raw_data <- list(
-  download_web_of_life_data,
-  download_itis_data,
-  download_ecoregions_data,
-  download_climate_data
+download_raw_data_targets <- list(
+  download_web_of_life_data_targets,
+  download_itis_data_targets,
+  download_ecoregions_data_targets,
+  download_climate_data_targets
 )
 
 
 # Read raw data ================================================================
 # Web of Life -----
-read_web_of_life_data <- list(
+read_web_of_life_data_targets <- list(
   tar_target(
     wol_raw_data,
     read_raw_wol_data(wol_raw_archive)
@@ -118,13 +118,13 @@ read_web_of_life_data <- list(
 )
 
 # List all read targets -----
-read_raw_data <- list(
-  read_web_of_life_data
+read_raw_data_targets <- list(
+  read_web_of_life_data_targets
 )
 
 
 # Compile TeX manuscripts ======================================================
-compile_TeX_manuscripts <-list(
+compile_TeX_manuscripts_targets <-list(
   tar_target(
     tex_source_files_to_watch,
     list.files(
@@ -148,8 +148,8 @@ compile_TeX_manuscripts <-list(
 
 # List all project targets to make =============================================
 list(
-  read_YAML_config,
-  download_raw_data,
-  read_raw_data,
-  compile_TeX_manuscripts
+  read_YAML_config_targets,
+  download_raw_data_targets,
+  read_raw_data_targets,
+  compile_TeX_manuscripts_targets
 )
