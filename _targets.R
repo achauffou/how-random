@@ -47,13 +47,13 @@ read_YAML_config <- list(
 # Web of life data -----
 download_web_of_life_data <- list(
   tar_target(
-    wol_networks_list,
-    list_wol_networks(wol_interaction_type, download_date)
+    wol_download_list,
+    download_wol_networks_list(wol_interaction_type, download_date)
   ),
   tar_target(
-    wol_networks_raw_archive,
+    wol_raw_archive,
     download_wol_networks_raw_archive(
-      wol_networks_list,  "data/raw/wol_networks.zip"
+      wol_download_list,  "data/raw/wol.zip"
     ),
     format = "file"
   )

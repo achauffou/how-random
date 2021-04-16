@@ -27,7 +27,9 @@ download_from_url <- function(download_url, dest_file, download_date = NA) {
 #' * 11: anemone-fish
 #' * All
 #' 
-list_wol_networks <- function(interaction_type = "All", download_date = NA) {
+download_wol_networks_list <- function(
+  interaction_type = "All", download_date = NA
+) {
   # Resolve interaction type name:
   interaction_id <- interaction_type
   if (is.character(interaction_type)) {
