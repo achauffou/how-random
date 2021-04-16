@@ -2,6 +2,14 @@
 *Alain Chauffoureaux*
 
 #### 16 April 2021
+##### Starting to read and prepare interactions data:
+I slowly started to read Web of Life raw data and think about the next steps.
+Next week, I will need to start:
+* Formatting data on species (as a table with species information)
+* Cleaning species names (merging synonyms, resolving weird names)
+* Formatting data on interactions (as a table with information on each interaction for each network)
+* Format interactions metadata by adding a column for location ID and the possibility to assign locations manually
+
 ##### Jake's feedback on the outline:
 Today I received feedback from Jake about the outline.
 In particular, he made the following points:
