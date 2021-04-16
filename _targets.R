@@ -117,9 +117,18 @@ read_web_of_life_data_targets <- list(
   tar_target(wol_raw_metadata, wol_raw_data$metadata)
 )
 
+# ITIS databases -----
+read_itis_data_targets <- list(
+  tar_target(
+    itis_raw_data,
+    read_raw_itis_data(itis_raw_archive)
+  )
+)
+
 # List all read targets -----
 read_raw_data_targets <- list(
-  read_web_of_life_data_targets
+  read_web_of_life_data_targets,
+  read_itis_data_targets
 )
 
 

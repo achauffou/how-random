@@ -61,3 +61,35 @@ read_raw_wol_metadata <- function(file_path) {
     data.table::as.data.table()
   })
 }
+
+
+# Read ITIS database ===========================================================
+#' Read raw ITIS database archive
+#' 
+#' Read an ITIS sqlite database archive and return taxonomic units and synonym 
+#' links datatables.
+#' 
+read_raw_itis_data <- function(file_path) {
+  # Unzip the raw archive:
+  dir_path <- paste0(tempdir(), "/", 
+                     tools::file_path_sans_ext(basename(file_path)))
+  unzipped_files <- unzip(file_path, exdir = dir_path)
+  
+  # Establish connection with the database:
+  db_path <- unzipped_files[stringr::str_detect(unzipped_files, "ITIS")]
+  db_con <- RSQLite::dbConnect(RSQLite::SQLite(), db_path)
+  
+  # Retrieve table with taxonomic units:
+  taxonomic_units <- RSQLite::dbReadTable(db_con, "taxonomic_units") %>%
+    data.table::as.data.table() %>%
+    # Keep only plants, animals, and drop useless columns:
+    .[kingdom_id %in% c(3,5), .(tsn, complete_name, n_usage, rank_id, 
+                                unaccept_reason)]
+  # Retrieve table with synonym links:
+  synonym_links <- RSQLite::dbReadTable(db_con, "synonym_links") %>%
+    data.table::as.data.table()
+  
+  # Close connection and return tables:
+  RSQLite::dbDisconnect(db_con)
+  list(taxonomic_units = taxonomic_units, synonym_links = synonym_links)
+}
