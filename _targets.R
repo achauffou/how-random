@@ -106,6 +106,23 @@ download_raw_data <- list(
 )
 
 
+# Read raw data ================================================================
+# Web of Life -----
+read_web_of_life_data <- list(
+  tar_target(
+    wol_raw_data,
+    read_raw_wol_data(wol_raw_archive)
+  ),
+  tar_target(wol_raw_networks, wol_raw_data$networks),
+  tar_target(wol_raw_metadata, wol_raw_data$metadata)
+)
+
+# List all read targets -----
+read_raw_data <- list(
+  read_web_of_life_data
+)
+
+
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts <-list(
   tar_target(
@@ -133,5 +150,6 @@ compile_TeX_manuscripts <-list(
 list(
   read_YAML_config,
   download_raw_data,
+  read_raw_data,
   compile_TeX_manuscripts
 )
