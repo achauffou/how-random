@@ -84,7 +84,8 @@ read_raw_itis_data <- function(file_path) {
     data.table::as.data.table() %>%
     # Keep only plants, animals, and drop useless columns:
     .[kingdom_id %in% c(3,5), .(tsn, complete_name, n_usage, rank_id, 
-                                unaccept_reason)]
+                                parent_tsn, unaccept_reason)]
+  
   # Retrieve table with synonym links:
   synonym_links <- RSQLite::dbReadTable(db_con, "synonym_links") %>%
     data.table::as.data.table()
