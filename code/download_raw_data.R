@@ -47,11 +47,14 @@ list_wol_networks <- function(interaction_type = "All", download_date = NA) {
   }
   
   # Get list of data and parse it with JSON:
-  "http://www.web-of-life.es/networkslist.php?type=" %>%
+  networks_list <- "http://www.web-of-life.es/networkslist.php?type=" %>%
     paste0(interaction_id, "&data=All") %>%
     readLines(warn = FALSE) %>%
     glue::glue_collapse() %>%
     rjson::fromJSON()
+  
+  # Clean network list to remove networks with no species (root networks):
+  networks_list[sapply(networks_list, function (x) x$root) == 0]
 }
 
 #' Download Web of Life networks raw data
