@@ -2,6 +2,11 @@
 *Alain Chauffoureaux*
 
 #### 20 April 2021
+##### To do next:
+Today, I have started to prepare the species names for checking. Before performing the validation using GNR and ITIS, I need to finish the preparation step by:
+* Flag unidentified species as such
+* Resolve genus, species, subspecies in proposed names
+
 ##### Strategy to clean species names:
 After looking at F. Cagua's code, I have thought of the strategy that I can adopt to clean species names. It is likely to change depending on the new challenges I face while I implement it. For now, I am considering to do it as follows:
 * Starting point: data.table with raw species names (as used in Web of Life), network name, interaction type, location ID, functional group
