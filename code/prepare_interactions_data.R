@@ -31,3 +31,15 @@ get_raw_wol_species <- function(networks) {
     purrr::discard(~length(.) == 0) %>% # remove any empty network
     purrr::map_dfr(single_network_spp, .id = "net_name")
 }
+
+
+# Prepare interactions =========================================================
+#' Remove supplementary rows/columns from Web of Life networks
+#' 
+#' Remove any row/column with a name that matches given ones.
+#' 
+remove_supp_data_from_wol_networks <- function(networks, supp_names) {
+  # Remove columns and rows with names that match supplementary data:
+  networks %<>%
+    purrr::map(~.[!rownames(.) %in% supp_names, !colnames(.) %in% supp_names])
+}

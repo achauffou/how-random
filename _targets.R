@@ -39,6 +39,7 @@ read_YAML_config_targets <- list(
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_interaction_type, config$wol_interaction_type),
+  tar_target(wol_supp_data_names_path, config$wol_supp_data_names_path),
   tar_target(worldclim_download_url, config$worldclim_download_url)
 )
 
@@ -125,10 +126,24 @@ read_itis_data_targets <- list(
   )
 )
 
+# Read manually created data -----
+read_manual_data_targets <- list(
+  tar_target(
+    wol_supp_data_names_file,
+    wol_supp_data_names_path,
+    format = "file"
+  ),
+  tar_target(
+    wol_supp_data_names,
+    readLines(wol_supp_data_names_file)
+  )
+)
+
 # List all read targets -----
 read_raw_data_targets <- list(
   read_web_of_life_data_targets,
-  read_itis_data_targets
+  read_itis_data_targets,
+  read_manual_data_targets
 )
 
 
@@ -145,14 +160,23 @@ prepare_interactions_metadata_targets <- list(
 clean_species_names_targets <- list(
   tar_target(
     wol_raw_species,
-    get_raw_wol_species(wol_raw_networks)
+    get_raw_wol_species(wol_networks_wo_supp_data)
+  )
+)
+
+# Prepare interactions -----
+prepare_interractions_targets <- list(
+  tar_target(
+    wol_networks_wo_supp_data,
+    remove_supp_data_from_wol_networks(wol_raw_networks, wol_supp_data_names)
   )
 )
 
 # List all targets to prepare interactions data -----
 prepare_interactions_data_targets <- list(
   prepare_interactions_metadata_targets,
-  clean_species_names_targets
+  clean_species_names_targets,
+  prepare_interractions_targets
 )
 
 

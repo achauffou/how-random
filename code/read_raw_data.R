@@ -31,7 +31,6 @@ read_raw_wol_networks <- function(dir_path, format = "csv") {
       file_names %>% 
         file.path(dir_path, .) %>%
         purrr::map(readr::read_csv) %>%
-        purrr::map(~dplyr::filter(., X1 != 'Abundance"')) %>%
         purrr::map(format_wol_network_as_matrix) %>%
         `names<-`(networks_names)
     })
