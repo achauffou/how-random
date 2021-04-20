@@ -77,6 +77,7 @@ remove_abbreviations <- function(sp_name) {
     stringr::str_replace(stringr::regex("\\s*var\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*aff\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*cf\\."), "") %>%
+    stringr::str_replace(stringr::regex("\\s*subsp\\."), "") %>%
     stringr::str_replace(" x .+", "")
 }
 

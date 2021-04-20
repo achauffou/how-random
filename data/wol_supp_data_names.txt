@@ -1,3 +1,4 @@
 Abundance
 Abundance"
 Num. of hosts sampled
+Number of droppings analysed"
