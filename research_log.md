@@ -2,6 +2,12 @@
 *Alain Chauffoureaux*
 
 #### 20 April 2021
+##### Removing supplementary information from Web of Life networks:
+In many networks from Web of Life, there are columns/rows that are used to give supplementary information, usually species abundance.
+For now, I simply remove rows/columns that match predefined names and do not use this additional information.
+There are most likely many supplementary rows/columns that I did not remove yet.
+Since these rows will not be matched against taxonomic databases, I will remove them manually when I correct species names.
+
 ##### Cleaning and resolving species names:
 Today I start cleaning and resolving species names.
 I have read the supplementary methods from F. Cagua that explain in details how he resolved species names in his study.
