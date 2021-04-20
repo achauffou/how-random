@@ -132,6 +132,27 @@ read_raw_data_targets <- list(
 )
 
 
+# Prepare interactions data ====================================================
+# Prepare metadata -----
+prepare_interactions_metadata_targets <- list(
+  tar_target(
+    wol_metadata,
+    create_wol_metadata_loc_id(wol_raw_metadata)
+  )
+)
+
+# Clean species names -----
+clean_species_names_targets <- list(
+  
+)
+
+# List all targets to prepare interactions data -----
+prepare_interactions_data_targets <- list(
+  prepare_interactions_metadata_targets,
+  clean_species_names_targets
+)
+
+
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts_targets <-list(
   tar_target(
@@ -160,5 +181,6 @@ list(
   read_YAML_config_targets,
   download_raw_data_targets,
   read_raw_data_targets,
+  prepare_interactions_data_targets,
   compile_TeX_manuscripts_targets
 )
