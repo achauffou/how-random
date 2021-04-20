@@ -36,10 +36,13 @@ get_raw_wol_species <- function(networks) {
 #' 
 add_metadata_to_wol_species <- function(species, metadata, fun_groups_info) {
   # Add interaction type and location ID to species data.table:
-  species %<>% .[metadata[, .(net_name, int_type, loc_id)], on = .(net_name)]
+  species %<>% 
+    merge(metadata[, .(net_name, int_type, loc_id)], 
+          by = c("net_name"), all.x = TRUE)
   
   # Add guild depending on the interaction type:
-  species %<>% .[fun_groups_info, on = .(int_type, is_row)]
+  species %<>% 
+    merge(fun_groups_info, by = c("int_type", "is_row"), all.x = TRUE)
   species[, is_row:=NULL]
 }
 
