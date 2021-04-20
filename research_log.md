@@ -2,6 +2,20 @@
 *Alain Chauffoureaux*
 
 #### 20 April 2021
+##### Strategy to clean species names:
+After looking at F. Cagua's code, I have thought of the strategy that I can adopt to clean species names. It is likely to change depending on the new challenges I face while I implement it. For now, I am considering to do it as follows:
+* Starting point: data.table with raw species names (as used in Web of Life), network name, interaction type, location ID, functional group
+* Apply manual name corrections
+* Remove abbreviations
+* Analyse raw name to determine genus, species and subspecies and indicate rank
+* Flag names that indicate unidentified species
+* Query cache to resolve names in cache without performing the next steps
+* Check names that are not in the cache, proceed as follows:
+  * Find out whether the name is in the ITIS database
+  * Try to query GNR to resolve any spelling mistake if the name was not found in ITIS (verify that the kingdom is expected)
+  * Determine the corresponding valid taxon based on ITIS synonyms
+* Output: data.table with all raw species names either resolved or unresolved (with reason indicated)
+
 ##### Removing supplementary information from Web of Life networks:
 In many networks from Web of Life, there are columns/rows that are used to give supplementary information, usually species abundance.
 For now, I simply remove rows/columns that match predefined names and do not use this additional information.
