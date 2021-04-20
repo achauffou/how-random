@@ -46,6 +46,40 @@ add_metadata_to_wol_species <- function(species, metadata, fun_groups_info) {
   species[, is_row:=NULL]
 }
 
+#' Prepare unchecked species names dictionary
+#' 
+#' Implement manual species names corrections, remove abbreviations and 
+#' aggregate input species names to prepare the cleaning dictionary.
+#' 
+prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
+  # Implement manual corrections:
+  if (nrow(data.table::as.data.table(manual_corrections)) > 0) {
+    dict <- species %>%
+      .[, .(raw_sp_name)] %>%
+      merge(manual_corrections, by = c("raw_sp_name"), all.x = TRUE)
+  } else {
+    dict <- data.table::copy(species) %>%
+      .[, ':='(manual_sp_name = NA_character_, manual_comments = NA_character_)]
+  }
+  
+  # Create column for proposed species name (the one to query):
+  dict[, proposed_sp_name := 
+         ifelse(is.na(manual_sp_name), raw_sp_name, manual_sp_name)]
+  
+  # Remove abbreviations from proposed name:
+  dict[, proposed_sp_name := remove_abbreviations(proposed_sp_name)]
+}
+
+#' Remove abbraviations from species name
+#' 
+remove_abbreviations <- function(sp_name) {
+  sp_name %>%
+    stringr::str_replace(stringr::regex("\\s*var\\."), "") %>%
+    stringr::str_replace(stringr::regex("\\s*aff\\."), "") %>%
+    stringr::str_replace(stringr::regex("\\s*cf\\."), "") %>%
+    stringr::str_replace(" x .+", "")
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks

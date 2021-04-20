@@ -40,6 +40,7 @@ read_YAML_config_targets <- list(
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_fun_groups_info_path, config$wol_fun_groups_info_path),
   tar_target(wol_interaction_type, config$wol_interaction_type),
+  tar_target(wol_manual_species_names_path, config$wol_manual_species_names_path),
   tar_target(wol_supp_data_names_path, config$wol_supp_data_names_path),
   tar_target(worldclim_download_url, config$worldclim_download_url)
 )
@@ -146,6 +147,15 @@ read_manual_data_targets <- list(
   tar_target(
     wol_fun_groups_info,
     data.table::fread(wol_fun_groups_info_file)
+  ),
+  tar_target(
+    wol_manual_species_names_file,
+    wol_manual_species_names_path,
+    format = "file"
+  ),
+  tar_target(
+    wol_manual_species_names,
+    data.table::fread(wol_manual_species_names_file)
   )
 )
 
@@ -175,6 +185,10 @@ clean_species_names_targets <- list(
   tar_target(
     wol_raw_species_w_metadata,
     add_metadata_to_wol_species(wol_raw_species, wol_metadata, wol_fun_groups_info)
+  ),
+  tar_target(
+    unchecked_species_dict,
+    prepare_unchecked_species_dict(wol_raw_species, wol_manual_species_names)
   )
 )
 
