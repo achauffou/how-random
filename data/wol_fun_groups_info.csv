@@ -1,15 +1,15 @@
-int_type	is_row	fun_group
-Anemone-Fish	TRUE	Anemone
-Anemone-Fish	FALSE	Fish
-Food Webs	TRUE	Resource
-Food Webs	FALSE	Consumer
-Host-Parasite	TRUE	Host
-Host-Parasite	FALSE	Parasite
-Plant-Ant	TRUE	Ant
-Plant-Ant	FALSE	Plant
-Plant-Herbivore	TRUE	Plant
-Plant-Herbivore	FALSE	Herbivore
-Pollination	TRUE	Plant
-Pollination	FALSE	Pollinator
-Seed Dispersal	TRUE	Plant
-Seed Dispersal	FALSE	Disperser
+int_type,is_row,fun_group
+Anemone-Fish,TRUE,Anemone
+Anemone-Fish,FALSE,Fish
+Food Webs,TRUE,Resource
+Food Webs,FALSE,Consumer
+Host-Parasite,TRUE,Host
+Host-Parasite,FALSE,Parasite
+Plant-Ant,TRUE,Ant
+Plant-Ant,FALSE,Plant
+Plant-Herbivore,TRUE,Plant
+Plant-Herbivore,FALSE,Herbivore
+Pollination,TRUE,Plant
+Pollination,FALSE,Pollinator
+Seed Dispersal,TRUE,Plant
+Seed Dispersal,FALSE,Disperser
