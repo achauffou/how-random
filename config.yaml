@@ -5,6 +5,7 @@ envirem_topo_download_url: https://deepblue.lib.umich.edu/data/downloads/37720c8
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
+wol_fun_groups_info_path: data/wol_fun_groups_info.csv
 wol_interaction_type: All
 wol_supp_data_names_path: data/wol_supp_data_names.txt
 worldclim_download_url: https://data.biogeo.ucdavis.edu/data/worldclim/v2.1/base/wc2.1_2.5m_bio.zip

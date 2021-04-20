@@ -32,6 +32,17 @@ get_raw_wol_species <- function(networks) {
     purrr::map_dfr(single_network_spp, .id = "net_name")
 }
 
+#' Add some metadata to the Web of Life species data.table
+#' 
+add_metadata_to_wol_species <- function(species, metadata, fun_groups_info) {
+  # Add interaction type and location ID to species data.table:
+  species %<>% .[metadata[, .(net_name, int_type, loc_id)], on = .(net_name)]
+  
+  # Add guild depending on the interaction type:
+  species %<>% .[fun_groups_info, on = .(int_type, is_row)]
+  species[, is_row:=NULL]
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks
