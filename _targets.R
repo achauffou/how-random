@@ -143,7 +143,10 @@ prepare_interactions_metadata_targets <- list(
 
 # Clean species names -----
 clean_species_names_targets <- list(
-  
+  tar_target(
+    wol_raw_species,
+    get_raw_wol_species(wol_raw_networks)
+  )
 )
 
 # List all targets to prepare interactions data -----
