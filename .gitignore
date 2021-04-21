@@ -1,5 +1,6 @@
 # Specific folders and files to ignore -----
 data/raw/**
+data/cache/**
 
 # R gitignore -----
 # Ignore _targets directory
