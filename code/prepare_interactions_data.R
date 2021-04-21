@@ -129,6 +129,7 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
     stringr::str_count(proposed_sp_name, " ") > 2,
     ':='(
       is_too_long = TRUE,
+      is_valid = FALSE,
       validity_status = "Too long",
       proposed_sp_name = NA_character_
     )
