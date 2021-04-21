@@ -52,6 +52,9 @@ add_metadata_to_wol_species <- function(species, metadata, fun_groups_info) {
 #' aggregate input species names to prepare the cleaning dictionary.
 #' 
 prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
+  # Remove duplicate entries:
+  species %<>% unique(by = "raw_sp_name")
+  
   # Implement manual corrections:
   if (nrow(data.table::as.data.table(manual_corrections)) > 0) {
     dict <- species %>%
