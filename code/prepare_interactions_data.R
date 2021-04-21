@@ -72,8 +72,10 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
     is_valid = TRUE,
     validity_status = NA_character_,
     proposed_sp_name = NA_character_,
+    proposed_rank = NA_character_,
     is_identified = TRUE,
     is_too_long = FALSE,
+    is_subspecies = FALSE,
     needs_distinction = FALSE,
     distinction_string = NA_character_
   )]
@@ -121,6 +123,29 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
       distinction_string = NA_character_
     )
   ][, ambiguous_case := NULL]
+
+  # Aggregate subspecies and indicate a priori rank:
+  dict[
+    stringr::str_count(proposed_sp_name, " ") > 2,
+    ':='(
+      is_too_long = TRUE,
+      validity_status = "Too long",
+      proposed_sp_name = NA_character_
+    )
+  ][
+    stringr::str_count(proposed_sp_name, " ") == 2,
+    ':='(
+      proposed_rank = 'subspecies',
+      is_subspecies = TRUE,
+      subspecies = proposed_sp_name %>%
+        purrr::map(~stringr::str_split(., " ", simplify = TRUE)[3]) %>% 
+        unlist(),
+      proposed_sp_name = proposed_sp_name %>%
+        purrr::map(~stringr::str_split(., " ", simplify = TRUE)[c(1,2)] %>%
+                     paste(collapse = " ")) %>% 
+        unlist()
+    )
+  ]
 }
 
 #' Remove abbraviations from species name
