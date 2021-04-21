@@ -1,4 +1,7 @@
 Abundance
 Abundance"
+Frequency of occurrences"
 Num. of hosts sampled
 Number of droppings analysed"
+Number of flowers
+Numbers of flowers
