@@ -20,6 +20,9 @@ tar_option_set(packages = readLines(".r_packages"))
 # Load all functions scripts in the code folder -----
 f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
+# Set path of the species names verification cache -----
+verified_species_names_path <- "data/cache/verified_species_names.csv"
+
 
 # Read YAML configuration ======================================================
 read_YAML_config_targets <- list(
@@ -189,6 +192,11 @@ clean_species_names_targets <- list(
   tar_target(
     unchecked_species_dict,
     prepare_unchecked_species_dict(wol_raw_species, wol_manual_species_names)
+  ),
+  tar_target(
+    checked_species_dict,
+    check_species_dict(unchecked_species_dict, itis_raw_data, 
+                       verified_species_names_path)
   )
 )
 

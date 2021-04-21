@@ -169,6 +169,62 @@ remove_abbreviations <- function(sp_name) {
     stringr::str_replace(" x .+", "")
 }
 
+#' Automatically check species names on ITIS and GNR (use cache)
+#' 
+#' Check all proposed species names in a dictionary and return the dictionary 
+#' with an additional verified_sp_name column as well as other columns on the 
+#' status of verification. To avoid useless verification (involving internet 
+#' requests), the function uses the information in the cache file when 
+#' the species name has already been assessed.
+#' 
+check_species_dict <- function(unchecked_dict, synonyms, cache_path) {
+  # Read the cache file or create one if it does not exist:
+  if(file.exists(cache_path)) {
+    cache_dict <- data.table::fread(cache_path)
+  } else {
+    dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
+    cache_dict <- data.table::data.table(
+      proposed_sp_name = character(),
+      verified_sp_name = character(),
+      is_verified = logical(),
+      verification_status = character()
+    )
+  }
+  
+  # Get proposed names to verify that are not in cache:
+  species_names_to_verify <- unchecked_dict[
+    !is.na(proposed_sp_name), 
+  ][
+    !proposed_sp_name %in% cache_dict[['proposed_sp_name']],
+  ][['proposed_sp_name']]
+  
+  # Verify names that are not in cache:
+  newly_verified_dict <- species_names_to_verify %>%
+    sample(10) %>% # TEMPORARY!!!
+    lapply(check_single_species_name, synonyms) %>%
+    data.table::rbindlist()
+  
+  # Append new verifications to cache:
+  data.table::fwrite(newly_verified_dict, cache_path, append = TRUE)
+  
+  # Join verifications to unchecked dictionary:
+  full_verification_dict <- rbind(cache_dict, newly_verified_dict)
+  unchecked_dict %>%
+    merge(full_verification_dict, by = "proposed_sp_name", all.x = TRUE)
+}
+
+#' Automatically check a single species name on ITIS and GNR
+#' 
+check_single_species_name <- function(proposed_sp_name, synonyms) {
+  # TEMPORARY!!! Remove once the function is written
+  data.table::data.table(
+    proposed_sp_name = character(),
+    verified_sp_name = character(),
+    is_verified = logical(),
+    verification_status = character()
+  )
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks
