@@ -1,6 +1,15 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 21 April 2021
+##### What to do with undefined species of same genus in a network:
+I am not sure yet if and how I will include species that are only resolved at the genus level.
+There are many, so it could make sense to still include observations of defined genus but undefined species (handling genus as if it was a species).
+For now, I will also resolve genera names to leave the possibility open, and I can decide later.
+That mean that it is possible that:
+* In the same network, several unknown species of the same genus are both resolved to the same genus (I added the *needs_distinction* flag to the species dictionnary when it is the case)
+* In the end, some species in the a genus could be defined at species level while others resolve to the genus name (I can check later if it is really the case)
+
 #### 20 April 2021
 ##### To do next:
 Today, I have started to prepare the species names for checking. Before performing the validation using GNR and ITIS, I need to finish the preparation step by:
