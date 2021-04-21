@@ -61,16 +61,66 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
       .[, .(raw_sp_name)] %>%
       merge(manual_corrections, by = c("raw_sp_name"), all.x = TRUE)
   } else {
-    dict <- data.table::copy(species) %>%
+    dict <- species %>%
+      .[, .(raw_sp_name)] %>%
       .[, ':='(manual_sp_name = NA_character_, manual_comments = NA_character_)]
   }
   
+  # Create all dict columns with default values:
+  dict[, ':='(
+    prior_sp_name = NA_character_,
+    is_valid = TRUE,
+    validity_status = NA_character_,
+    proposed_sp_name = NA_character_,
+    is_identified = TRUE,
+    is_too_long = FALSE,
+    needs_distinction = FALSE,
+    distinction_string = NA_character_
+  )]
+  
   # Create column for proposed species name (the one to query):
-  dict[, proposed_sp_name := 
+  dict[, prior_sp_name := 
          ifelse(is.na(manual_sp_name), raw_sp_name, manual_sp_name)]
   
   # Remove abbreviations from proposed name:
-  dict[, proposed_sp_name := remove_abbreviations(proposed_sp_name)]
+  dict[, proposed_sp_name := remove_abbreviations(prior_sp_name)]
+  
+  # Detect and flag unidentified species:
+  dict[
+    stringr::str_detect(proposed_sp_name, "^[Unidentified|Undefined|Unientified]"),
+    ':='(
+      is_identified = FALSE,
+      is_valid = FALSE,
+      validity_status = "Unidentified",
+      proposed_sp_name = NA_character_
+    )
+  ]
+  
+  # Detect and flag entries with several unidentified species of the same genus 
+  # in the same network:
+  dict[
+    stringr::str_detect(proposed_sp_name, "sp[0-9]+.*"),
+    ':='(
+      distinction_string = proposed_sp_name %>%
+        stringr::str_extract("sp[0-9]+.*") %>%
+        stringr::str_replace(" ", "_"),
+      ambiguous_case = proposed_sp_name %>%
+        stringr::str_extract(".*sp[0-9]+.*") %>%
+        stringr::str_replace(" ", "_") %>%
+        stringr::str_replace("sp[0-9]+", ""),
+      proposed_sp_name = proposed_sp_name %>%
+        stringr::str_replace(" sp[0-9]+.*", ""),
+      needs_distinction = TRUE
+    )
+  ]
+  unique_ambiguous_cases <- dict[, .N, by = .(ambiguous_case)][N == 1, ][['ambiguous_case']]
+  dict[
+    ambiguous_case %in% unique_ambiguous_cases,
+    ':='(
+      needs_distinction = FALSE,
+      distinction_string = NA_character_
+    )
+  ][, ambiguous_case := NULL]
 }
 
 #' Remove abbraviations from species name
