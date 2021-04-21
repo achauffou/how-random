@@ -75,9 +75,9 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
     proposed_rank = NA_character_,
     is_identified = TRUE,
     is_too_long = FALSE,
-    is_subspecies = FALSE,
     needs_distinction = FALSE,
-    distinction_string = NA_character_
+    distinction_string = NA_character_,
+    proposed_subspecies = NA_character_
   )]
   
   # Create column for proposed species name (the one to query):
@@ -134,11 +134,16 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
       proposed_sp_name = NA_character_
     )
   ][
+    stringr::str_count(proposed_sp_name, " ") == 1,
+    proposed_rank := 'species'
+  ][
+    stringr::str_count(proposed_sp_name, " ") == 0,
+    proposed_rank := 'genus'
+  ][
     stringr::str_count(proposed_sp_name, " ") == 2,
     ':='(
       proposed_rank = 'subspecies',
-      is_subspecies = TRUE,
-      subspecies = proposed_sp_name %>%
+      proposed_subspecies = proposed_sp_name %>%
         purrr::map(~stringr::str_split(., " ", simplify = TRUE)[3]) %>% 
         unlist(),
       proposed_sp_name = proposed_sp_name %>%
@@ -146,7 +151,7 @@ prepare_unchecked_species_dict <- function(species, manual_corrections = NULL) {
                      paste(collapse = " ")) %>% 
         unlist()
     )
-  ]
+  ][is_valid == TRUE, validity_status := "Valid"]
 }
 
 #' Remove abbraviations from species name
