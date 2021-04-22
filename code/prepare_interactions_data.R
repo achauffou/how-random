@@ -98,7 +98,7 @@ prepare_names_to_verify <- function(species, manual_corrections = NULL) {
   
   # Detect and flag unidentified species:
   dict[
-    stringr::str_detect(proposed_name, "^[Unidentified|Undefined|Unientified]"),
+    stringr::str_detect(proposed_name, "^(Unidentified|Undefined|Unientified)"),
     ':='(
       is_identified = FALSE,
       is_valid = FALSE,
