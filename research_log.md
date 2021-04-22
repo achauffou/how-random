@@ -1,6 +1,21 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 22 April 2021
+##### Rethinking the strategy to clean species names:
+I had to rethink the strategy to clean species names. Here are the main steps of the solution that I will try to implement:
+* Link each Web of Life name to a proposed_name that will be used for taxonomic resolution. At the same time, detect any potential ambiguity issue. (already done)
+* Create a taxonomic dictionary that will link any proposed name to a valid taxon (one that is present and valid in the ITIS database). This step will imply to resolve names that are ITIS synonyms, autocorrection of misspelled names using GNR, as well as some manual corrections whenever applicable (or alternatively they can be done forthe proposed name directly, the solution I have now).
+* Create a database that gives information on all valid taxa from the taxonomic dictionary. This includes the rank of the taxon, the name of its higher rank, species and subspecies (when given), as well as links to parent taxonomic units.
+* Use the taxonomic dictionary to give a taxonomic ID to all Web of Life names. Additionally, give a wol_species_ID and a wol_subspecies_id that will enable to distinguish ambiguous (different species/subspecies that belong to the same higher-level taxa) and unverified rows (entities that do not have matching taxonomic information)
+
+I think that there could be a few different advantages to this new strategy:
+* It makes a clear distinction between taxonomic information (that is well resolved) and entities (that can be unresolved or be different although linked to the exact same taxonomic information).
+* Later on, I can use all synonyms (i.e. names that resolve to the same taxon) of a given taxon when querying other databases such as GBIF. That way, data should be found even if the database uses unusual names.
+* I can decide later on at which level I want to collapse information. I can keep subspecies resolution, aggregate subspecies at species level, or even aggregate species at genus (or higher) level.
+
+Let's hope this strategy will prove effective, but it is probable that it changes again while I implement it.
+
 #### 21 April 2021
 ##### What to do with undefined species of same genus in a network:
 I am not sure yet if and how I will include species that are only resolved at the genus level.
