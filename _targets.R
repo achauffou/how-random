@@ -20,6 +20,9 @@ tar_option_set(packages = readLines(".r_packages"))
 # Load all functions scripts in the code folder -----
 f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
+# Path of the taxonomic dictionary cache -----
+taxonomic_dict_cache_path <- "data/cache/taxonomic_dict_cache.csv"
+
 
 # Read YAML configuration ======================================================
 read_YAML_config_targets <- list(
@@ -189,6 +192,11 @@ clean_species_names_targets <- list(
   tar_target(
     wol_proposed_names,
     prepare_names_to_verify(wol_raw_species, wol_manual_species_names)
+  ),
+  tar_target(
+    taxonomic_dict,
+    check_proposed_names(wol_proposed_names, itis_raw_data, 
+                         taxonomic_dict_cache_path)
   )
 )
 
