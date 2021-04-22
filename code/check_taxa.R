@@ -9,7 +9,7 @@
 #' 
 check_proposed_names <- function(
   proposed_names, 
-  synonyms_db, 
+  itis_database, 
   cache_path = file.path(tempdir(), "taxonomic_dictionary_cache.csv")
 ) {
   # Open cached dictionary or create one if it does not exist:
@@ -33,9 +33,11 @@ check_proposed_names <- function(
     sample(10) %>% # TEMPORARY!!!
     lapply(check_single_name, synonyms, cache_path)
   
-  # Return the updated taxonomic dictionary with new last proposition date:
+  # Remove duplicates, set taxon IDs and update last proposition date:
   data.table::fread(cache_path) %>%
-    merge_duplicate_propositions(proposed_names[['proposed_name']]) %>%
+    .[order(-verification_time), ] %>%
+    unique(by = c("proposed_name", "verified_kingdom", "verified_name")) %>%
+    set_taxon_ID() %>%
     .[proposed_name %in% proposed_names, last_proposed_time := character(Sys.time())]
 }
 
@@ -43,21 +45,23 @@ check_proposed_names <- function(
 #' 
 empty_taxonomic_dict <- function() {
   data.table::data.table(
-    taxon_ID = integer(),
     proposed_name = character(),
-    proposed_level = character(),
-    verified_tsn = integer(),
     verified_name = character(),
     verified_level = character(),
     verified_kingdom  = character(),
+    verified_rank = character(),
     is_verified = logical(),
     verification_status = character(),
-    found_in_itis = logical(),
-    itis_status = character(),
-    itis_reason = character(),
+    gnr_status = character(),
     gnr_match = character(),
     gnr_score = numeric(),
     gnr_source = character(),
+    found_in_itis = character(),
+    itis_tsn = integer(),
+    itis_status = character(),
+    itis_reason = character(),
+    itis_kingdom = character(),
+    itis_rank = character(),
     verification_time = character(),
     last_proposed_time = character()
   )
@@ -70,29 +74,28 @@ empty_taxonomic_dict <- function() {
 #' already in the taxonomic dictionary, update the cache accordingly after 
 #' verifying it.
 #' 
-check_single_name <- function(name, synonyms_db, cache_path) {
+check_single_name <- function(name, itis_database, cache_path) {
   # Check whether the proposed name is already in the cache:
   cache_dict <- data.table::fread(cache_path)
   
   # If the name is not already in cache, verify it:
   if (nrow(cache_dict[proposed_name == name, ]) == 0) {
-    verify_taxon(name, synonyms_db, cache_dict) %>%
+    verify_taxon(name, itis_database, cache_dict) %>%
       data.table::fwrite(cache_path, append = TRUE)
   }
 }
 
-#' Safely merge duplicate proposed names from a taxonomic dictionary
+#' Set each unique taxon in a taxonomic dictionary a unique ID
 #' 
-#' If there are duplicate entries for a proposed name in the given taxonomic 
-#' dictionary, this function safely merge them by ensuring that their related 
-#' names (that shared taxon_id with the proposed name) are given a new name. In
-#' case a name from the vector of proposed names is absent, the function yields
-#' an error to prevent missing verifications.
+#' Give to each unverified proposed names a different ID that ends in 0 and to 
+#' each verified_name-verified_kingdom combination a different ID that ends in
+#' a number corresponding to the associated kingdom.
 #' 
-merge_duplicate_propositions <- function(dict, proposed_names) {
+set_taxon_ID <- function(dict, itis_database) {
   #TODO
   dict
 }
+
 
 # Proceed to single name verification ==========================================
 #' Verify a single proposed taxonomic name (without cache)
@@ -100,7 +103,68 @@ merge_duplicate_propositions <- function(dict, proposed_names) {
 #' Verify a single proposed taxonomic name and return its verification as well
 #' as the verification of associated names in the verification process.
 #' 
-verify_taxon <- function(name, synonyms_db, cache_dict) {
+verify_taxon <- function(name, itis_database, cache_dict) {
+  # Check the name for valid matches and synonyms in ITIS:
+  itis_results_1 <- check_itis(name, itis_database)
+  
+  # Check the returned names for :
+  gnr_results <- itis_results_1 %>%
+    .[['proposed_name']] %>%
+    check_gnr()
+  
+  # Verify the name dictionary with ITIS to fill remaining information:
+  itis_results_2 <- gnr_results %>%
+    .[['proposed_name']] %>%
+    check_itis(itis_database)
+  
+  # Combine retrieved information:
+  combined_results <- rbind(itis_results_1, itis_results_2) %>%
+    merge(gnr_results, by = "proposed_name", all.x = TRUE)
+  
+  # Set verification information of all entries:
+  combined_results %<>% set_verification_info(cache_dict)
+}
+
+#' Verify proposed names in the ITIS database
+#' 
+check_itis <- function(names, itis_database) {
   #TODO
-  empty_taxonomic_dict()
+  data.table::data.table(
+    proposed_name = character(),
+    found_in_itis = character(),
+    itis_tsn = integer(),
+    itis_status = character(),
+    itis_reason = character(),
+    itis_kingdom = character(),
+    itis_rank = character()
+  )
+}
+
+#' Verify proposed names with GNR resolve
+#' 
+check_gnr <- function(names) {
+  #TODO
+  data.table::data.table(
+    proposed_name = character(),
+    gnr_status = character(),
+    gnr_match = character(),
+    gnr_score = numeric(),
+    gnr_source = character()
+  )
+}
+
+#' Set verification information for all rows of a name dictionary
+#' 
+set_verification_info <- function(name_dict, cache_dict) {
+  #TODO
+  name_dict[, ':='(
+    verified_name = character(),
+    verified_level = character(),
+    verified_kingdom  = character(),
+    verified_rank = character(),
+    is_verified = logical(),
+    verification_status = character(),
+    verification_time = character(),
+    last_proposed_time = character()
+  )]
 }
