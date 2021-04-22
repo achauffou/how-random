@@ -187,8 +187,8 @@ clean_species_names_targets <- list(
     add_metadata_to_wol_species(wol_raw_species, wol_metadata, wol_fun_groups_info)
   ),
   tar_target(
-    unchecked_species_dict,
-    prepare_unchecked_species_dict(wol_raw_species, wol_manual_species_names)
+    wol_proposed_names,
+    prepare_names_to_verify(wol_raw_species, wol_manual_species_names)
   )
 )
 
