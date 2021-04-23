@@ -64,7 +64,6 @@ empty_taxonomic_dict <- function() {
     proposed_name = character(),
     verified_name = character(),
     verified_level = character(),
-    verified_rank = character(),
     verified_kingdom  = character(),
     is_verified = logical(),
     verification_status = character(),
@@ -88,10 +87,10 @@ empty_taxonomic_dict <- function() {
 #' 
 tax_dict_cols_classes <- function() {
   list(
-    character = c(1:5, 7:9, 11, 15:20),
-    logical = c(6, 12),
-    integer = c(13, 14),
-    numeric = c(10)
+    character = c(1:4, 6:8, 10, 14:19),
+    logical = c(5, 11),
+    integer = c(12, 13),
+    numeric = c(9)
   )
 }
 
@@ -116,7 +115,7 @@ check_single_name <- function(name, itis_database, cache_path) {
 
   # If the name is not already in cache, verify it:
   if (nrow(cache_dict[proposed_name == name, ]) == 0) {
-    verify_taxon(name, itis_database, cache_dict) %>%
+    verify_taxon(name, itis_database) %>%
       data.table::fwrite(cache_path, append = TRUE)
   }
 }
@@ -139,7 +138,7 @@ set_taxon_ID <- function(dict, itis_database) {
 #' Verify a single proposed taxonomic name and return its verification as well
 #' as the verification of associated names in the verification process.
 #'
-verify_taxon <- function(name, itis_database, cache_dict) {
+verify_taxon <- function(name, itis_database) {
   # Check the name for valid matches and synonyms in ITIS:
   itis_results_1 <- check_itis(name, itis_database)
 
@@ -185,9 +184,18 @@ verify_taxon <- function(name, itis_database, cache_dict) {
   # Combine retrieved information:
   combined_results <- rbind(itis_results_1, itis_results_2) %>%
     merge(gnr_results, by = "proposed_name", all.x = TRUE)
-
+  
   # Set verification information of all entries:
-  combined_results %<>% set_verification_info(cache_dict)
+  combined_results %<>% set_verification_info()
+  
+  # Set the correct columns order
+  data.table::setcolorder(combined_results, c(
+    "proposed_name", "verified_name", "verified_level", "verified_kingdom", 
+    "is_verified", "verification_status", "gnr_status", "gnr_match", 
+    "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
+    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
+    "itis_kingdom", "verification_time", "last_proposed_time"
+  ))
 }
 
 #' Verify proposed name in the ITIS database
@@ -307,26 +315,94 @@ check_gnr <- function(name) {
 
 #' Set verification information for all rows of a name dictionary
 #'
-set_verification_info <- function(name_dict, cache_dict) {
-  #TODO
+set_verification_info <- function(name_dict) {
+  # Verify the kingdom for all entries with GNR match found in ITIS:
+  name_dict[
+    gnr_status != "Not found", 
+    verified_kingdom := .SD[order(itis_kingdom), ][['itis_kingdom']][1], 
+    by = .(gnr_match)
+  ]
+  
+  # Verify the kingdom for entries found only in GNR:
+  name_dict <- rbind(
+    name_dict[gnr_status == "Not found" || !is.na(verified_kingdom), ],
+    name_dict[gnr_status != "Not found" && is.na(verified_kingdom), ] %>%
+      apply(1, as.list) %>%
+      lapply(get_ncbi_kingdoms) %>%
+      data.table::rbindlist()
+  )
+  
+  # Set the same verified name for entries with identical kingdom:
+  name_dict[
+    , ':='(verified_name = get_verified_name(.SD)), by = .(verified_kingdom)
+  ]
+  
+  # Set verified level, verification status and time for all entries:
   name_dict[, ':='(
-    verified_name = character(),
-    verified_level = character(),
-    verified_rank = character(),
-    verified_kingdom  = character(),
-    is_verified = logical(),
-    verification_status = character(),
-    verification_time = character(),
-    last_proposed_time = character()
+    verified_level = c('higher', 'species', 'subspecies') %>%
+      .[stringr::str_count(verified_name, " ") + 1],
+    is_verified = !is.na(verified_name),
+    verification_status = get_verified_status(itis_status, gnr_status),
+    verification_time = as.character(Sys.time()),
+    last_proposed_time = NA_character_
   )]
-
-  # Set the correct columns order
-  data.table::setcolorder(name_dict, c(
-    "proposed_name", "verified_name", "verified_level", "verified_rank",
-    "verified_kingdom", "is_verified", "verification_status", "gnr_status",
-    "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn",
-    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
-    "itis_kingdom", "verification_time", "last_proposed_time"
-  ))
   name_dict
+}
+
+#' Set the valid verified name of a dictionary of taxonomics synonyms
+#' 
+get_verified_name <- function(dict) {
+  # If there is an accepted ITIS name, set it as the verified name:
+  valid_itis_name <- dict[itis_status == "Accepted", ][['proposed_name']][1]
+  if (!is.na(valid_itis_name)) return(valid_itis_name)
+  
+  # Then, if there is a GNR match, set it as the verified name:
+  valid_gnr_name <- dict[!is.na(gnr_match), ][['gnr_match']][1]
+  if (!is.na(valid_gnr_name)) return(valid_gnr_name)
+  
+  # If no verified name is available, set the verified name to NA:
+  return(NA)
+}
+
+#' Get the verification status of a taxonomic name entry
+#' 
+get_verified_status <- function(vec_itis_status, vec_gnr_status) {
+  # Function to get status of a single entry:
+  single_entry_status <- function(itis_status, gnr_status) {
+    if (!is.na(itis_status)) {
+      if (itis_status == "Accepted") {
+        verif_status <- "ITIS accepted"
+      } else {
+        verif_status <- "ITIS synonym"
+      }
+    } else {
+      verif_status <- switch(gnr_status,
+                             "Not found" = "Unverified",
+                             "Perfect match" = "GNR perfect match",
+                             "Fuzzy match" = "GNR fuzzy match"
+      )
+    }
+    verif_status
+  }
+  
+  # Apply function to all entries:
+  sapply(
+    1:length(vec_itis_status), 
+    function(x) single_entry_status(vec_itis_status[x], vec_gnr_status[x])
+  )
+}
+
+#' Get the possible NCBI kingdoms of a given dictionary row 
+#' 
+get_ncbi_kingdoms <- function(name_dict) {
+  # Convert named list to data.table:
+  name_dict %<>% data.table::as.data.table()
+  
+  # Retrieve NCBI kingdoms of the given name:
+  #TODO
+  kingdoms <- c("Unknown")
+  
+  # Return one row per possible kingdom:
+  kingdoms %>% 
+    purrr::map_df(~ data.table::copy(name_dict[, verified_kingdom := .]))
 }
