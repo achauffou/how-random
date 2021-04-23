@@ -14,7 +14,7 @@ check_proposed_names <- function(
 ) {
   # Open cached dictionary or create one if it does not exist:
   if(file.exists(cache_path)) {
-    cache_dict <- data.table::fread(cache_path)
+    cache_dict <- data.table::fread(cache_path, na.strings = c("", "NA"))
   } else {
     dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
     cache_dict <- empty_taxonomic_dict()
@@ -34,7 +34,7 @@ check_proposed_names <- function(
     lapply(check_single_name, itis_database, cache_path)
   
   # Remove duplicates, set taxon IDs and update last proposition date:
-  data.table::fread(cache_path) %>%
+  data.table::fread(cache_path, na.strings = c("", "NA")) %>%
     .[order(-verification_time), ] %>%
     unique(by = c("proposed_name", "verified_kingdom", "verified_name")) %>%
     set_taxon_ID() %>%
@@ -77,7 +77,7 @@ empty_taxonomic_dict <- function() {
 #' 
 check_single_name <- function(name, itis_database, cache_path) {
   # Check whether the proposed name is already in the cache:
-  cache_dict <- data.table::fread(cache_path)
+  cache_dict <- data.table::fread(cache_path, na.strings = c("", "NA"))
   
   # If the name is not already in cache, verify it:
   if (nrow(cache_dict[proposed_name == name, ]) == 0) {
@@ -111,11 +111,13 @@ verify_taxon <- function(name, itis_database, cache_dict) {
   # Check the returned names for :
   gnr_results <- itis_results_1 %>%
     .[['proposed_name']] %>%
-    check_gnr()
+    unique() %>%
+    purrr::map_df(check_gnr)
   
   # Verify the name dictionary with ITIS to fill remaining information:
   itis_results_2 <- gnr_results %>%
     .[['proposed_name']] %>%
+    unique() %>%
     purrr::map_df(~check_itis(., itis_database))
   
   # Combine retrieved information:
@@ -192,17 +194,53 @@ check_itis <- function(name, itis_database) {
   return_table
 }
 
-#' Verify proposed names with GNR resolve
+#' Verify proposed name with GNR resolve
 #' 
-check_gnr <- function(names) {
-  #TODO
-  data.table::data.table(
-    proposed_name = character(),
-    gnr_status = character(),
-    gnr_match = character(),
-    gnr_score = numeric(),
-    gnr_source = character()
+check_gnr <- function(name) {
+  # Function to return default GNR result (not found):
+  default_gnr <- function(name) {
+    data.table::data.table(
+      proposed_name = name,
+      gnr_status = 'Not found',
+      gnr_match = NA_character_,
+      gnr_score = NA_real_,
+      gnr_source = NA_character_
+    )
+  }
+  
+  # Check the name using the GNR resolve function:
+  gnr_outcome <- taxize::gnr_resolve(
+    name, best_match_only = "TRUE", canonical = TRUE
   )
+  
+  # Process the result or return default table if no result is found:
+  if (nrow(gnr_outcome) > 0) {
+    gnr_result <- data.table::data.table(
+      proposed_name = name,
+      gnr_status = ifelse(
+        name == gnr_outcome$matched_name2, 
+        "Perfect match",
+        "Fuzzy match"
+      ),
+      gnr_match = gnr_outcome$matched_name2,
+      gnr_score = gnr_outcome$score,
+      gnr_source = gnr_outcome$data_source_title
+    )
+    
+    # If the match is fuzzy, add a row for the fuzzy name:
+    if (gnr_result$gnr_status == "Fuzzy match") {
+      gnr_result %<>% rbind(data.table::data.table(
+        proposed_name = gnr_outcome$matched_name2,
+        gnr_status = 'Perfect match',
+        gnr_match = gnr_outcome$matched_name2,
+        gnr_score = 0.988,
+        gnr_source = gnr_outcome$data_source_title
+      ))
+    }
+  } else {
+    gnr_result <- default_gnr(name)
+  }
+  gnr_result
 }
 
 #' Set verification information for all rows of a name dictionary
