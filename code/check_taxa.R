@@ -31,7 +31,7 @@ check_proposed_names <- function(
   # Verify proposed names that are not already in cache:
   names_to_verify %>%
     sample(10) %>% # TEMPORARY!!!
-    lapply(check_single_name, synonyms, cache_path)
+    lapply(check_single_name, itis_database, cache_path)
   
   # Remove duplicates, set taxon IDs and update last proposition date:
   data.table::fread(cache_path) %>%
@@ -48,8 +48,8 @@ empty_taxonomic_dict <- function() {
     proposed_name = character(),
     verified_name = character(),
     verified_level = character(),
-    verified_kingdom  = character(),
     verified_rank = character(),
+    verified_kingdom  = character(),
     is_verified = logical(),
     verification_status = character(),
     gnr_status = character(),
@@ -58,10 +58,11 @@ empty_taxonomic_dict <- function() {
     gnr_source = character(),
     found_in_itis = character(),
     itis_tsn = integer(),
+    itis_accepted_tsn = integer(),
     itis_status = character(),
     itis_reason = character(),
-    itis_kingdom = character(),
     itis_rank = character(),
+    itis_kingdom = character(),
     verification_time = character(),
     last_proposed_time = character()
   )
@@ -115,7 +116,7 @@ verify_taxon <- function(name, itis_database, cache_dict) {
   # Verify the name dictionary with ITIS to fill remaining information:
   itis_results_2 <- gnr_results %>%
     .[['proposed_name']] %>%
-    check_itis(itis_database)
+    purrr::map_df(~check_itis(., itis_database))
   
   # Combine retrieved information:
   combined_results <- rbind(itis_results_1, itis_results_2) %>%
@@ -125,19 +126,70 @@ verify_taxon <- function(name, itis_database, cache_dict) {
   combined_results %<>% set_verification_info(cache_dict)
 }
 
-#' Verify proposed names in the ITIS database
+#' Verify proposed name in the ITIS database
 #' 
-check_itis <- function(names, itis_database) {
-  #TODO
-  data.table::data.table(
-    proposed_name = character(),
-    found_in_itis = character(),
-    itis_tsn = integer(),
-    itis_status = character(),
-    itis_reason = character(),
-    itis_kingdom = character(),
-    itis_rank = character()
-  )
+check_itis <- function(name, itis_database) {
+  # Find matches in ITIS database:
+  itis_matches <- itis_database$taxonomic_units[complete_name == name, ]
+  
+  # If entry found, process results and synonyms, else return default table:
+  if (nrow(itis_matches) > 0) {
+    # Left join with synonyms:
+    itis_matches %<>%
+      merge(itis_database$synonym_links, by = "tsn", all.x = TRUE)
+    
+    # Add valid synonyms:
+    valid_synonyms <- itis_database$taxonomic_units[
+      tsn %in% itis_matches[!is.na(tsn_accepted), ][['tsn_accepted']],
+    ][
+      , ':='(tsn_accepted = NA)
+    ]
+    
+    # Bind itis_matches and valid_synonyms:
+    itis_matches %<>% rbind(valid_synonyms)
+    
+    # Left join with kingdom and rank names:
+    itis_matches %<>%
+      merge(itis_database$kingdoms, by = "kingdom_id", all.x = TRUE) %>%
+      merge(itis_database$ranks, by = c("kingdom_id", "rank_id"), all.x = TRUE)
+    
+    # Remove duplicates by choosing the entry with rank closest to species:
+    itis_matches %<>% .[
+      , priority := abs(220 - rank_id)
+    ]
+    itis_matches %<>% .[
+      order(priority),
+    ] %>%
+      unique(by = c("complete_name", "kingdom_id"))
+    
+    # Format data to return:
+    return_table <- itis_matches[, .(
+      proposed_name = complete_name,
+      found_in_itis = TRUE,
+      itis_tsn = tsn,
+      itis_accepted_tsn = tsn_accepted,
+      itis_status = ifelse(
+        n_usage %in% c("accepted", "valid"), 
+        "Accepted", 
+        ifelse(is.na(tsn_accepted), "Unaccepted", "Accepted synonym found")
+      ),
+      itis_reason = unaccept_reason,
+      itis_rank = rank_name,
+      itis_kingdom = kingdom_name
+    )]
+  } else {
+    return_table <- data.table::data.table(
+      proposed_name = name,
+      found_in_itis = FALSE,
+      itis_tsn = NA_integer_,
+      itis_accepted_tsn = NA_integer_,
+      itis_status = NA_character_,
+      itis_reason = NA_character_,
+      itis_rank = NA_character_,
+      itis_kingdom = NA_character_
+    )
+  }
+  return_table
 }
 
 #' Verify proposed names with GNR resolve
@@ -160,11 +212,21 @@ set_verification_info <- function(name_dict, cache_dict) {
   name_dict[, ':='(
     verified_name = character(),
     verified_level = character(),
-    verified_kingdom  = character(),
     verified_rank = character(),
+    verified_kingdom  = character(),
     is_verified = logical(),
     verification_status = character(),
     verification_time = character(),
     last_proposed_time = character()
   )]
+  
+  # Set the correct columns order
+  data.table::setcolorder(name_dict, c(
+    "proposed_name", "verified_name", "verified_level", "verified_rank", 
+    "verified_kingdom", "is_verified", "verification_status", "gnr_status", 
+    "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
+    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank", 
+    "itis_kingdom", "verification_time", "last_proposed_time"
+  ))
+  name_dict
 }
