@@ -82,14 +82,30 @@ read_raw_itis_data <- function(file_path) {
   taxonomic_units <- RSQLite::dbReadTable(db_con, "taxonomic_units") %>%
     data.table::as.data.table() %>%
     # Keep only plants, animals, and drop useless columns:
-    .[kingdom_id %in% c(3,5), .(tsn, complete_name, n_usage, rank_id, 
-                                parent_tsn, unaccept_reason)]
+    .[kingdom_id %in% c(3,5), .(tsn, complete_name, n_usage, kingdom_id, 
+                                rank_id, parent_tsn, unaccept_reason)]
   
   # Retrieve table with synonym links:
   synonym_links <- RSQLite::dbReadTable(db_con, "synonym_links") %>%
-    data.table::as.data.table()
+    data.table::as.data.table() %>%
+    .[, .(tsn, tsn_accepted)]
+  
+  # Retrieve table with translation from rank ID to rank name:
+  ranks <- RSQLite::dbReadTable(db_con, "taxon_unit_types") %>%
+    data.table::as.data.table() %>%
+    .[, .(kingdom_id, rank_id, rank_name)]
+  
+  # Retrieve table with translation from kingdom ID to name:
+  kingdoms <- RSQLite::dbReadTable(db_con, "kingdoms") %>%
+    data.table::as.data.table() %>%
+    .[, .(kingdom_id, kingdom_name)]
   
   # Close connection and return tables:
   RSQLite::dbDisconnect(db_con)
-  list(taxonomic_units = taxonomic_units, synonym_links = synonym_links)
+  list(
+    taxonomic_units = taxonomic_units, 
+    synonym_links = synonym_links,
+    ranks = ranks,
+    kingdoms = kingdoms
+  )
 }
