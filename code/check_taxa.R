@@ -31,9 +31,23 @@ check_proposed_names <- function(
   ][['proposed_name']]
 
   # Verify proposed names that are not already in cache:
-  names_to_verify %>%
-    sample(10) %>% # TEMPORARY!!!
-    lapply(check_single_name, itis_database, cache_path)
+  nb_cores <- parallel::detectCores()
+  message(paste("Checking", length(names_to_verify), "species names..."))
+  pb <- progress::progress_bar$new(
+    total = length(names_to_verify),
+    format = "  :current/:total :percent |:bar| :elapsedfull",
+    incomplete = " ",
+    force = TRUE
+  )
+  new_dict <- 1:length(names_to_verify) %>%
+    parallel::mclapply(
+      function(x) {
+        check_single_name(names_to_verify[x], itis_database, cache_path, nb_cores)
+        if(x %% nb_cores == 0) pb$update(x/length(names_to_verify))
+      }, mc.cores = nb_cores
+    )
+  pb$terminate()
+  message()
 
   # Remove duplicates(proposed names with same verified kingdom):
   taxonomic_dict <- data.table::fread(
@@ -94,32 +108,6 @@ tax_dict_cols_classes <- function() {
   )
 }
 
-#' Check a single proposed taxonomic name (use and save in cache)
-#'
-#' Check the proposed name in the taxonomic directory in cache and verify the
-#' name if it is not already present in the dictionary. If the name was not
-#' already in the taxonomic dictionary, update the cache accordingly after
-#' verifying it.
-#'
-check_single_name <- function(name, itis_database, cache_path) {
-  # Check whether the proposed name is already in the cache:
-  cols_classes <- list(
-    character = c(1:5, 7:9, 11, 15:20),
-    logical = c(6, 12),
-    integer = c(13, 14),
-    numeric = c(10)
-  )
-  cache_dict <- data.table::fread(
-    cache_path, na.strings = c("", "NA"), colClasses = tax_dict_cols_classes()
-  )
-
-  # If the name is not already in cache, verify it:
-  if (nrow(cache_dict[proposed_name == name, ]) == 0) {
-    verify_taxon(name, itis_database) %>%
-      data.table::fwrite(cache_path, append = TRUE)
-  }
-}
-
 #' Set each unique taxon in a taxonomic dictionary a unique ID
 #'
 #' Give to each unverified proposed names a different ID that ends in 0 and to
@@ -164,12 +152,38 @@ set_taxon_ID <- function(dict) {
 
 
 # Proceed to single name verification ==========================================
+#' Check a single proposed taxonomic name (use and save in cache)
+#'
+#' Check the proposed name in the taxonomic directory in cache and verify the
+#' name if it is not already present in the dictionary. If the name was not
+#' already in the taxonomic dictionary, update the cache accordingly after
+#' verifying it.
+#'
+check_single_name <- function(name, itis_database, cache_path, nb_cores = 1) {
+  # Check whether the proposed name is already in the cache:
+  cols_classes <- list(
+    character = c(1:5, 7:9, 11, 15:20),
+    logical = c(6, 12),
+    integer = c(13, 14),
+    numeric = c(10)
+  )
+  cache_dict <- data.table::fread(
+    cache_path, na.strings = c("", "NA"), colClasses = tax_dict_cols_classes()
+  )
+  
+  # If the name is not already in cache, verify it:
+  if (nrow(cache_dict[proposed_name == name, ]) == 0) {
+    verify_taxon(name, itis_database, nb_cores) %>%
+      data.table::fwrite(cache_path, append = TRUE)
+  }
+}
+
 #' Verify a single proposed taxonomic name (without cache)
 #'
 #' Verify a single proposed taxonomic name and return its verification as well
 #' as the verification of associated names in the verification process.
 #'
-verify_taxon <- function(name, itis_database) {
+verify_taxon <- function(name, itis_database, nb_cores = 1) {
   # Check the name for valid matches and synonyms in ITIS:
   itis_results_1 <- check_itis(name, itis_database)
 
@@ -217,7 +231,7 @@ verify_taxon <- function(name, itis_database) {
     merge(gnr_results, by = "proposed_name", all.x = TRUE)
   
   # Set verification information of all entries:
-  combined_results %<>% set_verification_info()
+  combined_results %<>% set_verification_info(nb_cores)
   
   # Set the correct columns order
   data.table::setcolorder(combined_results, c(
@@ -352,7 +366,7 @@ check_gnr <- function(name) {
 
 #' Set verification information for all rows of a name dictionary
 #'
-set_verification_info <- function(name_dict) {
+set_verification_info <- function(name_dict, nb_cores = 1) {
   # Verify the kingdom for all entries with GNR match found in ITIS:
   name_dict[
     gnr_status != "Not found", 
@@ -365,7 +379,7 @@ set_verification_info <- function(name_dict) {
     name_dict[gnr_status == "Not found" || !is.na(verified_kingdom), ],
     name_dict[gnr_status != "Not found" && is.na(verified_kingdom), ] %>%
       apply(1, as.list) %>%
-      lapply(get_ncbi_kingdoms) %>%
+      lapply(get_ncbi_kingdoms, nb_cores) %>%
       data.table::rbindlist()
   )
   
@@ -431,17 +445,17 @@ get_verified_status <- function(vec_itis_status, vec_gnr_status) {
 
 #' Get the possible NCBI kingdoms of a given dictionary row 
 #' 
-get_ncbi_kingdoms <- function(name_dict) {
+get_ncbi_kingdoms <- function(name_dict, nb_cores = 1) {
   # Convert named list to data.table:
   name_dict %<>% data.table::as.data.table()
   
   # Retrieve the UID of the given taxon:
-  uids <- get_ncbi_uid_from_name(name_dict[['gnr_match']])
+  uids <- get_ncbi_uid_from_name(name_dict[['gnr_match']], nb_cores)
   
   # Retrieve NCBI kingdoms of the given UID:
   if (!is.null(uids)) {
     kingdoms <- uids %>%
-      sapply(get_ncbi_kingdom_from_uid)
+      sapply(get_ncbi_kingdom_from_uid, nb_cores)
   } else {
     kingdoms <- "Unknown"
   }
@@ -453,7 +467,7 @@ get_ncbi_kingdoms <- function(name_dict) {
 
 #' Get all possible UIDs of a species name by performing a NCBI eutils query
 #' 
-get_ncbi_uid_from_name <- function(name) {
+get_ncbi_uid_from_name <- function(name, nb_cores = 1) {
   # Prepare query:
   api_key <- Sys.getenv("ENTREZ_KEY")
   name <- gsub(" ", "+", name)
@@ -468,7 +482,7 @@ get_ncbi_uid_from_name <- function(name) {
   # Get query results:
   success <- FALSE
   trial <- 0
-  sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334)
+  sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334) * nb_cores
   uids <- NULL
   while(success == FALSE && trial < 10) {
     tryCatch({
@@ -489,7 +503,7 @@ get_ncbi_uid_from_name <- function(name) {
 
 #' Return all NCBI kingdom (or superkingdom) matching a species UID
 #' 
-get_ncbi_kingdom_from_uid <- function(uid) {
+get_ncbi_kingdom_from_uid <- function(uid, nb_cores = 1) {
   # Retrieve NCBI kingdom/superkingdom:
   ncbi_categ <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
     data.table::as.data.table() %>%
@@ -497,6 +511,9 @@ get_ncbi_kingdom_from_uid <- function(uid) {
     .[ncbi_rank %in% c("kingdom", "superkingdom"), ] %>%
     .[order(ncbi_rank)]
   ncbi_categ <- ncbi_categ[['name']][1]
+  sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334) * 
+    (nb_cores - 1)
+  Sys.sleep(sleep)
   
   # Correct kingdom/superkingdom name to match ITIS:
   if (!is.null(ncbi_categ)) {
