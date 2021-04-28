@@ -224,6 +224,12 @@ check_itis <- function(name, itis_database) {
     itis_matches %<>%
       merge(itis_database$kingdoms, by = "kingdom_id", all.x = TRUE) %>%
       merge(itis_database$ranks, by = c("kingdom_id", "rank_id"), all.x = TRUE)
+    
+    # Merge Chromista and Protozoa into one kingdom:
+    itis_matches[
+      kingdom_name %in% c("Protozoa", "Chromista"), 
+      kingdom_name := "Other Eukaryota"
+    ]
 
     # Remove duplicates by choosing the entry with rank closest to species:
     itis_matches %<>% .[
@@ -232,7 +238,7 @@ check_itis <- function(name, itis_database) {
     itis_matches %<>% .[
       order(priority),
     ] %>%
-      unique(by = c("complete_name", "kingdom_id"))
+      unique(by = c("complete_name", "kingdom_name"))
 
     # Format data to return:
     return_table <- itis_matches[, .(
@@ -398,11 +404,82 @@ get_ncbi_kingdoms <- function(name_dict) {
   # Convert named list to data.table:
   name_dict %<>% data.table::as.data.table()
   
-  # Retrieve NCBI kingdoms of the given name:
-  #TODO
-  kingdoms <- c("Unknown")
+  # Retrieve the UID of the given taxon:
+  uids <- get_ncbi_uid_from_name(name_dict[['gnr_match']])
+  
+  # Retrieve NCBI kingdoms of the given UID:
+  if (!is.null(uids)) {
+    kingdoms <- uids %>%
+      sapply(get_ncbi_kingdom_from_uid)
+  } else {
+    kingdoms <- "Unknown"
+  }
   
   # Return one row per possible kingdom:
   kingdoms %>% 
     purrr::map_df(~ data.table::copy(name_dict[, verified_kingdom := .]))
+}
+
+#' Get all possible UIDs of a species name by performing a NCBI eutils query
+#' 
+get_ncbi_uid_from_name <- function(name) {
+  # Prepare query:
+  api_key <- Sys.getenv("ENTREZ_KEY")
+  name <- gsub(" ", "+", name)
+  query <- paste0(
+    "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?", 
+    "db=taxonomy&retmode=json&api_key=", 
+    api_key,
+    "&term=",
+    name
+  )
+  
+  # Get query results:
+  success <- FALSE
+  trial <- 0
+  sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334)
+  uids <- NULL
+  while(success == FALSE && trial < 10) {
+    tryCatch({
+      query_result <- query %>%
+        readLines(warn = FALSE)%>%
+        glue::glue_collapse() %>%
+        rjson::fromJSON()
+      if (length(query_result$esearchresult$ERROR) == 0) {
+        uids <- query_result$esearchresult$idlist
+        success <- TRUE
+      }
+    }, error = function(e) {}, warning = function(w) {}, finally = {})
+    Sys.sleep(sleep)
+    trial <- trial + 1
+  }
+  unlist(uids)
+}
+
+#' Return all NCBI kingdom (or superkingdom) matching a species UID
+#' 
+get_ncbi_kingdom_from_uid <- function(uid) {
+  # Retrieve NCBI kingdom/superkingdom:
+  ncbi_categ <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
+    data.table::as.data.table() %>%
+    data.table::setnames("rank", "ncbi_rank") %>%
+    .[ncbi_rank %in% c("kingdom", "superkingdom"), ] %>%
+    .[order(ncbi_rank)]
+  ncbi_categ <- ncbi_categ[['name']][1]
+  
+  # Correct kingdom/superkingdom name to match ITIS:
+  if (!is.null(ncbi_categ)) {
+    new_categ <- ncbi_categ %>% switch(
+      "Archaea" = "Archaea",
+      "Bacteria" = "Bacteria",
+      "Eukaryota" = "Other Eukaryota",
+      "Fungi" = "Fungi",
+      "Metazoa" = "Animalia",
+      "Viridiplantae" = "Plantae",
+      "Unknown"
+    )
+  } else {
+    new_categ <- "Unknown"
+  }
+  new_categ
 }
