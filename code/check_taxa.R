@@ -126,9 +126,40 @@ check_single_name <- function(name, itis_database, cache_path) {
 #' each verified_name-verified_kingdom combination a different ID that ends in
 #' a number corresponding to the associated kingdom.
 #'
-set_taxon_ID <- function(dict, itis_database) {
-  #TODO
-  dict
+set_taxon_ID <- function(dict) {
+  # Split dictionary into two depending on whether the name is verified
+  dict_unverified <- dict[is_verified == FALSE, ]
+  dict_verified <- dict[is_verified == TRUE, ]
+  
+  # Give a unique taxon ID ending in 0 to unverified species:
+  dict_unverified[, taxon_ID := .GRP * 10, by = .(proposed_name)]
+  
+  # Give a unique taxon ID to verified species:
+  dict_verified[
+    , 
+    taxon_ID := .GRP * 10 + sapply(
+      verified_kingdom, 
+      switch, 
+      "Archaea" = 1,
+      "Bacteria" = 2,
+      "Other Eukaryota" = 3,
+      "Animalia" = 4,
+      "Fungus" = 5,
+      "Plantae" = 6,
+      7
+    ),
+    by = .(verified_name, verified_kingdom)
+  ]
+  
+  # Bind verified and unverified names and reorder columns:
+  rbind(dict_unverified, dict_verified) %>% 
+    data.table::setcolorder(c(
+    "taxon_ID", "proposed_name", "verified_name", "verified_level", 
+    "verified_kingdom", "is_verified", "verification_status", "gnr_status", 
+    "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
+    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
+    "itis_kingdom", "verification_time", "last_proposed_time"
+  ))
 }
 
 
