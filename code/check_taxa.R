@@ -29,25 +29,27 @@ check_proposed_names <- function(
   ][
     !proposed_name %in% cache_dict[['proposed_name']],
   ][['proposed_name']]
-
+  
   # Verify proposed names that are not already in cache:
-  nb_cores <- parallel::detectCores()
-  message(paste("Checking", length(names_to_verify), "species names..."))
-  pb <- progress::progress_bar$new(
-    total = length(names_to_verify),
-    format = "  :current/:total :percent |:bar| :elapsedfull",
-    incomplete = " ",
-    force = TRUE
-  )
-  new_dict <- 1:length(names_to_verify) %>%
-    parallel::mclapply(
-      function(x) {
-        check_single_name(names_to_verify[x], itis_database, cache_path, nb_cores)
-        if(x %% nb_cores == 0) pb$update(x/length(names_to_verify))
-      }, mc.cores = nb_cores
+  if (length(names_to_verify) > 0) {
+    nb_cores <- parallel::detectCores()
+    message(paste("Checking", length(names_to_verify), "species names..."))
+    pb <- progress::progress_bar$new(
+      total = length(names_to_verify),
+      format = "  :current/:total :percent |:bar| :elapsedfull",
+      incomplete = " ",
+      force = TRUE
     )
-  pb$terminate()
-  message()
+    new_dict <- 1:length(names_to_verify) %>%
+      parallel::mclapply(
+        function(x) {
+          check_single_name(names_to_verify[x], itis_database, cache_path, nb_cores)
+          if(x %% nb_cores == 0) pb$update(x/length(names_to_verify))
+        }, mc.cores = nb_cores
+      )
+    pb$terminate()
+    message()
+  }
 
   # Remove duplicates(proposed names with same verified kingdom):
   taxonomic_dict <- data.table::fread(
@@ -330,10 +332,13 @@ check_gnr <- function(name) {
   }
 
   # Check the name using the GNR resolve function:
-  gnr_outcome <- taxize::gnr_resolve(
-    name, best_match_only = "TRUE", canonical = TRUE
-  )
-
+  gnr_outcome <- data.table::data.table(NULL)
+  tryCatch({
+    gnr_outcome <- taxize::gnr_resolve(
+      name, best_match_only = "TRUE", canonical = TRUE
+    )
+  }, error = function(e) {}, warning = function(w) {}, finally = {})
+  
   # Process the result or return default table if no result is found:
   if (nrow(gnr_outcome) > 0) {
     gnr_result <- data.table::data.table(
@@ -505,15 +510,18 @@ get_ncbi_uid_from_name <- function(name, nb_cores = 1) {
 #' 
 get_ncbi_kingdom_from_uid <- function(uid, nb_cores = 1) {
   # Retrieve NCBI kingdom/superkingdom:
-  ncbi_categ <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
-    data.table::as.data.table() %>%
-    data.table::setnames("rank", "ncbi_rank") %>%
-    .[ncbi_rank %in% c("kingdom", "superkingdom"), ] %>%
-    .[order(ncbi_rank)]
-  ncbi_categ <- ncbi_categ[['name']][1]
-  sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334) * 
-    (nb_cores - 1)
-  Sys.sleep(sleep)
+  ncbi_categ <- NULL
+  tryCatch({
+    ncbi_categ <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
+      data.table::as.data.table() %>%
+      data.table::setnames("rank", "ncbi_rank") %>%
+      .[ncbi_rank %in% c("kingdom", "superkingdom"), ] %>%
+      .[order(ncbi_rank)]
+    ncbi_categ <- ncbi_categ[['name']][1]
+    sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334) * 
+      (nb_cores - 1)
+    Sys.sleep(sleep)
+  }, error = function(e) {}, warning = function(w) {}, finally = {})
   
   # Correct kingdom/superkingdom name to match ITIS:
   if (!is.null(ncbi_categ)) {
