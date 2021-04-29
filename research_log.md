@@ -1,6 +1,27 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 29 April 2021
+##### Starting manual names verification:
+Today I finished the code to automatically correct taxonomic names using ITIS, GNR and NCBI.
+Here are some stats about the resolution status of names:
+
+|validity_status|N|
+|---|---|
+|Valid|11979|
+|Unidentified|2641|
+|Too long|17|
+
+|verification_status|N|
+|---|---|
+|Unverified|369|
+|GNR perfect match|4179|
+|ITIS accepted|3929|
+|GNR fuzzy match|1339|
+|ITIS synonym|728|
+
+I need to manually check the remaining 17 + 369 names that could not be resolved automatically.
+
 #### 22 April 2021
 ##### Rethinking the strategy to clean species names:
 I had to rethink the strategy to clean species names. Here are the main steps of the solution that I will try to implement:
