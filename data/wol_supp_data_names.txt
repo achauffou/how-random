@@ -1,5 +1,6 @@
 Abundance
 Abundance"
+Discard
 Frequency of occurrences"
 Num. of hosts sampled
 Number of droppings analysed"
