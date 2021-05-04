@@ -393,6 +393,12 @@ set_verification_info <- function(name_dict, nb_cores = 1) {
     , ':='(verified_name = get_verified_name(.SD)), by = .(verified_kingdom)
   ]
   
+  # Remove abbreviations from proposed and verified names:
+  name_dict[, ':='(verified_name = remove_abbreviations(verified_name))]
+  dict_wo_abbr <- data.table::copy(name_dict) %>%
+    .[, ':='(proposed_name = remove_abbreviations(proposed_name))]
+  name_dict <- rbind(name_dict, dict_wo_abbr) %>% unique()
+  
   # Set verified level, verification status and time for all entries:
   name_dict[, ':='(
     verified_level = c('higher', 'species', 'subspecies') %>%

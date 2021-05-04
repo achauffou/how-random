@@ -140,11 +140,14 @@ remove_abbreviations <- function(name) {
     stringr::str_replace(stringr::regex("\\s*aff\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*cf\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*subsp\\."), "") %>%
+    stringr::str_replace(stringr::regex("\\s*ssp\\."), "") %>%
+    stringr::str_replace(stringr::regex("\\s*spp\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*sp\\."), "") %>%
     stringr::str_replace(stringr::regex("\\s*indet\\."), "") %>%
     stringr::str_replace(stringr::regex("^ "), "") %>%
     stringr::str_replace(stringr::regex(" $"), "") %>%
-    stringr::str_replace(" x .+", "")
+    stringr::str_replace(" x .+", "") %>%
+    stringr::str_replace(" X .+", "")
 }
 
 
