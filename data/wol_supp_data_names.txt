@@ -2,6 +2,8 @@ Abundance
 Abundance"
 Discard
 Frequency of occurrences"
+Group 1
+Group 2
 Import
 Imports
 Num. of hosts sampled

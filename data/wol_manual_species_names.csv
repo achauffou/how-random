@@ -20,10 +20,12 @@ Acalyptrate sp1 M_PL_062,Acalyptratae,Common name
 Acaena pinn,Acaena pinnatifida,
 Acnanthidium saxonica,Achnanthidium sp1,Species unknown
 Adesmia brachy,Adesmia brachysemeon,
+Adult hake,Merluccius,Common name
 Agemilla dulcifera subflavescens,Undefined,Not found
 Agrotis ipsilon anieturma,Agrotis ipsilon,Subspecies unknown
 Ahlber ferra,Undefined,Not found
 Alophera sp1 M_PL_019,Undefined,Not found
+Amphipoda type purple,Amphipoda,Remove additional text
 Amphipods,Amphipoda,Common name
 Anchovy,Engraulidae,Common name
 Andreana sp1 M_PL_046,Tillandsia andreana,Common name
@@ -66,6 +68,7 @@ Blue-green algae sp1 FW_013_02,Cyanobacteria,Common name
 Blue-green algae sp1 FW_015_01,Cyanobacteria,Common name
 Blue-green algae sp1 FW_015_02,Cyanobacteria,Common name
 Blue-green algae sp1 FW_015_03,Cyanobacteria,Common name
+Blue whiting,Micromesistius poutassou,Common name
 Bornbus beaticola,Bombus beaticola,Spelling mistake
 Bornbus consobrinus,Bombus consobrinus,Spelling mistake
 Brachyome sinclairii,Brachycome sinclairii,Spelling mistake
@@ -75,6 +78,7 @@ Brundin,Undefined,Not found
 Bryozoans,Ectoprocta,Outdated nomenclature
 Calceolaria arac,Calceolaria arachnoidea,
 Calcidoidae sp1 M_PL_064,Chalcidoidea sp1 M_PL_064,Spelling mistake
+Calliphora quadrimaculata_1,Calliphora quadrimaculata,Remove additional text
 Calicopis sp1 M_PL_031,Calycopis sp1 M_PL_031,Spelling mistake
 Carpelius exigussp,Carpelius exigus,Spelling mistake
 Cateres pennatus,Kateretes pennatus,
@@ -88,6 +92,11 @@ Chalcidoma disjunctum,Undefined,Not found
 Chatanys insularis istoi,Undefined,Not found
 Cheitosia sp1 M_PL_055,Cheilosia sp1 M_PL_031,Spelling mistake
 Cheliosia sp1 M_PL_057,Cheilosia sp1 M_PL_057,Spelling mistake
+Chironomid type Brundin,Chironomidae,Common name
+Chironomid type Larsia,Larsia,Common name
+Chironomid type Polyped,Chironomidae,Common name
+Chironomid type Slant-eye,Chironomidae,Common name
+Chironomid type Tanytarsini,Tanytarsini,Common name
 Chloropis sp1 M_PL_049,Prochola chloropis,Common name
 Choenopodium sp1 A_PH_005,Chenopodium sp1 A_PH_005,Spelling mistake
 Chromolanea sp1 M_PL_031,Chromolaena sp1 M_PL_031,Spelling mistake
@@ -113,6 +122,8 @@ Deposit-feeding gastropods,Gastropoda,Broad functional group
 Deposit-feeding peracaridan crustaceans,Peracarida,Broad functional group
 Deposit-feeding polychaetes,Polychaeta,Broad functional group
 Detritos,Undefined,
+Detritus Animal,Undefined,Broad functional group
+Detritus. POM. DOM,Undefined,Broad functional group
 Dolphins,Delphinidae,Common name
 Dracantomelon sp1 M_SD_018,Dracontomelon sp1 M_SD_018,Spelling mistake
 Dysmorphocellus sp1 M_PL_034,Cantharidae sp1 M_PL_034,
@@ -132,6 +143,7 @@ Epiphyte-grazing gastropods,Gastropoda,Broad functional group
 Epirrhoetristata sp1 M_PL_048,Epirrhoe tristata,Spelling mistake
 Epistoropheaino sp1 M_PL_057,Epistrophe aino,Spelling mistake
 Equium sabulicola,Echium sabulicola,
+Eristalis cerealis.,Eristalis cerealis,Remove additional text
 Erizoa olivalis,Undefined,Not found
 Euhibus sp1 M_PL_030,Undefined,Not found
 Eukieffidrella pseudomontana,Eukiefferiella,Spelling mistake
@@ -233,6 +245,8 @@ Meso and microzooplankton,Undefined,Broad functional group
 Mesopelagics,Undefined,Broad functional group
 Metialina sp1 M_PL_021,Undefined,Not found
 Metialina sp1 M_PL_057,Undefined,Not found
+Mexican mojarras,Mayaheros urophthalmus,Common name
+Miarus campanulae.,Miarus campanulae,Remove additional text
 Micro-epiphytes,Undefined,Broad functional group
 Microfauna,Undefined,Broad functional group
 Micromoth sp1 M_PL_006,Lepidoptera,Broad functional group
@@ -259,12 +273,15 @@ Octopuses,Octopoda,Broad functional group
 Oligo Lumbr. Blue,Undefined,
 Oligo skinny,Undefined,
 Oligo. Lumbr. Pink,Undefined,
+Oligochaete type I,Oligochaeta,Common name
+Oligochaete type II,Oligochaeta,Common name
 Oligochaets,Oligochaeta,Common name
 Omnivorous crabs,Undefined,Broad functional group
 Oniscigastor sp1 FW_015_02,Oniscigaster sp1 FW_015_02,Spelling mistake
 Oniscogaster sp1 FW_014_03,Oniscigaster sp1 FW_014_03,Spelling mistake
 Oracistrocerus drewseni drewseni,Orancistrocerus drewseni drewseni,Spelling mistake
 Orcnocetes virilis,Orconectes virilis,Spelling mistake
+Organic detritus,Undefined,
 Orthoclad sp1 FW_013_05,Orthocladiinae sp1 FW_013_05,Common name
 Orthoclad sp1 FW_014_02,Orthocladiinae sp1 FW_014_02,Common name
 Orthoclad sp1 FW_014_03,Orthocladiinae sp1 FW_014_03,Common name
@@ -305,6 +322,8 @@ Phytoplankton,Undefined,Broad functional group
 Pinfish,Lagodon rhomboides,Common name
 Pipefish and seahorses,Undefined,Several species
 Pitcaimia flammea,Pitcairnia flammea,
+Plant cells,Undefined,
+Plant material,Undefined,
 Pleaurotaenium sp1 FW_009,Pleurotaenium,Spelling mistake
 Poacea sp1 M_SD_022,Poaceae sp1 M_SD_022,Spelling mistake
 Pogonomyiodes segnis,Undefined,Not found
@@ -328,12 +347,15 @@ Ptilandrena g. maculati,Andrena distans,
 Pycnogonids,Pycnogonida,Spelling mistake
 Pyrrhogige sp1 M_PL_031,Pyrrhopyge,Spelling mistake
 Raptors,Undefined,Broad functional group
+Red algae,Rhodophyta,Common name
+Red drum,Sciaenops ocellatus,Common name
 Rhabdomastrix sp1 FW_013_01,Rhabdomastix sp1 FW_013_01,Spelling mistake
 Rhabdomastrix sp1 FW_013_04,Rhabdomastix sp1 FW_013_04,Spelling mistake
 Rhopalodea sp1 FW_013_03,Undefined,Not found
 Rhyncaenus sp1 M_PL_014,Rhynchaenus sp1 M_PL_014,Spelling mistake
 Rhynconycha sp1 M_PL_046,Undefined,Spelling mistake
 Rodophiala bifidum,Rhodophiala bifida,
+Rose shrimp,Parapaeneus longirostris,Common name
 Salpiglossus sp1 M_PL_001,Salpiglossis sp1 M_PL_001,Spelling mistake
 Sarcophagus sp1 M_PL_006,Salpiglossis sp1 M_PL_006,Spelling mistake
 Sarcophagus sp1 M_PL_007,Salpiglossis sp1 M_PL_007,Spelling mistake
@@ -353,6 +375,10 @@ Scirtid sp3 FW_013_05,Scirtidae sp3 FW_013_05,Spelling mistake
 Scirtid type broad,Scirtidae,Spelling mistake
 Scirtid type skinny,Scirtidae,Spelling mistake
 Scyllarid lobsters,Scyllaridae,Common name
+Sea anemones,Actiniaria,Common name
+Sea birds,Undefined,Broad functional group
+Sea mammals,Undefined,Broad functional group
+Sea turtles,Chelonioidea,Common name
 Seabirds,Undefined,Broad functional group
 Seafans,Undefined,Broad functional group
 Sephanodiscus sp1 FW_013_05,Stephanodiscus sp1 FW_013_05,Spelling mistake
@@ -364,6 +390,10 @@ Shrimp,Undefined,Broad functional group
 Shrimps,Undefined,Broad functional group
 Sipunculid worms,Sipuncula,Common name
 Skates,Rajidae,Common name
+Small benthopelagic fishes,Undefined,Broad functional group
+Small demersal fishes,Undefined,Broad functional group
+Small pelagics,Undefined,Broad functional group
+Small Zoo,Undefined,Broad functional group
 Smoragdina quadratoma culata,Smaragdina quadratomaculata,Spelling mistake
 Snappers,Lutjanidae,Common name
 Snooks,Centropomus,Common name
@@ -391,6 +421,7 @@ Swimming crabs,Portunidae,Common name
 Symbiotic algae,Undefined,Broad functional group
 Synechoccus,Synechococcus,Spelling mistake
 Syrphid sp1 M_PL_011,Syrphidae sp1 M_PL_011,Common name
+Syrphus vitripennis.,Syrphus vitripennis,Remove additional text
 Systogaster biannulata,Undefined,Not found
 Tachytessp sp1 M_PL_044,Tachytes sp1 M_PL_044,Spelling mistake
 Tanaids,Tanaidacea,Common name
@@ -398,10 +429,19 @@ Tanyderid,Tanyderidae,Common name
 Tanyderid sp1 FW_014_02,Tanyderidae sp1 FW_014_02,Common name
 Tanyderid sp1 FW_014_03,Tanyderidae sp1 FW_014_03,Common name
 Tanyderid sp1 FW_015_02,Tanyderidae sp1 FW_015_02,Common name
+Tanytarsini I,Tanytarsini,Remove additional text
+Tanytarsus Genus A,Tanytarsus,Remove additional text
 Tenthredo finchi seguro,Tenthredo,Subspecies unknown
 Tapinotaspis caerulea,Chalepogenus caeruleus,
 Tapinotaspis herbsti,Chalepogenus herbsti,
 Terrestial invertebrates,Undefined,Broad functional group
+Terrestrial bugs,Undefined,Broad functional group
+Terrestrial insects,Undefined,Broad functional group
+Terrestrial invertebrate,Undefined,Broad functional group
+Terrestrial invertebrates,Undefined,Broad functional group
+Terrestrial Invertebrates,Undefined,Broad functional group
+Terrestrial plant material,Undefined,Broad functional group
+Terrestrial plants,Undefined,Broad functional group
 Thaspium aureum atropurpurem,Thaspium trifoliatum,
 Theventimtia muricatus,Undefined,Not found
 Tilandsia sp1 M_SD_004,Tillandsia sp1 M_SD_004,Spelling mistake
