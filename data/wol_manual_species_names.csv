@@ -172,7 +172,22 @@ Gibulla umbilicalis,Gibbula umbilicalis,Spelling mistake
 Gobies,Gobiidae,Common name
 Gobies and blennies,Undefined,Several species
 Gormnosoma rotundatum,Undefined,Maybe Gnorimoschema rotundatum?
+Green algae sp1 FW_013_01,Undefined,Broad functional group
+Green algae sp1 FW_013_02,Undefined,Broad functional group
 Green-algae sp1 FW_013_03,Undefined,Broad functional group
+Green algae sp1 FW_013_04,Undefined,Broad functional group
+Green algae sp1 FW_013_05,Undefined,Broad functional group
+Green algae sp1 FW_014_01,Undefined,Broad functional group
+Green algae sp1 FW_014_03,Undefined,Broad functional group
+Green algae sp1 FW_014_04,Undefined,Broad functional group
+Green algae sp1 FW_015_01,Undefined,Broad functional group
+Green algae sp1 FW_015_02,Undefined,Broad functional group
+Green algae sp1 FW_015_03,Undefined,Broad functional group
+Green algae sp1 FW_015_04,Undefined,Broad functional group
+Green algae sp2 FW_013_05,Undefined,Broad functional group
+Green algae sp2 FW_014_04,Undefined,Broad functional group
+Green algae sp2 FW_015_01,Undefined,Broad functional group
+Green macroalgae,Undefined,Broad functional group
 Gulls,Laridae,Common name
 Gynometriocnemus sp1 M_PL_014,Undefined,
 Habroloma nixillum insulicola,Habroloma nixilla insulicola,Spelling mistake
@@ -238,6 +253,8 @@ Mammals,Undefined,Broad functional group
 Maoridiamesea,Maoridiamesa,Spelling mistake
 Maoridiamesia sp1 FW_013_01,Maoridiamesa,Spelling mistake
 Maoridiemesea,Maoridiamesa,Spelling mistake
+Marine birds,Undefined,Broad functional group
+Marine mammals,Undefined,Broad functional group
 Mashumyia ferdinandi,Undefined,Not found
 Mauoglossum sp1 M_PL_057,Macroglossum sp1 M_PL_057,Spelling mistake
 Mediza sp1 M_PL_044,Undefined,Not found
@@ -282,6 +299,7 @@ Oniscogaster sp1 FW_014_03,Oniscigaster sp1 FW_014_03,Spelling mistake
 Oracistrocerus drewseni drewseni,Orancistrocerus drewseni drewseni,Spelling mistake
 Orcnocetes virilis,Orconectes virilis,Spelling mistake
 Organic detritus,Undefined,
+Organic detritus sp1 FW_013_01,Undefined,
 Orthoclad sp1 FW_013_05,Orthocladiinae sp1 FW_013_05,Common name
 Orthoclad sp1 FW_014_02,Orthocladiinae sp1 FW_014_02,Common name
 Orthoclad sp1 FW_014_03,Orthocladiinae sp1 FW_014_03,Common name
@@ -348,6 +366,10 @@ Pycnogonids,Pycnogonida,Spelling mistake
 Pyrrhogige sp1 M_PL_031,Pyrrhopyge,Spelling mistake
 Raptors,Undefined,Broad functional group
 Red algae,Rhodophyta,Common name
+Red algae sp1 FW_014_02,Rhodophyta,Common name
+Red algae sp1 FW_014_04,Rhodophyta,Common name
+Red algae sp1 FW_015_02,Rhodophyta,Common name
+Red algae sp1 FW_015_03,Rhodophyta,Common name
 Red drum,Sciaenops ocellatus,Common name
 Rhabdomastrix sp1 FW_013_01,Rhabdomastix sp1 FW_013_01,Spelling mistake
 Rhabdomastrix sp1 FW_013_04,Rhabdomastix sp1 FW_013_04,Spelling mistake
@@ -398,6 +420,7 @@ Smoragdina quadratoma culata,Smaragdina quadratomaculata,Spelling mistake
 Snappers,Lutjanidae,Common name
 Snooks,Centropomus,Common name
 Spaeocystis sp1 FW_013_03,Phaeocystis sp1 FW_013_03,Spelling mistake
+Sphaerophoria menthastri-group,Sphaerophoria menthastri,Remove additional text
 Sphecoid wasp,Sphecidae,Common name
 Spider crabs,Majoidea,Common name
 Spiny lobsters,Palinuridae,Common name
