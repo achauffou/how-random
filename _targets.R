@@ -197,6 +197,10 @@ clean_species_names_targets <- list(
     taxonomic_dict,
     check_proposed_names(wol_proposed_names, itis_raw_data, 
                          taxonomic_dict_cache_path)
+  ),
+  tar_target(
+    wol_species_cleaned,
+    clean_wol_species(wol_proposed_names, taxonomic_dict)
   )
 )
 

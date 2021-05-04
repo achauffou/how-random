@@ -150,6 +150,17 @@ remove_abbreviations <- function(name) {
     stringr::str_replace(" X .+", "")
 }
 
+#' Merge raw Web of Life species with their verified names
+#' 
+clean_wol_species <- function(proposed_species, dict) {
+  # Join proposed names with taxonomic dictionary:
+  cleaned_species <- proposed_species %>%
+    merge(dict, all.x = TRUE, by = "proposed_name") %>%
+    .[, .(taxon_ID, raw_name, verified_name, genus = verified_genus, 
+          species = verified_species, proposed_level, verified_level, 
+          kingdom = verified_kingdom, is_verified, verification_status)]
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks

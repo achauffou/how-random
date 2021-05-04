@@ -69,8 +69,25 @@ check_proposed_names <- function(
   data.table::fwrite(taxonomic_dict, cache_path)
   
   # Set taxon ID to distinguish unique taxa and return the dictionary:
-  taxonomic_dict %>%
+  taxonomic_dict %<>%
     set_taxon_ID()
+  
+  # Set genus- and species-aggregated names:
+  taxonomic_dict[, ':='(
+    verified_genus = stringr::str_extract(verified_name, "^(\\w*)"),
+    verified_species = stringr::str_extract(verified_name, "^(\\w* ?\\w*)")
+  )]
+  
+  # Set columns order:
+  taxonomic_dict %>% 
+    data.table::setcolorder(c(
+      "taxon_ID", "proposed_name", "verified_name", "verified_genus", 
+      "verified_species", "verified_level", "verified_kingdom", "is_verified", 
+      "verification_status", "gnr_status", "gnr_match", "gnr_score", 
+      "gnr_source", "found_in_itis", "itis_tsn", "itis_accepted_tsn", 
+      "itis_status", "itis_reason", "itis_rank", "itis_kingdom", 
+      "verification_time", "last_proposed_time"
+    ))
 }
 
 #' Create an empty taxonomic dictionary
@@ -142,14 +159,7 @@ set_taxon_ID <- function(dict) {
   ]
   
   # Bind verified and unverified names and reorder columns:
-  rbind(dict_unverified, dict_verified) %>% 
-    data.table::setcolorder(c(
-    "taxon_ID", "proposed_name", "verified_name", "verified_level", 
-    "verified_kingdom", "is_verified", "verification_status", "gnr_status", 
-    "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
-    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
-    "itis_kingdom", "verification_time", "last_proposed_time"
-  ))
+  rbind(dict_unverified, dict_verified)
 }
 
 
