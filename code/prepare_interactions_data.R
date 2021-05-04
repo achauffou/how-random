@@ -150,15 +150,77 @@ remove_abbreviations <- function(name) {
     stringr::str_replace(" X .+", "")
 }
 
-#' Merge raw Web of Life species with their verified names
+#' Merge proposed taxonomic names from Web of Life with verified information
 #' 
-clean_wol_species <- function(proposed_species, dict) {
+get_verified_names <- function(proposed_species, dict) {
   # Join proposed names with taxonomic dictionary:
-  cleaned_species <- proposed_species %>%
-    merge(dict, all.x = TRUE, by = "proposed_name") %>%
-    .[, .(taxon_ID, raw_name, verified_name, genus = verified_genus, 
-          species = verified_species, proposed_level, verified_level, 
-          kingdom = verified_kingdom, is_verified, verification_status)]
+  proposed_species %>%
+    merge(dict, all.x = TRUE, by = "proposed_name")
+}
+
+#' Select and aggregate the most plausible taxonomic data for all species
+#' 
+#' For all species entries, select the most plausible entry from the verified 
+#' names that matches the raw species name. To decide which entry is most 
+#' plausible, the function follows the given hierarchy of plausible kingdoms 
+#' for the given functional type. Plausible kingdoms must be passed as a named 
+#' list. Additionally, entry name is aggregated to the desired taxonomic level 
+#' (genus, species or subspecies). Finally, additional columns for final name 
+#' and selection flags are added.
+#' 
+select_verified_species <- function(
+  species, 
+  verified_names, 
+  plausible_kingdoms,
+  aggregation_level = "species"
+) {
+  # Function to get the priority of a verified kingom:
+  get_priority <- function(kingdom, fun_group) {
+    if (kingdom %in% "Unknown") return(20)
+    if (is.na(kingdom)) return(30)
+    res <- match(kingdom, plausible_kingdoms[[fun_group]])
+    if (is.na(res)) return(10)
+    return(res)
+  }
+  
+  # Join the species entry with verified entries matching the raw name:
+  species %<>% merge(verified_names, by = "raw_name", all.x = TRUE)
+  species %<>% .[, .(
+    int_type,
+    net_name,
+    raw_name,
+    final_name = switch(aggregation_level, "species" = verified_species, 
+                        "genus" = verified_genus, verified_name),
+    kingdom = verified_kingdom,
+    loc_id,
+    fun_group,
+    taxon_ID,
+    verified_name,
+    is_verified, 
+    verification_status
+  )]
+  
+  # Set priority of the entry:
+  species[, priority := purrr::map2(kingdom, fun_group, get_priority) %>% 
+    as.integer()]
+  
+  # Flag species with duplicate entries:
+  species[
+    priority < 10,
+  ][
+    , selection_flag := ifelse(.N > 1, "Several plausible kingdoms", 
+                               NA_character_), 
+    by = .(net_name, raw_name)
+  ]
+  
+  # Remove species with duplicate entries:
+  species %<>% data.table::setkey(priority) %>%
+    unique(by = c("net_name", "raw_name", "fun_group"))
+  
+  # Flag out species with unknown or implausible kingdom:
+  species[priority == 10, selection_flag := "Implausible kingdom"]
+  species[priority == 20, selection_flag := "Unknown kingdom"]
+  species[, priority := NULL]
 }
 
 

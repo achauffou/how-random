@@ -1,7 +1,20 @@
+aggregation_level: species
 download_date: 2021-04-14
 ecoregions_download_url: http://maps.tnc.org/files/shp/terr-ecoregions-TNC.zip
 envirem_bioclim_download_url: https://deepblue.lib.umich.edu/data/downloads/ms35t870p?locale=en
 envirem_topo_download_url: https://deepblue.lib.umich.edu/data/downloads/37720c880?locale=en
+fun_groups_plausible_kingdoms:
+  Anemone: [Animalia]
+  Ant: [Animalia]
+  Consumer: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
+  Disperser: [Animalia]
+  Fish: [Animalia]
+  Herbivore: [Animalia]
+  Host: [Animalia]
+  Parasite: [Animalia, Fungi, Other Eukaryota, Bacteria, Archaea]
+  Plant: [Plantae]
+  Pollinator: [Animalia]
+  Resource: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07

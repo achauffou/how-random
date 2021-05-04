@@ -35,10 +35,12 @@ read_YAML_config_targets <- list(
     config,
     yaml::read_yaml(config_file)
   ),
+  tar_target(aggregation_level, config$aggregation_level),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
   tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
+  tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_fun_groups_info_path, config$wol_fun_groups_info_path),
@@ -199,8 +201,13 @@ clean_species_names_targets <- list(
                          taxonomic_dict_cache_path)
   ),
   tar_target(
+    wol_verified_names,
+    get_verified_names(wol_proposed_names, taxonomic_dict)
+  ),
+  tar_target(
     wol_species_cleaned,
-    clean_wol_species(wol_proposed_names, taxonomic_dict)
+    select_verified_species(wol_raw_species_w_metadata, wol_verified_names, 
+                            fun_groups_plausible_kingdoms, aggregation_level)
   )
 )
 
