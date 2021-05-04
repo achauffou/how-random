@@ -391,8 +391,8 @@ set_verification_info <- function(name_dict, nb_cores = 1) {
   
   # Verify the kingdom for entries found only in GNR:
   name_dict <- rbind(
-    name_dict[gnr_status == "Not found" || !is.na(verified_kingdom), ],
-    name_dict[gnr_status != "Not found" && is.na(verified_kingdom), ] %>%
+    name_dict[gnr_status == "Not found" | !is.na(verified_kingdom), ],
+    name_dict[gnr_status != "Not found" & is.na(verified_kingdom), ] %>%
       apply(1, as.list) %>%
       lapply(get_ncbi_kingdoms, nb_cores) %>%
       data.table::rbindlist()
