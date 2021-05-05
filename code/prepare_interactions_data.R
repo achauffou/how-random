@@ -147,7 +147,7 @@ remove_abbreviations <- function(name) {
     stringr::str_replace(stringr::regex("^ "), "") %>%
     stringr::str_replace(stringr::regex(" $"), "") %>%
     stringr::str_replace(" x .+", "") %>%
-    stringr::str_replace(" X .+", "")
+    stringr::str_replace(" X ", " ")
 }
 
 #' Merge proposed taxonomic names from Web of Life with verified information
