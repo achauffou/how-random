@@ -151,7 +151,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_fun_groups_info,
-    data.table::fread(wol_fun_groups_info_file)
+    data.table::fread(wol_fun_groups_info_file, na.strings = c("", "NA"))
   ),
   tar_target(
     wol_manual_species_names_file,
@@ -160,7 +160,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_manual_species_names,
-    data.table::fread(wol_manual_species_names_file)
+    data.table::fread(wol_manual_species_names_file, na.strings = c("", "NA"))
   )
 )
 

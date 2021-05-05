@@ -43,7 +43,10 @@ check_proposed_names <- function(
     new_dict <- 1:length(names_to_verify) %>%
       parallel::mclapply(
         function(x) {
-          check_single_name(names_to_verify[x], itis_database, cache_path, nb_cores)
+          manual_kingdom <- proposed_names[
+            proposed_name == names_to_verify[x], ][['manual_kingdom']]
+          check_single_name(names_to_verify[x], itis_database, cache_path, 
+                            manual_kingdom, nb_cores)
           if(x %% nb_cores == 0) pb$update(x/length(names_to_verify))
         }, mc.cores = nb_cores
       )
@@ -170,7 +173,7 @@ set_taxon_ID <- function(dict) {
 #' already in the taxonomic dictionary, update the cache accordingly after
 #' verifying it.
 #'
-check_single_name <- function(name, itis_database, cache_path, nb_cores = 1) {
+check_single_name <- function(name, itis_database, cache_path, kingdom = NA, nb_cores = 1) {
   # Check whether the proposed name is already in the cache:
   cache_dict <- data.table::fread(
     cache_path, na.strings = c("", "NA"), colClasses = tax_dict_cols_classes()
@@ -178,7 +181,7 @@ check_single_name <- function(name, itis_database, cache_path, nb_cores = 1) {
 
   # If the name is not already in cache, verify it:
   if (nrow(cache_dict[proposed_name == name, ]) == 0) {
-    verify_taxon(name, itis_database, nb_cores) %>%
+    verify_taxon(name, itis_database, kingdom, nb_cores) %>%
       data.table::fwrite(cache_path, append = TRUE)
   }
 }
@@ -188,7 +191,7 @@ check_single_name <- function(name, itis_database, cache_path, nb_cores = 1) {
 #' Verify a single proposed taxonomic name and return its verification as well
 #' as the verification of associated names in the verification process.
 #'
-verify_taxon <- function(name, itis_database, nb_cores = 1) {
+verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
   # Check the name for valid matches and synonyms in ITIS:
   itis_results_1 <- check_itis(name, itis_database)
   
@@ -247,6 +250,34 @@ verify_taxon <- function(name, itis_database, nb_cores = 1) {
     "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
     "verification_time", "last_proposed_time"
   ))
+  
+  # If there is no entry for the manually specified kingdom, add one:
+  if (!is.na(kingdom)) {
+    if (nrow(combined_results[verified_kingdom %in% kingdom, ]) == 0) {
+      combined_results <- data.table::data.table(
+        proposed_name = name,
+        verified_name = name,
+        verified_level = c('higher', 'species', 'subspecies') %>%
+          .[stringr::str_count(name, " ") + 1],
+        verified_kingdom  = kingdom,
+        is_verified = TRUE,
+        verification_status = "Manual kingdom",
+        gnr_status = "Not found",
+        gnr_match = NA_character_,
+        gnr_score = NA_real_,
+        gnr_source = NA_character_,
+        found_in_itis = FALSE,
+        itis_tsn = NA_integer_,
+        itis_accepted_tsn = NA_integer_,
+        itis_status = NA_character_,
+        itis_reason = NA_character_,
+        itis_rank = NA_character_,
+        verification_time = as.character(Sys.time()),
+        last_proposed_time = NA_character_
+      ) %>% rbind(combined_results)
+    }
+  }
+  combined_results
 }
 
 #' Verify proposed name in the ITIS database
