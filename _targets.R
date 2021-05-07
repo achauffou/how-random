@@ -1,11 +1,11 @@
 # Configuration ================================================================
-# Load targets package -----
+# Load targets package:
 library(targets)
 
-# Load other crucial packages -----
+# Load other crucial packages:
 library(magrittr)
 
-# Set R options -----
+# Set R options:
 QUIET_DOWNLOADS <- FALSE
 options(download.file.method = "curl")
 options(download.file.extra = "-L")
@@ -14,13 +14,13 @@ options(tinytex.engine_args = "-shell-escape")
 options(tinytex.bib_engine = "biber")
 options(tinytex.compile.min_times = 2)
 
-# Set options to load R packages listed in .r_packages if necessary -----
+# Set options to load R packages listed in .r_packages if necessary:
 tar_option_set(packages = readLines(".r_packages"))
 
-# Load all functions scripts in the code folder -----
+# Load all functions scripts in the code folder:
 f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
-# Path of the taxonomic dictionary cache -----
+# Path of the taxonomic dictionary cache:
 taxonomic_dict_cache_path <- "data/cache/taxonomic_dict_cache.csv"
 
 
@@ -52,7 +52,7 @@ read_YAML_config_targets <- list(
 
 
 # Download raw data ============================================================
-# Web of life data -----
+# Web of life data:
 download_web_of_life_data_targets <- list(
   tar_target(
     wol_download_list,
@@ -67,7 +67,7 @@ download_web_of_life_data_targets <- list(
   )
 )
 
-# ITIS database -----
+# ITIS database:
 download_itis_data_targets <- tar_target(
   itis_raw_archive,
   download_from_url(itis_download_url, "data/raw/itis_sqlite.zip",
@@ -75,7 +75,7 @@ download_itis_data_targets <- tar_target(
   format = "file"
 )
 
-# Terrestrial ecoregions -----
+# Terrestrial ecoregions:
 download_ecoregions_data_targets <- tar_target(
   ecoregions_raw_archive,
   download_from_url(ecoregions_download_url, 
@@ -83,7 +83,7 @@ download_ecoregions_data_targets <- tar_target(
   format = "file"
 )
 
-# Climate data -----
+# Climate data:
 download_climate_data_targets <- list(
   tar_target(
     worldclim_raw_archive,
@@ -105,7 +105,7 @@ download_climate_data_targets <- list(
   )
 )
 
-# List all download targets -----
+# List all download targets:
 download_raw_data_targets <- list(
   download_web_of_life_data_targets,
   download_itis_data_targets,
@@ -115,7 +115,7 @@ download_raw_data_targets <- list(
 
 
 # Read raw data ================================================================
-# Web of Life -----
+# Web of Life:
 read_web_of_life_data_targets <- list(
   tar_target(
     wol_raw_data,
@@ -125,7 +125,7 @@ read_web_of_life_data_targets <- list(
   tar_target(wol_raw_metadata, wol_raw_data$metadata)
 )
 
-# ITIS databases -----
+# ITIS databases:
 read_itis_data_targets <- list(
   tar_target(
     itis_raw_data,
@@ -133,7 +133,7 @@ read_itis_data_targets <- list(
   )
 )
 
-# Read manually created data -----
+# Read manually created data:
 read_manual_data_targets <- list(
   tar_target(
     wol_supp_data_names_file,
@@ -164,7 +164,7 @@ read_manual_data_targets <- list(
   )
 )
 
-# List all read targets -----
+# List all read targets:
 read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
@@ -173,7 +173,7 @@ read_raw_data_targets <- list(
 
 
 # Prepare interactions data ====================================================
-# Prepare metadata -----
+# Prepare metadata:
 prepare_interactions_metadata_targets <- list(
   tar_target(
     wol_metadata,
@@ -181,7 +181,7 @@ prepare_interactions_metadata_targets <- list(
   )
 )
 
-# Clean species names -----
+# Clean species names:
 clean_species_names_targets <- list(
   tar_target(
     wol_raw_species,
@@ -211,7 +211,7 @@ clean_species_names_targets <- list(
   )
 )
 
-# Prepare interactions -----
+# Prepare interactions:
 prepare_interactions_targets <- list(
   tar_target(
     wol_networks_wo_supp_data,
@@ -219,7 +219,7 @@ prepare_interactions_targets <- list(
   )
 )
 
-# List all targets to prepare interactions data -----
+# List all targets to prepare interactions data:
 prepare_interactions_data_targets <- list(
   prepare_interactions_metadata_targets,
   clean_species_names_targets,
