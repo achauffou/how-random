@@ -208,6 +208,10 @@ clean_species_names_targets <- list(
     wol_species_cleaned,
     select_verified_species(wol_raw_species_w_metadata, wol_verified_names, 
                             fun_groups_plausible_kingdoms, aggregation_level)
+  ),
+  tar_target(
+    wol_problematic_networks,
+    detect_problematic_networks(wol_species_cleaned)
   )
 )
 
@@ -220,7 +224,8 @@ prepare_interactions_targets <- list(
   tar_target(
     wol_interactions,
     get_wol_interactions(wol_networks_wo_supp_data, wol_metadata, 
-                         wol_species_cleaned, wol_fun_groups_info, NA)
+                         wol_species_cleaned, wol_fun_groups_info, 
+                         wol_problematic_networks)
   )
 )
 

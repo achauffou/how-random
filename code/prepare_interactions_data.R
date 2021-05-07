@@ -223,6 +223,18 @@ select_verified_species <- function(
   species[, priority := NULL]
 }
 
+#' Detect networks with species belonging to incompatible functional groups
+#' 
+detect_problematic_networks <- function(species) {
+  species[
+    !is.na(final_name) & !int_type %in% "Food Webs",
+  ][
+    , .(problem = length(unique(.SD[['fun_group']])) > 1), by = .(net_name, final_name)
+  ][
+    problem == TRUE,
+  ][['net_name']] %>% unique()
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks
