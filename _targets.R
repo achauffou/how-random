@@ -43,6 +43,7 @@ read_YAML_config_targets <- list(
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
+  tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_fun_groups_info_path, config$wol_fun_groups_info_path),
   tar_target(wol_interaction_type, config$wol_interaction_type),
   tar_target(wol_manual_locations_path, config$wol_manual_locations_path),
@@ -111,7 +112,8 @@ download_raw_data_targets <- list(
   download_web_of_life_data_targets,
   download_itis_data_targets,
   download_ecoregions_data_targets,
-  download_climate_data_targets
+  download_climate_data_targets,
+  download_occurrence_data
 )
 
 
@@ -221,7 +223,8 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     wol_problematic_networks,
-    detect_problematic_networks(wol_species_cleaned, wol_metadata)
+    detect_problematic_networks(wol_species_cleaned, wol_metadata) %>%
+      c(wol_aquatic_networks)
   )
 )
 

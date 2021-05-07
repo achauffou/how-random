@@ -18,6 +18,7 @@ fun_groups_plausible_kingdoms:
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
+wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, M_AF_001, M_AF_002]
 wol_fun_groups_info_path: data/wol_fun_groups_info.csv
 wol_interaction_type: All
 wol_manual_locations_path: data/wol_manual_locations.csv
