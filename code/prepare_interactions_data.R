@@ -1,7 +1,15 @@
 # Prepare interactions metadata ================================================
-#' Add a column with location ID to Web of Life metadata
+#' Correct manually some locations and add location ID to Web of Life metadata
 #' 
-create_wol_metadata_loc_id <- function(metadata) {
+create_wol_metadata_loc_id <- function(metadata, manual_loc) {
+  # Manual locations corrections:
+  metadata <- manual_loc[, .(net_name, man_lat = lat, man_lon = lon)] %>%
+    merge(metadata, by = "net_name", all.y = TRUE)
+  metadata[!is.na(man_lat), lat := man_lat]
+  metadata[!is.na(man_lon), lat := man_lon]
+  metadata[, ':='(man_lat = NULL, man_lon = NULL)]
+  
+  # Add column with location ID:
   metadata[order(net_name), ':='(loc_id = paste0("wol_", .GRP)), by = .(lat, lon)]
 }
 
@@ -284,7 +292,7 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     # Format networks as data.table:
     purrr::map_df(interactions_as_dt, .id = "net_name") %>%
     # Add metadata about location ID and interaction type:
-    merge(metadata[, .(net_name, loc_id, int_type)]) %>%
+    merge(metadata[, .(net_name, loc_id, int_type)], by = "net_name") %>%
     # Add functional group of each species:
     merge(fun_groups[is_row == TRUE,], by = "int_type") %>%
     .[, ':='(sp1_fun_group = fun_group, fun_group = NULL, is_row = NULL)] %>%
