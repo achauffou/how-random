@@ -216,6 +216,11 @@ prepare_interactions_targets <- list(
   tar_target(
     wol_networks_wo_supp_data,
     remove_supp_data_from_wol_networks(wol_raw_networks, wol_supp_data_names)
+  ),
+  tar_target(
+    wol_interactions,
+    get_wol_interactions(wol_networks_wo_supp_data, wol_metadata, 
+                         wol_species_cleaned, wol_fun_groups_info, NA)
   )
 )
 

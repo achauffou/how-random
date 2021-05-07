@@ -234,3 +234,63 @@ remove_supp_data_from_wol_networks <- function(networks, supp_names) {
   networks %<>%
     purrr::map(~.[!rownames(.) %in% supp_names, !colnames(.) %in% supp_names])
 }
+
+#' Get interactions data as a data.table
+#' 
+#' Remove problematic networks, format as data.table, add location ID,
+#' assign cleaned species names, remove species with implausible kingdom and
+#' undefined species, and merge duplicate observations at the same location.
+#' 
+get_wol_interactions <- function(networks, metadata, species, fun_groups, 
+                                 problematic_networks = NA) {
+  # Remove problematic networks:
+  networks %<>% .[!names(.) %in% problematic_networks]
+  
+  # Function to format matrix as data.table:
+  interactions_as_dt <- function(x) {
+    x %>%
+      as.table() %>%
+      data.table::as.data.table() %>%
+      data.table::setnames(c("sp1_raw_name", "sp2_raw_name", "int_weight")) %>%
+      .[, ':='(
+        sp1_raw_name = as.character(sp1_raw_name),
+        sp2_raw_name = as.character(sp2_raw_name),
+        int_weight = as.numeric(as.character(int_weight))
+      )]
+  }
+  
+  # Remove implausible kingdoms from species:
+  species %<>% .[!selection_flag %in% "Implausible kingdom", 
+                 .(net_name, raw_name, final_name, fun_group, kingdom)]
+  
+  # Prepare interactions data.table:
+  interactions <- networks %>%
+    # Remove empty networks:
+    purrr::discard(~length(.) == 0) %>%
+    # Format networks as data.table:
+    purrr::map_df(interactions_as_dt, .id = "net_name") %>%
+    # Add metadata about location ID and interaction type:
+    merge(metadata[, .(net_name, loc_id, int_type)]) %>%
+    # Add functional group of each species:
+    merge(fun_groups[is_row == TRUE,], by = "int_type") %>%
+    .[, ':='(sp1_fun_group = fun_group, fun_group = NULL, is_row = NULL)] %>%
+    merge(fun_groups[is_row == FALSE,], by = "int_type") %>%
+    .[, ':='(sp2_fun_group = fun_group, fun_group = NULL, is_row = NULL)] %>%
+    # Add cleaned species names:
+    merge(species[, .(
+      net_name, sp1_raw_name = raw_name, sp1_name = final_name, 
+      sp1_fun_group = fun_group
+    )], by = c("net_name", "sp1_raw_name", "sp1_fun_group"), all.x = TRUE) %>%
+    merge(species[, .(
+      net_name, sp2_raw_name = raw_name, sp2_name = final_name, 
+      sp2_fun_group = fun_group
+    )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
+    .[!is.na(sp1_name) & !is.na(sp2_name),]
+  
+  # Merge duplicate interactions at the same location:
+  data.table::setkey(interactions, loc_id, int_type, sp1_fun_group, sp1_name, 
+                     sp2_fun_group, sp2_name)
+  interactions[
+    , .(int_weight = sum(.SD[['int_weight']])), 
+    by = .(loc_id, int_type, sp1_fun_group, sp1_name, sp2_fun_group, sp2_name)]
+}
