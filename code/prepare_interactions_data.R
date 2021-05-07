@@ -225,14 +225,16 @@ select_verified_species <- function(
 
 #' Detect networks with species belonging to incompatible functional groups
 #' 
-detect_problematic_networks <- function(species) {
+detect_problematic_networks <- function(species, metadata) {
   species[
     !is.na(final_name) & !int_type %in% "Food Webs",
   ][
     , .(problem = length(unique(.SD[['fun_group']])) > 1), by = .(net_name, final_name)
   ][
     problem == TRUE,
-  ][['net_name']] %>% unique()
+  ][['net_name']] %>% 
+    c(metadata[is.na(lat) | is.na(lon)][['net_name']]) %>%
+    unique()
 }
 
 

@@ -211,7 +211,7 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     wol_problematic_networks,
-    detect_problematic_networks(wol_species_cleaned)
+    detect_problematic_networks(wol_species_cleaned, wol_metadata)
   )
 )
 
