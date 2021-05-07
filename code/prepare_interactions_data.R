@@ -197,12 +197,13 @@ select_verified_species <- function(
     int_type,
     net_name,
     raw_name,
+    final_id = switch(aggregation_level, "species" = sp_id, 
+                      "genus" = genus_id, taxon_id),
     final_name = switch(aggregation_level, "species" = verified_species, 
                         "genus" = verified_genus, verified_name),
     kingdom = verified_kingdom,
     loc_id,
     fun_group,
-    taxon_ID,
     verified_name,
     is_verified, 
     verification_status
@@ -283,7 +284,7 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
   
   # Remove implausible kingdoms from species:
   species %<>% .[!selection_flag %in% "Implausible kingdom", 
-                 .(net_name, raw_name, final_name, fun_group, kingdom)]
+                 .(net_name, raw_name, final_id, final_name, fun_group, kingdom)]
   
   # Prepare interactions data.table:
   interactions <- networks %>%
@@ -301,18 +302,19 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     # Add cleaned species names:
     merge(species[, .(
       net_name, sp1_raw_name = raw_name, sp1_name = final_name, 
-      sp1_fun_group = fun_group
+      sp1_fun_group = fun_group, sp1_id = final_id
     )], by = c("net_name", "sp1_raw_name", "sp1_fun_group"), all.x = TRUE) %>%
     merge(species[, .(
       net_name, sp2_raw_name = raw_name, sp2_name = final_name, 
-      sp2_fun_group = fun_group
+      sp2_fun_group = fun_group, sp2_id = final_id
     )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
     .[!is.na(sp1_name) & !is.na(sp2_name),]
   
   # Merge duplicate interactions at the same location:
-  data.table::setkey(interactions, loc_id, int_type, sp1_fun_group, sp1_name, 
-                     sp2_fun_group, sp2_name)
+  data.table::setkey(interactions, loc_id, int_type, sp1_fun_group, sp1_id, 
+                     sp1_name, sp2_fun_group, sp2_id, sp2_name)
   interactions[
     , .(int_weight = sum(.SD[['int_weight']])), 
-    by = .(loc_id, int_type, sp1_fun_group, sp1_name, sp2_fun_group, sp2_name)]
+    by = .(loc_id, int_type, sp1_fun_group, sp1_id, sp1_name, sp2_fun_group, 
+           sp2_id, sp2_name)]
 }

@@ -71,24 +71,24 @@ check_proposed_names <- function(
   # Save the taxonomic dictionary without duplicate lines in cache:
   data.table::fwrite(taxonomic_dict, cache_path)
 
-  # Set taxon ID to distinguish unique taxa and return the dictionary:
-  taxonomic_dict %<>%
-    set_taxon_ID()
-
   # Set genus- and species-aggregated names:
   taxonomic_dict[, ':='(
     verified_genus = stringr::str_extract(verified_name, "^(\\w*)"),
     verified_species = stringr::str_extract(verified_name, "^(\\w* ?\\w*)")
   )]
+  
+  # Set taxon ID to distinguish unique taxa and return the dictionary:
+  taxonomic_dict %<>%
+    set_taxon_ID()
 
   # Set columns order:
   taxonomic_dict %>%
     data.table::setcolorder(c(
-      "taxon_ID", "proposed_name", "verified_name", "verified_genus",
-      "verified_species", "verified_level", "verified_kingdom", "is_verified",
-      "verification_status", "gnr_status", "gnr_match", "gnr_score",
-      "gnr_source", "found_in_itis", "itis_tsn", "itis_accepted_tsn",
-      "itis_status", "itis_reason", "itis_rank",
+      "genus_id", "sp_id", "taxon_id", "proposed_name", "verified_name", 
+      "verified_genus", "verified_species", "verified_level", 
+      "verified_kingdom", "is_verified", "verification_status", "gnr_status", 
+      "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
+      "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
       "verification_time", "last_proposed_time"
     ))
 }
@@ -141,12 +141,13 @@ set_taxon_ID <- function(dict) {
   dict_verified <- dict[is_verified == TRUE, ]
 
   # Give a unique taxon ID ending in 0 to unverified species:
-  dict_unverified[, taxon_ID := .GRP * 10, by = .(proposed_name)]
+  dict_unverified[, ':='(taxon_id = .GRP * 10, genus_id = .GRP * 10, 
+                         sp_id = .GRP * 10), by = .(proposed_name)]
 
-  # Give a unique taxon ID to verified species:
+  # Give a unique taxon ID to verified names:
   dict_verified[
     ,
-    taxon_ID := .GRP * 10 + sapply(
+    taxon_id := .GRP * 10 + sapply(
       verified_kingdom,
       switch,
       "Archaea" = 1,
@@ -158,6 +159,36 @@ set_taxon_ID <- function(dict) {
       7
     ),
     by = .(verified_name, verified_kingdom)
+  ]
+  dict_verified[
+    ,
+    genus_id := .GRP * 10 + sapply(
+      verified_kingdom,
+      switch,
+      "Archaea" = 1,
+      "Bacteria" = 2,
+      "Other Eukaryota" = 3,
+      "Animalia" = 4,
+      "Fungus" = 5,
+      "Plantae" = 6,
+      7
+    ),
+    by = .(verified_genus, verified_kingdom)
+  ]
+  dict_verified[
+    ,
+    sp_id := .GRP * 10 + sapply(
+      verified_kingdom,
+      switch,
+      "Archaea" = 1,
+      "Bacteria" = 2,
+      "Other Eukaryota" = 3,
+      "Animalia" = 4,
+      "Fungus" = 5,
+      "Plantae" = 6,
+      7
+    ),
+    by = .(verified_species, verified_kingdom)
   ]
 
   # Bind verified and unverified names and reorder columns:
