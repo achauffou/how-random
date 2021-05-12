@@ -82,7 +82,7 @@ download_wol_networks_raw_archive <- function(
 }
 
 
-# Download GBIF occurrence data ================================================
+# Get GBIF keys to downloads ===================================================
 #' Get a data.table with the names to propose and download on GBIF
 #' 
 select_names_to_gbif_suggest <- function(species, taxonomic_dict, 
@@ -104,7 +104,7 @@ select_names_to_gbif_suggest <- function(species, taxonomic_dict,
   )] %>% merge(verified_names, by = c("final_name", "kingdom"))
   names_to_suggest[, .(
     verified_name = final_name, 
-    proposed_name,
+    proposed_name = remove_abbreviations(proposed_name),
     proposed_kingdom = kingdom
   )] %>% unique()
 }
@@ -186,7 +186,7 @@ empty_gbif_keys <- function() {
 suggest_single_gbif_name <- function(suggested_name, suggested_kingdom, cache_path) {
   # Suggest the name to GBIF:
   gbif_results <- rgbif::name_suggest(
-    remove_abbreviations(suggested_name), limit = 1000, 
+    suggested_name, limit = 1000, 
     fields = c("key", "kingdom", "canonicalName", "rank")
   ) %$% data %>% data.table::as.data.table()
   
