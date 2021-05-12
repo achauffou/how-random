@@ -1,6 +1,16 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 12 May 2021
+##### Starting to download and clean GBIF occurrences:
+Now that I have cleaned all species names and prepared interactions, I can start downloading GBIF occurrence data and clean them.
+The major steps will be:
+* Retrieve and select GBIF keys to download
+* Download GBIF occurrence data based on keys
+* Extract and clean occurrence data
+
+The goal is to finish this part before next week (or latest during next week), but that leaves very little time considering the amount of work required.
+
 #### 29 April 2021
 ##### Starting manual names verification:
 Today I finished the code to automatically correct taxonomic names using ITIS, GNR and NCBI.
