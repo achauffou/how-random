@@ -119,6 +119,10 @@ download_occurrence_data <- list(
   tar_target(
     gbif_keys_dict,
     suggest_gbif_names(gbif_names_to_suggest, gbif_keys_cache_path)
+  ),
+  tar_target(
+    gbif_keys,
+    select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict)
   )
 )
 

@@ -227,3 +227,33 @@ suggest_single_gbif_name <- function(suggested_name, suggested_kingdom, cache_pa
   # Write results to cache:
   data.table::fwrite(results, cache_path, append = TRUE)
 }
+
+#' Select the GBIF keys to download
+#' 
+select_gbif_keys_to_download <- function(gbif_names_to_suggest, gbif_keys_dict) {
+  # Remove unranked keys and keys from very high orders:
+  gbif_keys_dict %<>% .[!gbif_rank %in% c("UNRANKED", "OTHER"),]
+  
+  # Select GBIF keys to include:
+  gbif_keys <- gbif_keys_dict[, ':='(
+    same_name = (tolower(proposed_name) == tolower(gbif_canonical_name)),
+    same_rank = stringr::str_count(proposed_name, " ") == 
+      stringr::str_count(gbif_canonical_name, " ")
+  )][
+    , ':='(
+      proposed_found = any(.SD[['same_name']] == TRUE),
+      only_sub = all(.SD[['same_rank']] == FALSE)
+    ), by = .(proposed_name)
+  ][, ':='(
+    necessary_name = (same_name | !proposed_found)
+  )][
+    (same_rank & necessary_name) | only_sub,
+  ]
+  
+  # Merge GBIF keys with verified names:
+  gbif_names_to_suggest %>% 
+  merge(gbif_keys, by = c("proposed_name", "proposed_kingdom")) %>% .[
+    , .(verified_name, proposed_name, proposed_kingdom, gbif_key, 
+        gbif_canonical_name, gbif_kingdom, gbif_rank)
+  ]
+}
