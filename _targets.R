@@ -20,8 +20,9 @@ tar_option_set(packages = readLines(".r_packages"))
 # Load all functions scripts in the code folder:
 f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
 
-# Path of the taxonomic dictionary cache:
+# Paths of cache files:
 taxonomic_dict_cache_path <- "data/cache/taxonomic_dict_cache.csv"
+gbif_keys_cache_path <- "data/cache/gbif_keys_cache.csv"
 
 
 # Read YAML configuration ======================================================
@@ -114,6 +115,10 @@ download_occurrence_data <- list(
     gbif_names_to_suggest,
     select_names_to_gbif_suggest(wol_species, taxonomic_dict, 
                                  min_locations_per_species, aggregation_level)
+  ),
+  tar_target(
+    gbif_keys_dict,
+    suggest_gbif_names(gbif_names_to_suggest, gbif_keys_cache_path)
   )
 )
 
