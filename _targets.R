@@ -243,11 +243,7 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     wol_species,
-    wol_species_cleaned[
-      !net_name %in% wol_problematic_networks,
-    ][
-      !is.na(final_name),
-    ]
+    remove_problematic_species(wol_species_cleaned, wol_problematic_networks)
   )
 )
 

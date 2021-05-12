@@ -246,6 +246,21 @@ detect_problematic_networks <- function(species, metadata) {
     unique()
 }
 
+#' Remove species with NA as final name or from problematic networks
+#' 
+remove_problematic_species <- function(species, problematic_networks) {
+  all_net_names <- species[['net_name']] %>% unique()
+  problematic_networks <- sapply(
+    problematic_networks, 
+    function(x) stringr::str_extract(all_net_names, paste0("^", x, ".*$"))
+  )
+  species[
+    !net_name %in% problematic_networks,
+  ][
+    !is.na(final_name),
+  ]
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks
@@ -267,6 +282,10 @@ remove_supp_data_from_wol_networks <- function(networks, supp_names) {
 get_wol_interactions <- function(networks, metadata, species, fun_groups, 
                                  problematic_networks = NA) {
   # Remove problematic networks:
+  problematic_networks <- sapply(
+    problematic_networks, 
+    function(x) stringr::str_extract(names(networks), paste0("^", x, ".*$"))
+  )
   networks %<>% .[!names(.) %in% problematic_networks]
   
   # Function to format matrix as data.table:
