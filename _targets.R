@@ -42,6 +42,7 @@ read_YAML_config_targets <- list(
   tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
+  tar_target(min_locations_per_species, config$min_locations_per_species),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_fun_groups_info_path, config$wol_fun_groups_info_path),
@@ -104,6 +105,15 @@ download_climate_data_targets <- list(
     download_from_url(envirem_topo_download_url, 
                       "data/raw/envirem_topo_2-5.zip", download_date),
     format = "file"
+  )
+)
+
+# GBIF occurrence data:
+download_occurrence_data <- list(
+  tar_target(
+    gbif_names_to_suggest,
+    select_names_to_gbif_suggest(wol_species, taxonomic_dict, 
+                                 min_locations_per_species, aggregation_level)
   )
 )
 
@@ -225,6 +235,14 @@ clean_species_names_targets <- list(
     wol_problematic_networks,
     detect_problematic_networks(wol_species_cleaned, wol_metadata) %>%
       c(wol_aquatic_networks)
+  ),
+  tar_target(
+    wol_species,
+    wol_species_cleaned[
+      !net_name %in% wol_problematic_networks,
+    ][
+      !is.na(final_name),
+    ]
   )
 )
 

@@ -80,3 +80,31 @@ download_wol_networks_raw_archive <- function(
     paste0("&searchbox=&checked=") %>%
     download_from_url(dest_file, download_date)
 }
+
+
+# Download GBIF occurrence data ================================================
+#' Get a data.table with the names to propose and download on GBIF
+#' 
+select_names_to_gbif_suggest <- function(species, taxonomic_dict, 
+                                         min_locs, aggregation_level) {
+  # Verified species to download (with nb_locations > min_locations):
+  verified_names <- species[
+    , .(final_name, loc_id, kingdom), by = .(final_name, loc_id, kingdom)
+  ][
+    , .(nb_locs = .N), by = .(final_name, kingdom)
+  ][
+    nb_locs >= min_locs,
+  ][, .(final_name, kingdom)]
+  
+  # Names to suggest:
+  names_to_suggest <- taxonomic_dict[, ':='(
+    final_name = switch(aggregation_level, "species" = verified_species, 
+                         "genus" = verified_genus, verified_name),
+    kingdom = verified_kingdom
+  )] %>% merge(verified_names, by = c("final_name", "kingdom"))
+  names_to_suggest[, .(
+    verified_name = final_name, 
+    kingdom,
+    proposed_name
+  )] %>% unique()
+}
