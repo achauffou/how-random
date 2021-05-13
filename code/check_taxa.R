@@ -86,10 +86,10 @@ check_proposed_names <- function(
     data.table::setcolorder(c(
       "genus_id", "sp_id", "taxon_id", "proposed_name", "verified_name", 
       "verified_genus", "verified_species", "verified_level", 
-      "verified_kingdom", "is_verified", "verification_status", "gnr_status", 
-      "gnr_match", "gnr_score", "gnr_source", "found_in_itis", "itis_tsn", 
-      "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
-      "verification_time", "last_proposed_time"
+      "verified_kingdom", "verified_rank", "is_verified", "verification_status",
+      "gnr_status", "gnr_match", "gnr_score", "gnr_source", "ncbi_rank", 
+      "found_in_itis", "itis_tsn", "itis_accepted_tsn", "itis_status", 
+      "itis_reason", "itis_rank", "verification_time", "last_proposed_time"
     ))
 }
 
@@ -101,13 +101,15 @@ empty_taxonomic_dict <- function() {
     verified_name = character(),
     verified_level = character(),
     verified_kingdom  = character(),
+    verified_rank = character(),
     is_verified = logical(),
     verification_status = character(),
     gnr_status = character(),
     gnr_match = character(),
     gnr_score = numeric(),
     gnr_source = character(),
-    found_in_itis = character(),
+    ncbi_rank = character(),
+    found_in_itis = logical(),
     itis_tsn = integer(),
     itis_accepted_tsn = integer(),
     itis_status = character(),
@@ -122,10 +124,10 @@ empty_taxonomic_dict <- function() {
 #'
 tax_dict_cols_classes <- function() {
   list(
-    character = c(1:4, 6:8, 10, 14:18),
-    logical = c(5, 11),
-    integer = c(12, 13),
-    numeric = c(9)
+    character = c(1:5, 7:9, 11:12, 16:20),
+    logical = c(6, 13),
+    integer = c(14, 15),
+    numeric = c(10)
   )
 }
 
@@ -273,12 +275,12 @@ verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
   # Set verification information of all entries:
   combined_results %<>% set_verification_info()
 
-  # Set the correct columns order
+  # Set the correct columns order:
   data.table::setcolorder(combined_results, c(
     "proposed_name", "verified_name", "verified_level", "verified_kingdom",
-    "is_verified", "verification_status", "gnr_status", "gnr_match",
-    "gnr_score", "gnr_source", "found_in_itis", "itis_tsn",
-    "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
+    "verified_rank", "is_verified", "verification_status", "gnr_status", 
+    "gnr_match", "gnr_score", "gnr_source", "ncbi_rank", "found_in_itis", 
+    "itis_tsn", "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
     "verification_time", "last_proposed_time"
   ))
   
@@ -291,12 +293,14 @@ verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
         verified_level = c('higher', 'species', 'subspecies') %>%
           .[stringr::str_count(name, " ") + 1],
         verified_kingdom  = kingdom,
+        verified_rank = NA_character_,
         is_verified = TRUE,
         verification_status = "Manual kingdom",
         gnr_status = "Not found",
         gnr_match = NA_character_,
         gnr_score = NA_real_,
         gnr_source = NA_character_,
+        ncbi_rank = NA_character_,
         found_in_itis = FALSE,
         itis_tsn = NA_integer_,
         itis_accepted_tsn = NA_integer_,
@@ -376,7 +380,7 @@ check_itis <- function(name, itis_database) {
         ifelse(is.na(tsn_accepted), "Unaccepted", "Synonym found")
       ),
       itis_reason = unaccept_reason,
-      itis_rank = rank_name
+      itis_rank = tolower(rank_name)
     )]
   } else {
     return_table <- data.table::data.table(
@@ -404,7 +408,8 @@ check_gnr <- function(name, nb_cores = 1) {
       gnr_status = 'Not found',
       gnr_match = NA_character_,
       gnr_score = NA_real_,
-      gnr_source = NA_character_
+      gnr_source = NA_character_,
+      ncbi_rank = NA_character_
     )
   }
 
@@ -441,10 +446,10 @@ check_gnr <- function(name, nb_cores = 1) {
       ))
     }
     
-    # Get the NCBI kingdom:
+    # Get the NCBI kingdom and rank:
     gnr_result %<>%
       apply(1, as.list) %>%
-      lapply(get_ncbi_kingdoms, nb_cores) %>%
+      lapply(get_ncbi_info, nb_cores) %>%
       data.table::rbindlist() %>%
       .[, gnr_score := as.numeric(gnr_score)]
   } else {
@@ -469,9 +474,9 @@ set_verification_info <- function(name_dict) {
   }
   
   # Set the same verified name for entries with identical kingdom:
-  name_dict[
-    , ':='(verified_name = get_verified_name(.SD)), by = .(verified_kingdom)
-  ]
+  name_dict[, ':='(
+    verified_name = get_verified_name(.SD)
+  ), by = .(verified_kingdom)]
 
   # Remove abbreviations from proposed and verified names:
   name_dict[, ':='(verified_name = remove_abbreviations(verified_name))]
@@ -488,10 +493,15 @@ set_verification_info <- function(name_dict) {
     verification_time = as.character(Sys.time()),
     last_proposed_time = NA_character_
   )]
+  
+  # Set verified rank for all entries:
+  name_dict[, ':='(
+    verified_rank = get_verified_rank(.SD)
+  ), by = .(verified_name, verified_kingdom)]
   name_dict
 }
 
-#' Set the valid verified name of a dictionary of taxonomics synonyms
+#' Set the valid verified name of a dictionary of taxonomic synonyms
 #'
 get_verified_name <- function(dict) {
   # If there is an accepted ITIS name, set it as the verified name:
@@ -534,9 +544,26 @@ get_verified_status <- function(vec_itis_status, vec_gnr_status) {
   )
 }
 
+#' Get the verified kingdom of an entry
+#' 
+get_verified_rank <- function(dict) {
+  # If there is an accepted ITIS rank, set it as the verified name:
+  valid_itis_rank <- dict[itis_status == "Accepted", ][['itis_rank']][1]
+  if (!is.na(valid_itis_rank)) return(valid_itis_rank)
+  
+  # Then, if there is a NCBI match, set it as the verified name:
+  valid_ncbi_rank <- dict[
+    !is.na(ncbi_rank) & !ncbi_rank %in% "unknown", 
+  ][order(-verified_level)][['ncbi_rank']][1]
+  if (!is.na(valid_ncbi_rank)) return(valid_ncbi_rank)
+  
+  # If no verified name is available, set the verified rank to "Unknown":
+  return("unknown")
+}
+
 #' Get the possible NCBI kingdoms of a given dictionary row
 #'
-get_ncbi_kingdoms <- function(name_dict, nb_cores = 1) {
+get_ncbi_info <- function(name_dict, nb_cores = 1) {
   # Convert named list to data.table:
   name_dict %<>% data.table::as.data.table()
 
@@ -545,15 +572,17 @@ get_ncbi_kingdoms <- function(name_dict, nb_cores = 1) {
 
   # Retrieve NCBI kingdoms of the given UID:
   if (!is.null(uids)) {
-    kingdoms <- uids %>%
-      sapply(get_ncbi_kingdom_from_uid, nb_cores)
+    ncbi_info <- uids %>%
+      lapply(get_ncbi_info_from_uid, nb_cores)
   } else {
-    kingdoms <- "Unknown"
+    ncbi_info <- list(c("Unknown", "unknown"))
   }
   
   # Return one row per possible kingdom:
-  kingdoms %>%
-    purrr::map_df(~ data.table::copy(name_dict[, verified_kingdom := .]))
+  ncbi_info %>%
+    purrr::map_df(~ data.table::copy(name_dict[, ':='(
+      verified_kingdom = .[1], ncbi_rank = .[2]
+    )]))
 }
 
 #' Get all possible UIDs of a species name by performing a NCBI eutils query
@@ -592,25 +621,27 @@ get_ncbi_uid_from_name <- function(name, nb_cores = 1) {
   unlist(uids)
 }
 
-#' Return all NCBI kingdom (or superkingdom) matching a species UID
+#' Return the NCBI infos (kingdom/superkingdom, rank) matching a species UID
 #' 
-get_ncbi_kingdom_from_uid <- function(uid, nb_cores = 1) {
+get_ncbi_info_from_uid <- function(uid, nb_cores = 1) {
   # Retrieve NCBI kingdom/superkingdom:
-  ncbi_categ <- NULL
+  ncbi_classification <- NULL
   tryCatch({
-    ncbi_categ <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
+    ncbi_classification <- taxize::classification(uid, db = "ncbi", max_tries = 10)[[1]] %>%
       data.table::as.data.table() %>%
-      data.table::setnames("rank", "ncbi_rank") %>%
-      .[ncbi_rank %in% c("kingdom", "superkingdom"), ] %>%
-      .[order(ncbi_rank)]
-    ncbi_categ <- ncbi_categ[['name']][1]
+      data.table::setnames("rank", "ncbi_rank")
     sleep <- ifelse(nchar(Sys.getenv("ENTREZ_KEY")) > 0, 0.101, 0.334) *
       (nb_cores - 1)
     Sys.sleep(sleep)
   }, error = function(e) {}, warning = function(w) {}, finally = {})
-
-  # Correct kingdom/superkingdom name to match ITIS:
-  if (!is.null(ncbi_categ)) {
+  
+  if (!is.null(ncbi_classification)) {
+    # Get and correct kingdom/superkingdom name to match ITIS:
+    ncbi_categ <- ncbi_classification[
+      ncbi_rank %in% c("kingdom", "superkingdom"), 
+    ][
+      order(ncbi_rank)
+    ][['name']][1]
     new_categ <- ncbi_categ %>% switch(
       "Archaea" = "Archaea",
       "Bacteria" = "Bacteria",
@@ -620,8 +651,11 @@ get_ncbi_kingdom_from_uid <- function(uid, nb_cores = 1) {
       "Viridiplantae" = "Plantae",
       "Unknown"
     )
+    # Get rank:
+    new_rank <- ncbi_classification[id == uid, ][['ncbi_rank']]
   } else {
     new_categ <- "Unknown"
+    new_rank <- "Unknown"
   }
-  new_categ
+  return(c(new_categ, new_rank))
 }
