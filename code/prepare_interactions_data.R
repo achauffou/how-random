@@ -180,6 +180,7 @@ select_verified_species <- function(
   species, 
   verified_names, 
   plausible_kingdoms,
+  accepted_ranks = c("species", "subspecies"),
   aggregation_level = "species"
 ) {
   # Function to get the priority of a verified kingom:
@@ -200,6 +201,7 @@ select_verified_species <- function(
                       "genus" = genus_id, taxon_id),
     final_name = switch(aggregation_level, "species" = verified_species, 
                         "genus" = verified_genus, verified_name),
+    final_rank = verified_rank,
     kingdom = verified_kingdom,
     loc_id,
     fun_group,
@@ -229,6 +231,9 @@ select_verified_species <- function(
   species[priority == 10, selection_flag := "Implausible kingdom"]
   species[priority == 20, selection_flag := "Unknown kingdom"]
   species[, priority := NULL]
+  
+  # Keep only species with accepted rank or no rank information:
+  species[final_rank %in% accepted_ranks | is.na(final_rank)]
 }
 
 #' Detect networks with species belonging to incompatible functional groups

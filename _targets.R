@@ -36,6 +36,7 @@ read_YAML_config_targets <- list(
     config,
     yaml::read_yaml(config_file)
   ),
+  tar_target(accepted_ranks, config$accepted_ranks),
   tar_target(aggregation_level, config$aggregation_level),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
@@ -237,8 +238,10 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     wol_species_cleaned,
-    select_verified_species(wol_raw_species_w_metadata, wol_verified_names, 
-                            fun_groups_plausible_kingdoms, aggregation_level)
+    select_verified_species(
+      wol_raw_species_w_metadata, wol_verified_names, 
+      fun_groups_plausible_kingdoms, accepted_ranks, aggregation_level
+    )
   ),
   tar_target(
     wol_problematic_networks,
