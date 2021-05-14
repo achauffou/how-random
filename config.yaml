@@ -21,9 +21,5 @@ min_locations_per_species: 2
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]
-wol_fun_groups_info_path: data/wol_fun_groups_info.csv
 wol_interaction_type: All
-wol_manual_locations_path: data/wol_manual_locations.csv
-wol_manual_species_names_path: data/wol_manual_species_names.csv
-wol_supp_data_names_path: data/wol_supp_data_names.txt
 worldclim_download_url: https://data.biogeo.ucdavis.edu/data/worldclim/v2.1/base/wc2.1_2.5m_bio.zip

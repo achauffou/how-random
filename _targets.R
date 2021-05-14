@@ -43,11 +43,7 @@ read_YAML_config_targets <- list(
   tar_target(min_locations_per_species, config$min_locations_per_species),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
-  tar_target(wol_fun_groups_info_path, config$wol_fun_groups_info_path),
   tar_target(wol_interaction_type, config$wol_interaction_type),
-  tar_target(wol_manual_locations_path, config$wol_manual_locations_path),
-  tar_target(wol_manual_species_names_path, config$wol_manual_species_names_path),
-  tar_target(wol_supp_data_names_path, config$wol_supp_data_names_path),
   tar_target(worldclim_download_url, config$worldclim_download_url)
 )
 
@@ -157,7 +153,7 @@ read_itis_data_targets <- list(
 read_manual_data_targets <- list(
   tar_target(
     wol_supp_data_names_file,
-    wol_supp_data_names_path,
+    "data/wol_supp_data_names.txt",
     format = "file"
   ),
   tar_target(
@@ -166,7 +162,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_fun_groups_info_file,
-    wol_fun_groups_info_path,
+    "data/wol_fun_groups_info.csv",
     format = "file"
   ),
   tar_target(
@@ -175,7 +171,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_manual_locations_file,
-    wol_manual_locations_path,
+    "data/wol_manual_locations.csv",
     format = "file"
   ),
   tar_target(
@@ -184,7 +180,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_manual_species_names_file,
-    wol_manual_species_names_path,
+    "data/wol_manual_species_names.csv",
     format = "file"
   ),
   tar_target(
