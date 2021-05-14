@@ -10,7 +10,7 @@
 check_proposed_names <- function(
   proposed_names,
   itis_database,
-  cache_path = file.path(tempdir(), "taxonomic_dictionary_cache.csv")
+  cache_path
 ) {
   # Open cached dictionary or create one if it does not exist:
   if(file.exists(cache_path)) {
@@ -269,12 +269,28 @@ verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
   
   # Combine retrieved information:
   combined_results <- rbind(itis_results_1, itis_results_2) %>%
-    merge(gnr_results, by = c("proposed_name", "verified_kingdom"), 
-          all.x = TRUE, all.y = TRUE)
+    merge(gnr_results[!is.na(verified_kingdom)], 
+          by = c("proposed_name", "verified_kingdom"), all = TRUE) %>%
+    merge(gnr_results[is.na(verified_kingdom)], by = c("proposed_name"), 
+          all = TRUE)
+  combined_results[, ':='(
+    verified_kingdom = ifelse(is.na(verified_kingdom.x), verified_kingdom.y, verified_kingdom.x),
+    verified_kingdom.x = NULL, verified_kingdom.y = NULL,
+    gnr_status = ifelse(is.na(gnr_status.x), gnr_status.y, gnr_status.x),
+    gnr_status.x = NULL, gnr_status.y = NULL,
+    gnr_match = ifelse(is.na(gnr_match.x), gnr_match.y, gnr_match.x),
+    gnr_match.x = NULL, gnr_match.y = NULL,
+    gnr_score = ifelse(is.na(gnr_score.x), gnr_score.y, gnr_score.x),
+    gnr_score.x = NULL, gnr_score.y = NULL,
+    gnr_source = ifelse(is.na(gnr_source.x), gnr_source.y, gnr_source.x),
+    gnr_source.x = NULL, gnr_source.y = NULL,
+    ncbi_rank = ifelse(is.na(ncbi_rank.x), ncbi_rank.y, ncbi_rank.x),
+    ncbi_rank.x = NULL, ncbi_rank.y = NULL
+  )]
   
   # Set verification information of all entries:
   combined_results %<>% set_verification_info()
-
+  
   # Set the correct columns order:
   data.table::setcolorder(combined_results, c(
     "proposed_name", "verified_name", "verified_level", "verified_kingdom",
@@ -469,9 +485,26 @@ set_verification_info <- function(name_dict) {
   ]
   
   # If there was at least one verified row, remove unverified row:
-  if (nrow(name_dict[!is.na(verified_kingdom),]) > 0) {
-    name_dict %<>% .[!is.na(verified_kingdom),]
+  if (nrow(name_dict[found_in_itis == TRUE | !gnr_status %in% "Not found"]) > 0) {
+    name_dict %<>% .[found_in_itis == TRUE | !gnr_status %in% "Not found"]
   }
+  
+  # Set kingdom of GNR fuzzy matches without kingdom if their match has one:
+  get_fuzzy_kingdom <- function(name) {
+    name_dict[proposed_name %in% name][['verified_kingdom']]
+  }
+  name_dict <- rbind(
+    name_dict[
+      gnr_status %in% "Fuzzy match" & is.na(verified_kingdom), 
+      .(verified_kingdom = get_fuzzy_kingdom(gnr_match)),
+      by = proposed_name
+    ][
+      name_dict[gnr_status %in% "Fuzzy match" & is.na(verified_kingdom)][
+        , verified_kingdom := NULL], 
+      on = .(proposed_name)
+    ],
+    name_dict[!gnr_status %in% "Fuzzy match" | !is.na(verified_kingdom)]
+  )
   
   # Set the same verified name for entries with identical kingdom:
   name_dict[, ':='(
@@ -552,13 +585,12 @@ get_verified_rank <- function(dict) {
   if (!is.na(valid_itis_rank)) return(valid_itis_rank)
   
   # Then, if there is a NCBI match, set it as the verified name:
-  valid_ncbi_rank <- dict[
-    !is.na(ncbi_rank) & !ncbi_rank %in% "unknown", 
-  ][order(-verified_level)][['ncbi_rank']][1]
+  valid_ncbi_rank <- dict[!is.na(ncbi_rank),][
+    order(-verified_level)][['ncbi_rank']][1]
   if (!is.na(valid_ncbi_rank)) return(valid_ncbi_rank)
   
-  # If no verified name is available, set the verified rank to "Unknown":
-  return("unknown")
+  # If no verified name is available, set the verified rank to NA:
+  return(NA_character_)
 }
 
 #' Get the possible NCBI kingdoms of a given dictionary row
@@ -575,7 +607,7 @@ get_ncbi_info <- function(name_dict, nb_cores = 1) {
     ncbi_info <- uids %>%
       lapply(get_ncbi_info_from_uid, nb_cores)
   } else {
-    ncbi_info <- list(c("Unknown", "unknown"))
+    ncbi_info <- list(c(NA_character_, NA_character_))
   }
   
   # Return one row per possible kingdom:
@@ -649,13 +681,13 @@ get_ncbi_info_from_uid <- function(uid, nb_cores = 1) {
       "Fungi" = "Fungi",
       "Metazoa" = "Animalia",
       "Viridiplantae" = "Plantae",
-      "Unknown"
+      NA_character_
     )
     # Get rank:
     new_rank <- ncbi_classification[id == uid, ][['ncbi_rank']]
   } else {
-    new_categ <- "Unknown"
-    new_rank <- "Unknown"
+    new_categ <- NA_character_
+    new_rank <- NA_character_
   }
   return(c(new_categ, new_rank))
 }

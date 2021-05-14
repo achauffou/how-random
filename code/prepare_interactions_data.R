@@ -184,8 +184,7 @@ select_verified_species <- function(
 ) {
   # Function to get the priority of a verified kingom:
   get_priority <- function(kingdom, fun_group) {
-    if (kingdom %in% "Unknown") return(20)
-    if (is.na(kingdom)) return(30)
+    if (is.na(kingdom)) return(20)
     res <- match(kingdom, plausible_kingdoms[[fun_group]])
     if (is.na(res)) return(10)
     return(res)
