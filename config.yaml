@@ -1,4 +1,4 @@
-accepted_ranks: [genus, subgenus, species, subspecies, variety]
+accepted_ranks: [genus, subgenus, species, subspecies, variety, form]
 aggregation_level: species
 download_date: 2021-04-14
 ecoregions_download_url: http://maps.tnc.org/files/shp/terr-ecoregions-TNC.zip

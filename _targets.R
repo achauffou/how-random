@@ -123,7 +123,8 @@ download_occurrence_data <- list(
   ),
   tar_target(
     gbif_keys,
-    select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict)
+    select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict, 
+                                 accepted_ranks)
   )
 )
 

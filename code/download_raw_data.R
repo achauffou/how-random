@@ -240,9 +240,13 @@ suggest_single_gbif_name <- function(
 
 #' Select the GBIF keys to download
 #' 
-select_gbif_keys_to_download <- function(gbif_names_to_suggest, gbif_keys_dict) {
+select_gbif_keys_to_download <- function(
+  gbif_names_to_suggest, 
+  gbif_keys_dict,
+  accepted_ranks = c("species", "subspecies")
+) {
   # Remove unranked keys and keys from very high orders:
-  gbif_keys_dict %<>% .[!gbif_rank %in% c("UNRANKED", "OTHER"),]
+  gbif_keys_dict %<>% .[gbif_rank %in% accepted_ranks,]
   
   # Select GBIF keys to include:
   gbif_keys <- gbif_keys_dict[, ':='(
