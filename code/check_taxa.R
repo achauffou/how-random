@@ -684,7 +684,8 @@ get_ncbi_info_from_uid <- function(uid, nb_cores = 1) {
       NA_character_
     )
     # Get rank:
-    new_rank <- ncbi_classification[id == uid, ][['ncbi_rank']]
+    new_rank <- ncbi_classification[id == uid, ][['ncbi_rank']] %>%
+      stringr::str_replace("^varietas$", "variety")
   } else {
     new_categ <- NA_character_
     new_rank <- NA_character_
