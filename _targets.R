@@ -117,6 +117,12 @@ download_occurrence_data <- list(
     gbif_keys,
     select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict, 
                                  accepted_ranks)
+  ),
+  tar_target(
+    gbif_raw_archives,
+    get_gbif_occurrences(gbif_keys[['gbif_key']], "data/raw/gbif", 
+                         "data/cache/gbif_downloads_cache.csv", download_date),
+    format = "file"
   )
 )
 

@@ -272,5 +272,262 @@ select_gbif_keys_to_download <- function(
           gbif_canonical_name, gbif_kingdom, gbif_rank)
     ]
 }
+
+
+# Download raw GBIF occurrences ================================================
+#' Download GBIF occurrence data for given keys (check for existing downloads)
+#' 
+#' Given a vector of GBIF keys to download, this function checks for each key 
+#' whether it is already part of a downloaded dataset. The function downloads 
+#' GBIF data for the keys that have not already been downloaded and returns the
+#' file names of all archives containing occurrences for the given keys.
+#' 
+get_gbif_occurrences <- function(
+  keys, gbif_data_folder, cache_path, min_date = NA
+) {
+  # Get only unique keys:
+  keys <- unique(keys)
+  
+  # Update downloads cache:
+  downloads_cache <- update_gbif_downloads_cache(gbif_data_folder, 
+                                                 cache_path, min_date)
+  
+  # Get new keys to request:
+  new_keys <- keys %>%
+    setdiff(downloads_cache[!is.na(request_id)][['gbif_key']])
+  
+  if (length(new_keys) > 0) {
+    # Prepare requests for GBIF keys that do not exist:
+    new_requests <- new_keys %>%
+      prepare_gbif_requests()
+    
+    # Request keys that do not exist:
+    request_gbif_downloads(new_requests, cache_path)
+  }
+  
+  # Download pending occurrences with successful requests:
+  download_pending_gbif_occurrences(keys, gbif_data_folder, cache_path)
+  
+  # Update downloads cache:
+  downloads_cache <- update_gbif_downloads_cache(gbif_data_folder, cache_path, min_date)
+  
+  # Check if some files have not been downloaded:
+  keys_not_found <- downloads_cache[gbif_key %in% keys & is.na(download_file)][['gbif_key']]
+  if (length(keys_not_found) > 0) {
+    warning(paste(
+      "Occurrences for GBIF keys", 
+      keys_not_found,
+      "could not be retrieved!",
+      collapse = ", "
+    ))
+  }
+  
+  # Return file names containing the occurrences for the desired keys:
+  downloads_cache[gbif_key %in% keys & !is.na(download_file)] %>% 
+    .[['download_file']] %>% 
+    unique() %>%
+    file.path(gbif_data_folder, .)
+}
+
+#' Empty cache of GBIF downloads
+#' 
+empty_gbif_downloads_cache <- function() {
+  data.table::data.table(
+    gbif_key = integer(),
+    request_id = character(),
+    download_file = character(),
+    request_date = character(),
+    download_date = character()
+  )
+}
+
+#' Update GBIF downloads cache based by removing old, outdated and invalid info
+#' 
+#' This function remove rows from the download cache that do not correspond to
+#' the actual download situation. It first removes any download/request that is 
+#' older than the manual download date. It also checks that downloaded files 
+#' are present in the download directory and that requests that have not been 
+#' downloaded can still be.
+#' 
+update_gbif_downloads_cache <- function(gbif_data_folder, cache_path, min_date = NA) {
+  # Open cache file for GBIF downloads or create it if it does not exist:
+  if(file.exists(cache_path)) {
+    cache <- data.table::fread(
+      cache_path, na.strings = c("", "NA"), 
+      colClasses = list(integer = 1, character = 2:5)
+    )
+  } else {
+    dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
+    cache <- empty_gbif_downloads_cache()
+  }
+  
+  # Remove any duplicate:
+  cache %<>% unique(by = "gbif_key")
+  
+  # Remove requests/downloads that are too old:
+  cache <- cache[request_date >= min_date,]
+  cache[download_date < min_date, ':='(download_file = NA, download_date = NA)]
+  
+  # Check that download files still exist:
+  cache[
+    !is.na(download_file),
+  ][
+    !file.exists(file.path(gbif_data_folder, download_file)), 
+    ':='(download_file = NA, download_date = NA)
   ]
+  
+  # Check that pending downloads can still be downloaded:
+  request_IDs_to_download <- cache[
+    !is.na(request_id) & is.na(download_file),
+  ][['request_id']] %>% unique()
+  download_info <- rgbif::occ_download_list() %$% 
+    results %>% 
+    data.table::as.data.table()
+  downloadable_request_IDs <- download_info[
+    key %in% request_IDs_to_download,][as.Date(eraseAfter) > Sys.Date()]
+  outdated_keys <- setdiff(request_IDs_to_download, downloadable_request_IDs)
+  cache <- cache[!request_id %in% outdated_keys]
+  
+  # Save updated cache:
+  data.table::fwrite(cache, cache_path)
+  cache
+}
+
+#' Prepare requests to download GBIF data and return keys and requests
+#' 
+prepare_gbif_requests <- function(keys) {
+  # Function to construct GBIF request:
+  construct_gbif_request <- function(keys) {
+    rgbif::occ_download_prep(
+      rgbif::pred_in("taxonKey", keys),
+      rgbif::pred("hasCoordinate", TRUE),
+      rgbif::pred("hasGeospatialIssue", FALSE),
+      rgbif::pred_in("basisOfRecord", c("HUMAN_OBSERVATION", "OBSERVATION", 
+                                        "PRESERVED_SPECIMEN")),
+      rgbif::pred_gt("year", 1945)
+    )
+  }
+  
+  # Construct initial request:
+  request <- construct_gbif_request(keys)
+  request_length <- request %$%
+    request %>%
+    rgbif:::check_inputs() %>%
+    as.character() %>%
+    nchar()
+  
+  # If initial request is too long, split it:
+  if (request_length > 12000) {
+    n_chunks <- request_length %>%
+      divide_by(12000) %>%
+      ceiling() %>%
+      add(1)
+    split_keys <- split(keys, cut(seq_along(keys), n_chunks)) %>% unname()
+    requests <- lapply(split_keys, construct_gbif_request)
+    return(list(split_keys, requests))
+  } else {
+    return(list(list(keys), list(request)))
+  }
+}
+
+#' Request prepared GBIF downloads
+#' 
+request_gbif_downloads <- function(requests, cache_path) {
+  # Request prepared GBIF downloads (cancel requests on exit):
+  tryCatch({
+    message(paste("Requesting", length(requests[[2]]), "downloads from GBIF..."))
+    request_ids <- rgbif::occ_download_queue(.list = requests[[2]])
+  }, finally = {suppressMessages({rgbif::occ_download_cancel_staged()})})
+  
+  # If requests were successful, add their IDs and date to downloads cache:
+  if (exists("request_ids")) {
+    if (length(request_ids) == length(requests[[1]])) {
+      # Function to make new cache rows for a single download:
+      make_new_cache_rows <- function(nb, requests, request_ids) {
+        data.table::data.table(
+          gbif_key = requests[[1]][[nb]],
+          request_id = as.character(request_ids[[nb]]),
+          download_file = NA_character_,
+          request_date = Sys.Date(),
+          download_date = NA_character_
+        )
+      }
+      
+      # Prepare new downloads cache rows:
+      1:length(requests[[1]]) %>%
+        lapply(make_new_cache_rows, requests, request_ids) %>% 
+        data.table::rbindlist() %>% 
+        data.table::fwrite(cache_path, append = TRUE)
+      return()
+    }
+  }
+  warning("Not all GBIF requests were successful!")
+}
+
+#' Download pending requests from GBIF
+#' 
+download_pending_gbif_occurrences <- function(keys, gbif_data_folder, cache_path) {
+  # Read cache:
+  cache <- data.table::fread(
+    cache_path, na.strings = c("", "NA"), 
+    colClasses = list(integer = 1, character = 2:5)
+  )
+  
+  # Get request IDs to download:
+  new_downloads <- cache[gbif_key %in% keys & is.na(download_file), 
+                         .(request_id)] %>% unique()
+  
+  # Find download file for each download:
+  download_info <- rgbif::occ_download_list() %$% 
+    results %>% 
+    data.table::as.data.table()
+  new_downloads <- download_info[, .(
+    request_id = key, 
+    new_download_link = downloadLink, 
+    new_download_file = basename(downloadLink),
+    new_download_date = Sys.Date()
+  )] %>% 
+    merge(new_downloads, by = "request_id", all.y = TRUE)
+  
+  # Download pending requests:
+  download_pending_request <- function(url, file) {
+    success <- FALSE
+    trial <- 0
+    if (QUIET_DOWNLOADS == FALSE) {
+      message(paste(
+        "Downloading GBIF request to", file.path(gbif_data_folder, file), "..."
+      ))
+    }
+    while(success == FALSE && trial < 10) {
+      tryCatch({
+        download_from_url(url, file.path(gbif_data_folder, file))
+      }, error = function(e) {}, warning = function(w) {}, finally = {})
+      if (file.exists(file.path(gbif_data_folder, file))) success <- TRUE
+      Sys.sleep(0.1)
+      trial <- trial + 1
+    }
+    if (success == TRUE) {
+      return(file)
+    } else {
+      return(NA)
+    }
+  }
+  successful_downloads <- purrr::map2_chr(
+    new_downloads[!is.na(new_download_link)][['new_download_link']],
+    new_downloads[!is.na(new_download_link)][['new_download_file']],
+    ~ download_pending_request(.x, .y)
+  )
+  
+  # Update downloads cache:
+  new_cache <- new_downloads[new_download_file %in% successful_downloads] %>%
+    merge(cache, by = "request_id", all.y = TRUE)
+  new_cache[, ':='(
+    download_file = ifelse(is.na(download_file), new_download_file, 
+                           download_file),
+    download_date = ifelse(is.na(download_date), 
+                           as.character(new_download_date), download_date)
+  )]
+  new_cache[
+    , .(gbif_key, request_id, download_file, request_date, download_date)
+  ] %>% data.table::fwrite(cache_path)
 }
