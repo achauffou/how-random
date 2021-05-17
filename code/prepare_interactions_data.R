@@ -281,7 +281,7 @@ remove_supp_data_from_wol_networks <- function(networks, supp_names) {
 #' 
 #' Remove problematic networks, format as data.table, add location ID,
 #' assign cleaned species names, remove species with implausible kingdom and
-#' undefined species, and merge duplicate observations at the same location.
+#' undefined species.
 #' 
 get_wol_interactions <- function(networks, metadata, species, fun_groups, 
                                  problematic_networks = NA) {
@@ -297,11 +297,11 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     x %>%
       as.table() %>%
       data.table::as.data.table() %>%
-      data.table::setnames(c("sp1_raw_name", "sp2_raw_name", "int_weight")) %>%
+      data.table::setnames(c("sp1_raw_name", "sp2_raw_name", "int_strength")) %>%
       .[, ':='(
         sp1_raw_name = as.character(sp1_raw_name),
         sp2_raw_name = as.character(sp2_raw_name),
-        int_weight = as.numeric(as.character(int_weight))
+        int_strength = as.numeric(as.character(int_strength))
       )]
   }
   
@@ -333,11 +333,9 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
     .[!is.na(sp1_name) & !is.na(sp2_name),]
   
-  # Merge duplicate interactions at the same location:
-  data.table::setkey(interactions, loc_id, int_type, sp1_fun_group, sp1_id, 
-                     sp1_name, sp2_fun_group, sp2_id, sp2_name)
-  interactions[
-    , .(int_weight = sum(.SD[['int_weight']])), 
-    by = .(loc_id, int_type, sp1_fun_group, sp1_id, sp1_name, sp2_fun_group, 
-           sp2_id, sp2_name)]
+  # Return data.table with columns reordered:
+  interactions[, .(
+    loc_id, net_id = net_name, int_type, sp1_fun_group, sp1_id, sp1_name, 
+    sp2_fun_group, sp2_id, sp2_name, int_strength
+  )]
 }
