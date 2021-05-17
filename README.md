@@ -33,9 +33,19 @@ docker run -d -e DISABLE_AUTH=true -p 8787:8787 -v ${PWD}:/home/rstudio/how-rand
 
 To stop or restart the container, use `docker stop how-random-container` and `docker restart how-random-container`.
 
+### 5. Store NCBI and GBIF creditentials
+This project accesses several databases, including GBIF and NCBI that both require authentication information. The user personal NCBI key and GBIF authentication information must be stored in the `.Renviron` file as follows:
+```
+ENTREZ_KEY='<your_ncbi_api_key>'
+GBIF_USER='<your_gbif_username>'
+GBIF_PWD='<your_gbif_password>'
+GBIF_EMAIL='<your_gbif_email>'
+```
+To get these creditentials, create free [NCBI](https://www.ncbi.nlm.nih.gov/account/) and [GBIF](https://www.gbif.org/user/profile) user accounts. Once the NCBI user account has been created, follow [these instructions](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) to request a NCBI ENTREZ API key.
+
 ## Contribution
 ### Accessing Rstudio server
-Once the project docker container is running, it is possible to develop and run R code directly from Rstudio server. It can be accessed via port 8787 of the local host: [localhost:8787](localhost:8787). To access it on another port, modify the `docker run` command port mapping argument accordingly
+Once the project docker container is running, it is possible to develop and run R code directly from Rstudio server. It can be accessed via port 8787 of the local host: [localhost:8787](localhost:8787). To access it on another port, modify the `docker run` command port mapping argument accordingly.
 
 ### Opening an interactive terminal with sudo privileges
 The terminal from Rstudio server only grants rights for user *rstudio*. If you need to open an interactive terminal in the container with sudo privileges, use the following command:
