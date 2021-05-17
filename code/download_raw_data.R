@@ -89,13 +89,13 @@ select_names_to_gbif_suggest <- function(species, taxonomic_dict,
                                          min_locs, aggregation_level) {
   # Verified species to download (with nb_locations > min_locations):
   verified_names <- species[
-    , .(final_name, final_rank, loc_id, kingdom), 
-    by = .(final_name, loc_id, kingdom)
+    , .(final_id, final_name, final_rank, loc_id, kingdom), 
+    by = .(final_id, final_name, loc_id, kingdom)
   ][
-    , .(final_rank, nb_locs = .N), by = .(final_name, kingdom)
+    , .(final_rank, nb_locs = .N), by = .(final_id, final_name, kingdom)
   ][
     nb_locs >= min_locs,
-  ][, .(final_name, final_rank, kingdom)]
+  ][, .(final_id, final_name, final_rank, kingdom)]
   
   # Names to suggest:
   names_to_suggest <- taxonomic_dict[, ':='(
@@ -104,6 +104,7 @@ select_names_to_gbif_suggest <- function(species, taxonomic_dict,
     kingdom = verified_kingdom
   )] %>% merge(verified_names, by = c("final_name", "kingdom"))
   names_to_suggest[, .(
+    verified_id = final_id,
     verified_name = final_name,
     proposed_name = remove_abbreviations(proposed_name),
     proposed_rank = final_rank,
@@ -268,8 +269,9 @@ select_gbif_keys_to_download <- function(
   gbif_names_to_suggest %>% 
   merge(gbif_keys, by = c("proposed_name", "proposed_rank", "proposed_kingdom")) %>% 
     .[
-      , .(verified_name, proposed_name, proposed_rank, proposed_kingdom, gbif_key, 
-          gbif_canonical_name, gbif_kingdom, gbif_rank)
+      , .(verified_id, verified_name, proposed_name, proposed_rank, 
+          proposed_kingdom, gbif_key, gbif_canonical_name, gbif_kingdom, 
+          gbif_rank)
     ]
 }
 
