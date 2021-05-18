@@ -154,6 +154,14 @@ read_itis_data_targets <- list(
   )
 )
 
+# GBIF occurrences:
+read_gbif_data_targets <- list(
+  tar_target(
+    gbif_raw_archives_extraction_time,
+    extract_gbif_archives(gbif_raw_archives, "data/processed/gbif/raw.csv")
+  )
+)
+
 # Read manually created data:
 read_manual_data_targets <- list(
   tar_target(
@@ -198,6 +206,7 @@ read_manual_data_targets <- list(
 read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
+  read_gbif_data_targets,
   read_manual_data_targets
 )
 
