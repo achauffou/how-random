@@ -1,4 +1,8 @@
 build-essential
 curl
+libgeos-dev
+libgdal-dev
 libglpk40
+libproj-dev
+libudunits2-dev
 python3-pygments
