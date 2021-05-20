@@ -3,8 +3,8 @@
 #' 
 process_gbif_raw_archives <- function(
   archive_paths, dest_folder, land_data, gbif_keys, cache_path, 
-  db_file = "cleaned_data.sqlite", table_name = "occurrences", stats_name = "cleaning_stats.csv", 
-  chunk_size = getOption("CHUNK_SIZE", default = 5E4)
+  db_file = "occurrences.sqlite", table_name = "cleaned", stats_name = "cleaning_stats.csv", 
+  chunk_size = getOption("CHUNK_SIZE", default = 2E4)
 ) {
   # If the destination folder does not exist yet, create it:
   db_path <- file.path(dest_folder, db_file)
@@ -82,9 +82,11 @@ process_gbif_raw_archives <- function(
   # Clean and save to database archives that need to be processed:
   if (length(archives_to_process) > 0) {
     # Clean and process archives one by one:
-    for (archive_path in c(archives_to_process,archives_to_extract)) {
+    for (this_archive_path in c(archives_to_process,archives_to_extract)) {
       extracted_path <- file.path(
-        dest_folder, paste0(basename(tools::file_path_sans_ext(archive_path)), ".txt")
+        dest_folder, paste0(
+          basename(tools::file_path_sans_ext(this_archive_path)), ".txt"
+        )
       )
       clean_gbif_occurrences(
         extracted_path, db, table_name, land_data, gbif_keys, stats_path, 
@@ -94,9 +96,8 @@ process_gbif_raw_archives <- function(
         cache_path, na.strings = c("", "NA"), 
         colClasses = list(character = 1:4)
       )
-      cache[archive_path %in% archive_path & dest_folder %in% dest_folder, ':='(
-        processing_time = as.character(Sys.time())
-      )]
+      cache[archive_path %in% this_archive_path & dest_folder %in% dest_folder, 
+            ':='(processing_time = as.character(Sys.time()))]
       data.table::fwrite(cache, cache_path)
     }
     
@@ -126,6 +127,40 @@ empty_gbif_processing_cache <- function() {
     dest_folder = character(),
     extraction_time = character(),
     processing_time = character()
+  )
+}
+
+#' Return the fields of the database table that stores GBIF occurrences
+#' 
+get_gbif_clean_occurrences_fields <- function() {
+  list(
+    archive_name="TEXT",
+    verified_id="INTEGER",
+    decimalLatitude="REAL",
+    decimalLongitude="REAL"
+  )
+}
+
+#' Return empty cleaning stats file
+#' 
+empty_cleaning_stats <- function() {
+  data.table::data.table(
+    archive_name = character(),
+    initial_nb = integer(),
+    nb_wo_crucial_na = integer(),
+    nb_wo_zero_individuals = integer(),
+    nb_w_acceptable_uncertainty = integer(),
+    nb_coord_invalid = integer(),
+    nb_coord_capitals = integer(),
+    nb_coord_centroid = integer(),
+    nb_coord_equal = integer(),
+    nb_coord_gbif = integer(),
+    nb_coord_inst = integer(),
+    nb_coord_sea = integer(),
+    nb_w_clean_coordinates = integer(),
+    nb_matching_gbif_key = integer(),
+    nb_unique_rows = integer(),
+    cleaning_time_in_secs = numeric()
   )
 }
 
@@ -213,63 +248,83 @@ extract_gbif_archives <- function(
 #' 
 clean_gbif_occurrences <- function(
   occurrences_file, db, table_name, land_data, gbif_keys, stats_path, 
-  chunk_size = 1E5
+  chunk_size = 2E4
 ) {
-  # Clean and assign to organisms all occurrences chunk by chunk:
+  # Get column names from the occurrence file:
+  col_names <- system(paste("head -1", occurrences_file), intern = TRUE) %>%
+    stringr::str_split("\t") %>%
+    unlist()
+  
+  # Get chunks partition:
+  chunks_partition <- get_chunks_partition(occurrences_file, chunk_size)
+  
+  # Get archive name:
   archive_name <- occurrences_file %>%
     basename() %>%
     tools::file_path_sans_ext()
+  
+  # Clean chunks in parallel:
+  nb_cores <- parallel::detectCores()
   file_size <- file.info(occurrences_file) %>% .[['size']] / 1073741824
-  message(paste("Cleaning", format(file_size, digits = 4), "GB of GBIF occurrences..."))
-  suppressWarnings({
-    suppressMessages({
-      readr::read_delim_chunked(
-        occurrences_file,
-        function(x, idx) clean_gbif_occurrences_chunk(
-          x, db, table_name, land_data, gbif_keys, stats_path, archive_name
-        ),
-        chunk_size = chunk_size,
-        delim = "\t",
-        quote = "",
-        trim_ws = TRUE,
-        progress = TRUE
+  message(paste0(
+    "Cleaning ", length(chunks_partition), " chunks (", 
+    format(file_size, digits = 4), " GB) of GBIF occurrences..."
+  ))
+  pb <- progress::progress_bar$new(
+    total = length(chunks_partition),
+    format = "  :current/:total :percent |:bar| :elapsedfull",
+    incomplete = " ",
+    force = TRUE
+  )
+  keep_only <- c(
+    "taxonKey", "genusKey", "speciesKey", "decimalLatitude", "decimalLongitude",
+    "coordinateUncertaintyInMeters", "countryCode", "individualCount", 
+    "datasetKey", "taxonRank"
+  )
+  parallel::mclapply(
+    1:length(chunks_partition), function(x) {
+    fread_chunk(
+      occurrences_file, chunks_partition[[x]], col_names, keep_only, 
+      sep = "\t", quote = "", strip.white = TRUE
+    ) %>%
+      clean_gbif_occurrences_chunk(
+        db, table_name, land_data, gbif_keys, stats_path, archive_name
       )
-    })
-  })
+    if(x %% nb_cores == 0) pb$update(x/length(chunks_partition))
+  }, mc.cores = nb_cores)
+  pb$terminate()
+  message()
 }
 
-#' Return the fields of the database table that stores GBIF occurrences
+#' Get start and end lines of all chunks in a file
 #' 
-get_gbif_clean_occurrences_fields <- function() {
-  list(
-    archive_name="TEXT",
-    verified_id="INTEGER",
-    decimalLatitude="REAL",
-    decimalLongitude="REAL"
-  )
+get_chunks_partition <- function(file, chunk_size, skip = 1) {
+  # Get number of lines to read:
+  nb_lines <- as.numeric(system(paste("wc -l <", file), intern = TRUE)) - skip
+  nb_chunks <- ceiling(nb_lines / chunk_size)
+  
+  # Function to find chunk start and end lines:
+  chunk_limits <- function(chunk_nb, chunk_size, skip, nb_lines) {
+    start_line <- (chunk_nb - 1) * chunk_size + 1 + skip
+    end_line <- chunk_nb * chunk_size + skip
+    end_line <- ifelse(end_line > nb_lines + skip, nb_lines + skip, end_line)
+    return(c(start_line, end_line))
+  }
+  lapply(1:nb_chunks, chunk_limits, chunk_size, skip, nb_lines)
 }
 
-#' Return empty cleaning stats file
+#' Get chunk of file as a data.table (with only relevant columns)
 #' 
-empty_cleaning_stats <- function() {
-  data.table::data.table(
-    archive_name = character(),
-    initial_nb = integer(),
-    nb_wo_crucial_na = integer(),
-    nb_wo_zero_individuals = integer(),
-    nb_w_acceptable_uncertainty = integer(),
-    nb_coord_invalid = integer(),
-    nb_coord_capitals = integer(),
-    nb_coord_centroid = integer(),
-    nb_coord_equal = integer(),
-    nb_coord_gbif = integer(),
-    nb_coord_inst = integer(),
-    nb_coord_sea = integer(),
-    nb_w_clean_coordinates = integer(),
-    nb_matching_gbif_key = integer(),
-    nb_unique_rows = integer(),
-    cleaning_time_in_secs = numeric()
-  )
+#' To minimize the amount of memory taken by the chunk, only columns with names 
+#' in keep_only are returned.
+#' 
+fread_chunk <- function(
+  file, chunk_limits, col_names, keep_only = col_names, ...
+) {
+  paste0("head -", chunk_limits[2], " ", file, " | tail +", chunk_limits[1]) %>%
+    data.table::fread(cmd = ., header = FALSE, ...) %>%
+    data.table::setattr("names", col_names) %>% 
+    .[, ..keep_only]
 }
 
 
@@ -282,8 +337,7 @@ clean_gbif_occurrences_chunk <- function(
   # Start cleaning time:
   start_time <- Sys.time()
   
-  # Convert chunk to data.table:
-  chunk %<>% data.table::as.data.table()
+  # Get number of initial rows:
   initial_nb = nrow(chunk)
   
   # Format and keep only relevant columns:
@@ -296,9 +350,7 @@ clean_gbif_occurrences_chunk <- function(
     coordUncert = as.numeric(as.character(coordinateUncertaintyInMeters)),
     countryCode = countrycode::countrycode(countryCode, origin = "iso2c", 
                                            destination = "iso3c"),
-    year = as.integer(as.character(year)),
     indivCount = as.integer(individualCount),
-    basisOfRecord,
     datasetKey,
     taxonRank
   )]
@@ -373,7 +425,7 @@ clean_gbif_occurrences_chunk <- function(
   
   # Append cleaning stats for this chunk to file:
   end_time <- Sys.time()
-  time_diff <- difftime(end_time, start_time, units == "secs")
+  time_diff <- difftime(end_time, start_time, units = "secs")
   data.table::data.table(
     archive_name = archive_name,
     initial_nb = initial_nb,

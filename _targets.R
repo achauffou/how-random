@@ -13,7 +13,7 @@ options(tinytex.engine = "lualatex")
 options(tinytex.engine_args = "-shell-escape")
 options(tinytex.bib_engine = "biber")
 options(tinytex.compile.min_times = 2)
-options(CHUNK_SIZE = 5E4)
+options(CHUNK_SIZE = 2E4)
 
 # Set options to load R packages listed in .r_packages if necessary:
 tar_option_set(packages = readLines(".r_packages"))
@@ -164,14 +164,13 @@ read_gbif_data_targets <- list(
     )
   ),
   tar_target(
-    gbif_last_cleaned_data_update_time,
+    gbif_last_cleaning_update,
     process_gbif_raw_archives(
       gbif_raw_archives,
       "data/processed/gbif", 
       rnaturalearth_land_data, 
       gbif_keys, 
-      "data/cache/gbif_processing_cache.csv", 
-      chunk_size = 1E5
+      "data/cache/gbif_processing_cache.csv"
     )
   )
 )
