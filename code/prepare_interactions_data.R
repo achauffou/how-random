@@ -192,7 +192,15 @@ select_verified_species <- function(
   }
   
   # Join the species entry with verified entries matching the raw name:
-  species %<>% merge(verified_names, by = "raw_name", all.x = TRUE)
+  species %<>% merge(
+    verified_names[verified_rank %in% accepted_ranks | is.na(verified_rank)], 
+    by = "raw_name", all.x = TRUE
+  )
+  
+  # Keep only species with accepted rank or no rank information:
+  species <- species[verified_rank %in% accepted_ranks | is.na(verified_rank)]
+  
+  # Keep only relevant columns rows and choose final name and ID:
   species %<>% .[, .(
     int_type,
     net_name,
@@ -201,11 +209,11 @@ select_verified_species <- function(
                       "genus" = genus_id, taxon_id),
     final_name = switch(aggregation_level, "species" = verified_species, 
                         "genus" = verified_genus, verified_name),
-    final_rank = verified_rank,
     kingdom = verified_kingdom,
     loc_id,
     fun_group,
     verified_name,
+    verified_rank,
     is_verified, 
     verification_status
   )]
@@ -231,9 +239,6 @@ select_verified_species <- function(
   species[priority == 10, selection_flag := "Implausible kingdom"]
   species[priority == 20, selection_flag := "Unknown kingdom"]
   species[, priority := NULL]
-  
-  # Keep only species with accepted rank or no rank information:
-  species[final_rank %in% accepted_ranks | is.na(final_rank)]
 }
 
 #' Detect networks with species belonging to incompatible functional groups

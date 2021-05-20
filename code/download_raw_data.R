@@ -89,13 +89,13 @@ select_names_to_gbif_suggest <- function(species, taxonomic_dict,
                                          min_locs, aggregation_level) {
   # Verified species to download (with nb_locations > min_locations):
   verified_names <- species[
-    , .(final_id, final_name, final_rank, loc_id, kingdom), 
+    , .(final_id, final_name, loc_id, kingdom), 
     by = .(final_id, final_name, loc_id, kingdom)
   ][
-    , .(final_rank, nb_locs = .N), by = .(final_id, final_name, kingdom)
+    , .(nb_locs = .N), by = .(final_id, final_name, kingdom)
   ][
     nb_locs >= min_locs,
-  ][, .(final_id, final_name, final_rank, kingdom)]
+  ][, .(final_id, final_name, kingdom)]
   
   # Names to suggest:
   names_to_suggest <- taxonomic_dict[, ':='(
@@ -107,7 +107,7 @@ select_names_to_gbif_suggest <- function(species, taxonomic_dict,
     verified_id = final_id,
     verified_name = final_name,
     proposed_name = remove_abbreviations(proposed_name),
-    proposed_rank = final_rank,
+    proposed_rank = verified_rank,
     proposed_kingdom = kingdom
   )] %>% unique()
 }
