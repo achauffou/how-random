@@ -250,7 +250,10 @@ detect_problematic_networks <- function(species, metadata) {
     unique()
 }
 
-#' Remove species with NA as final name or from problematic networks
+#' Remove problematic species from species table
+#' 
+#' Species with NA as final name, implausible kingdom or from problematic
+#' networks are considered as problematic.
 #' 
 remove_problematic_species <- function(species, problematic_networks) {
   all_net_names <- species[['net_name']] %>% unique()
@@ -259,9 +262,8 @@ remove_problematic_species <- function(species, problematic_networks) {
     function(x) stringr::str_extract(all_net_names, paste0("^", x, ".*$"))
   )
   species[
-    !net_name %in% problematic_networks,
-  ][
-    !is.na(final_name),
+    !net_name %in% problematic_networks & !is.na(final_name) & 
+      !selection_flag %in% "Implausible kingdom"
   ]
 }
 
@@ -280,8 +282,8 @@ remove_supp_data_from_wol_networks <- function(networks, supp_names) {
 #' Get interactions data as a data.table
 #' 
 #' Remove problematic networks, format as data.table, add location ID,
-#' assign cleaned species names, remove species with implausible kingdom and
-#' undefined species.
+#' assign cleaned species names, remove species that are not found in the clean 
+#' species.
 #' 
 get_wol_interactions <- function(networks, metadata, species, fun_groups, 
                                  problematic_networks = NA) {
@@ -304,10 +306,6 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
         int_strength = as.numeric(as.character(int_strength))
       )]
   }
-  
-  # Remove implausible kingdoms from species:
-  species %<>% .[!selection_flag %in% "Implausible kingdom", 
-                 .(net_name, raw_name, final_id, final_name, fun_group, kingdom)]
   
   # Prepare interactions data.table:
   interactions <- networks %>%
