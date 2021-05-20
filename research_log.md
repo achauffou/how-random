@@ -1,6 +1,20 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 20 May 2021
+##### Download and cleaning GBIF occurrences:
+Last week, I prepared code to download and clean GBIF occurrences data.
+It should work now but requires a lot of computation time.
+I need to start using the cluster to perform the more computationally intensive tasks.
+
+##### Meeting with Bernat:
+I met with Bernat today.
+We discussed a lot about the project and the next steps to take.
+In particular, here is a list of some things that I need to do:
+* Finish preparing the data: clean GBIF occurrences and compute the climatic suitability of species in the network, compute the degree of generalism for each species
+* Double check the number of species and occurrences
+* Prepare sample data for prior predictive simulations
+
 #### 12 May 2021
 ##### Starting to download and clean GBIF occurrences:
 Now that I have cleaned all species names and prepared interactions, I can start downloading GBIF occurrence data and clean them.
