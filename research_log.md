@@ -1,6 +1,89 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 21 May 2021
+##### Some statistics on the number of verified species:
+Here are a few information I gathered about the number of species at different stages of the cleaning process:
+
+**Web of Life raw data**
+In total, there were 22838 species entries across all Web of Life networks from various functional groups.
+These entries summed to a total of 14632 unique raw species names.
+
+**Manual corrections**
+In total, 566 raw species names were manually changed because their name was too long (>3 words) or they could not be automatically corrected:
+- 212 species names that were undefined (could not manually be resolved)
+- 354 species names that could manually be corrected (some because the name was too long)
+
+**A priori names**
+There were 14336 unique prior names after implementing manual corrections.
+
+**Proposed names**
+The prior names were further processed to propose 10238 unique taxonomic names:
+- 2851 (including 212 manuals) are unidentified (e.g. raw name was 'Unidentified')
+- 4930 had identified genus but unidentified species (species tag stripped)
+- 34 had abbreviations that were stripped (e.g. ssp, sp, var)
+These 10238 unique taxonomic names were proposed for automatic verification.
+
+**Verified names**
+Among the proposed names, 122 were found in different kingdoms, bringing the total to 10363 species.
+The 10363 proposed names were verified in ITIS and GNR with the following outcome:
+- 4101 were ITIS accepted
+- 701 had a verified ITIS synonym
+- 4262 had a perfect GNR match
+- 1279 had a GNR fuzzy match
+- 20 had at least a GNR fuzzy match and a manual kingdom correction (see below)
+
+Verifying species names enabled to identify spelling mistakes and synonyms.
+The 10363 proposed names were resolved as 9901 distinct taxonomic units.
+
+**Removing taxonomic units from higher ranks**
+Out of the 9901 taxonomic units, 143 had a rank which was above genus and were removed:
+- The filter was applied to 7750 taxonomic units (2151 had unidentified kingdom)
+- 9758 taxonomic units were left after applying this filter
+
+The 9758 taxonomic units belonged to the following kingdoms:
+|verified_kingdom|N|
+|---|---|
+|Plantae|2950|
+|Animalia|4574|
+|<NA>|2132|
+|Other Eukaryota|74|
+|Fungi|16|
+|Bacteria|12|
+
+**Assigning each Web of Life entry a taxonomic unit depending on functional group**
+Each taxonomic name from each network (entry) was assigned a single taxonomic unit (with name and kingdom) depending on tits functional group:
+- Altogether out of the 22838 entries, 19181 had a verified taxonomic unit
+- Altogether, the 10238 distinct proposed names were assigned to 9660 distinct taxonomic units
+- 20 species kingdoms were manually added because they were incorrect (see above)
+- 43 (of the 22838) entries were removed despite matching a taxonomic unit, due to implausible kingdom (e.g. plants registered in Web of Life as animals)
+- 3756 (out of 19181) verified entries had an unknown kingdom
+
+Note that the kingdom matching/filtering was not applied to taxonomic with unknown kingdom:
+- Note that 3756 (out of the 19181 verified entries) had an unknown kingdom
+
+**Aggregating at species level**
+Taxonomic units were aggregated at the species level:
+- The 9660 distinct taxonomic units were aggregated into 9628 species/genus
+
+**Removing problematic species and networks**
+Problematic networks were removed:
+- 11 aquatic networks (either marine or stream ecosystems) were removed
+- 1 network without information about latitude/longitude was removed
+- 16039 entries belonging to 9046 species/genus remained after applying this filter
+
+At this point, no species/genus from Fungi, Bacteria, other Eukaryota and Archaea remained:
+|Kingdom|N|
+|---|---|
+|Plantae|4251|
+|Animalia|8485|
+|<NA>|3303|
+
+**Minimum number of locations**
+GBIF occurrences were only downloaded for species present in more than 1 network:
+- Out of the 9046 species/genus in more than 1 network, only 1905 were present in at least two locations
+- Out of these 1905, 1825 could be found in GBIF
+
 #### 20 May 2021
 ##### Download and cleaning GBIF occurrences:
 Last week, I prepared code to download and clean GBIF occurrences data.
