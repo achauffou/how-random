@@ -9,7 +9,7 @@ Follow the instructions below to install the project container.
 ### 1. Requirements
 This project uses [docker](https://docs.docker.com/) to build an isolated container for the project that enables to reproduce the results on any operating system without requiring manual software installation and package management. All code should run on any system with docker installed. Please check the following requirements below:
 * [Docker](https://docs.docker.com/get-docker/) 20.10 (or any compatible version)
-* 5 GB of free storage space on disk
+* 250 GB of free storage space on disk
 * 8 GB of RAM memory
 
 ### 2. Clone or download the project repository
