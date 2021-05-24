@@ -76,7 +76,7 @@ download_itis_data_targets <- tar_target(
 # Terrestrial ecoregions:
 download_ecoregions_data_targets <- tar_target(
   ecoregions_raw_archive,
-  download_from_url(ecoregions_download_url, 
+  download_from_url(ecoregions_download_url,
                     "data/raw/terrestrial_ecoregions.zip", download_date),
   format = "file"
 )
@@ -85,29 +85,40 @@ download_ecoregions_data_targets <- tar_target(
 download_climate_data_targets <- list(
   tar_target(
     worldclim_raw_archive,
-    download_from_url(worldclim_download_url, 
+    download_from_url(worldclim_download_url,
                      "data/raw/worldclim_2-5.zip", download_date),
     format = "file"
   ),
   tar_target(
     envirem_bioclim_raw_archive,
-    download_from_url(envirem_bioclim_download_url, 
+    download_from_url(envirem_bioclim_download_url,
                       "data/raw/envirem_bioclim_2-5.zip", download_date),
     format = "file"
   ),
   tar_target(
     envirem_topo_raw_archive,
-    download_from_url(envirem_topo_download_url, 
+    download_from_url(envirem_topo_download_url,
                       "data/raw/envirem_topo_2-5.zip", download_date),
     format = "file"
   )
 )
 
+# Rnaturalearth data:
+download_rnaturalearth_targets <- list(
+  tar_target(
+    rnaturalearth_land_data_download,
+    rnaturalearth::ne_download(
+      type = "land", category = "physical", returnclass = "sp", scale = 10,
+      load = FALSE, destdir = "data/raw/rnaturalearth"
+    ) %>% list(file_name = ., download_date = download_date)
+  )
+)
+
 # GBIF occurrence data:
-download_occurrence_data <- list(
+download_occurrence_data_targets <- list(
   tar_target(
     gbif_names_to_suggest,
-    select_names_to_gbif_suggest(wol_species, taxonomic_dict, 
+    select_names_to_gbif_suggest(wol_species, taxonomic_dict,
                                  min_locations_per_species, aggregation_level)
   ),
   tar_target(
@@ -116,12 +127,12 @@ download_occurrence_data <- list(
   ),
   tar_target(
     gbif_keys,
-    select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict, 
+    select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict,
                                  accepted_ranks)
   ),
   tar_target(
     gbif_raw_archives,
-    get_gbif_occurrences(gbif_keys[['gbif_key']], "data/raw/gbif", 
+    get_gbif_occurrences(gbif_keys[['gbif_key']], "data/raw/gbif",
                          "data/cache/gbif_downloads_cache.csv", download_date)
   )
 )
@@ -132,7 +143,8 @@ download_raw_data_targets <- list(
   download_itis_data_targets,
   download_ecoregions_data_targets,
   download_climate_data_targets,
-  download_occurrence_data
+  download_rnaturalearth_targets,
+  download_occurrence_data_targets
 )
 
 
@@ -155,21 +167,26 @@ read_itis_data_targets <- list(
   )
 )
 
-# GBIF occurrences:
-read_gbif_data_targets <- list(
+# Rnaturalearth data:
+read_rnaturalearth_targets <- list(
   tar_target(
     rnaturalearth_land_data,
-    rnaturalearth::ne_download(
-      type = "land", category = "physical", returnclass = "sp", scale = 10
+    rnaturalearth::ne_load(
+      destdir = "data/raw/rnaturalearth",
+      file_name = rnaturalearth_land_data_download[['file_name']]
     )
-  ),
+  )
+)
+
+# GBIF occurrences:
+read_gbif_data_targets <- list(
   tar_target(
     gbif_last_cleaning_update,
     process_gbif_raw_archives(
       gbif_raw_archives,
-      "data/processed/gbif", 
-      rnaturalearth_land_data, 
-      gbif_keys, 
+      "data/processed/gbif",
+      rnaturalearth_land_data,
+      gbif_keys,
       "data/cache/gbif_processing_cache.csv"
     )
   )
@@ -219,6 +236,7 @@ read_manual_data_targets <- list(
 read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
+  read_rnaturalearth_targets,
   read_gbif_data_targets,
   read_manual_data_targets
 )
@@ -249,7 +267,7 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     taxonomic_dict,
-    check_proposed_names(wol_proposed_names, itis_raw_data, 
+    check_proposed_names(wol_proposed_names, itis_raw_data,
                          "data/cache/taxonomic_dict_cache.csv")
   ),
   tar_target(
@@ -259,7 +277,7 @@ clean_species_names_targets <- list(
   tar_target(
     wol_species_cleaned,
     select_verified_species(
-      wol_raw_species_w_metadata, wol_verified_names, 
+      wol_raw_species_w_metadata, wol_verified_names,
       fun_groups_plausible_kingdoms, accepted_ranks, aggregation_level
     )
   ),
@@ -282,8 +300,8 @@ prepare_interactions_targets <- list(
   ),
   tar_target(
     wol_interactions,
-    get_wol_interactions(wol_networks_wo_supp_data, wol_metadata, 
-                         wol_species, wol_fun_groups_info, 
+    get_wol_interactions(wol_networks_wo_supp_data, wol_metadata,
+                         wol_species, wol_fun_groups_info,
                          wol_problematic_networks)
   )
 )
