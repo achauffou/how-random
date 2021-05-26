@@ -5,4 +5,5 @@ libgdal-dev
 libglpk40
 libproj-dev
 libudunits2-dev
+libv8-dev
 python3-pygments
