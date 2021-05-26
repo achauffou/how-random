@@ -80,7 +80,7 @@ process_gbif_raw_archives <- function(
   }
   
   # Clean and save to database archives that need to be processed:
-  if (length(archives_to_process) > 0) {
+  if (length(c(archives_to_process,archives_to_extract)) > 0) {
     # Clean and process archives one by one:
     for (this_archive_path in c(archives_to_process,archives_to_extract)) {
       extracted_path <- file.path(
