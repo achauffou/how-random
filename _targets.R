@@ -19,7 +19,9 @@ options(CHUNK_SIZE = 2E4)
 tar_option_set(packages = readLines(".r_packages"))
 
 # Load all functions scripts in the code folder:
-f <- lapply(list.files("code", recursive = TRUE, full.names = TRUE), source)
+f <- list.files("code", recursive = TRUE, full.names = TRUE) %>%
+  grep("\\.R$", ., value = TRUE) %>%
+  lapply(source)
 
 
 # Read YAML configuration ======================================================
