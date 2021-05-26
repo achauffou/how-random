@@ -255,6 +255,17 @@ clean_gbif_occurrences <- function(
     stringr::str_split("\t") %>%
     unlist()
   
+  # Creating log file:
+  archive_name <- basename(tools::file_path_sans_ext(occurrences_file))
+  log_path <- file.path(dirname(stats_path), paste0(archive_name, ".log"))
+  if (file.exists(log_path)) file.remove(log_path)
+  file.create(log_path, showWarnings = FALSE)
+  log_file <- file(log_path, open = "wt")
+  sink(file = log_file, type = "message")
+  message(paste("LOG FILE - ARCHIVE", archive_name, "-", Sys.time()))
+  sink(type =  "message")
+  close(log_file)
+  
   # Get chunks partition:
   chunks_partition <- get_chunks_partition(occurrences_file, chunk_size)
   
@@ -281,15 +292,19 @@ clean_gbif_occurrences <- function(
     "coordinateUncertaintyInMeters", "countryCode", "individualCount", 
     "datasetKey", "taxonRank"
   )
-  parallel::mclapply(
-    1:length(chunks_partition), function(x) {
-    fread_chunk(
-      occurrences_file, chunks_partition[[x]], col_names, keep_only, 
-      sep = "\t", quote = "", strip.white = TRUE
-    ) %>%
-      clean_gbif_occurrences_chunk(
-        db, table_name, land_data, stats_path, archive_name
-      )
+  parallel::mclapply(1:length(chunks_partition), function(x) {
+    tryCatch({
+      fread_chunk(
+        occurrences_file, chunks_partition[[x]], col_names, keep_only, 
+        sep = "\t", quote = "", strip.white = TRUE
+      ) %>%
+        clean_gbif_occurrences_chunk(
+          db, table_name, land_data, stats_path, archive_name
+        )
+    }, error = function(e) {
+      cat("Chunk ", x, " issued an error!\n\t", conditionMessage(e), "\n", 
+          file = log_path, append = TRUE, sep = "")
+    }, finally = {})
     if(x %% nb_cores == 0) pb$update(x/length(chunks_partition))
   }, mc.cores = nb_cores)
   pb$terminate()
