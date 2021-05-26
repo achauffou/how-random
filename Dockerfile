@@ -27,7 +27,7 @@ RUN mkdir $CMDSTAN \
   && rm cmdstan.tar.gz
 
 # Install cmdstanr 3.0.0 (2020-12-17):
-RUN R -e "devtools::install_github('stan-dev/cmdstanr@v0.3.0')" \
+RUN R -e "devtools::install_github('stan-dev/cmdstanr@v0.4.0')" \
   && echo CMDSTAN=$CMDSTAN >> /usr/local/lib/R/etc/Renviron.site
 
 # Install TeX-Live final 2020 archive using TinyTeX:
