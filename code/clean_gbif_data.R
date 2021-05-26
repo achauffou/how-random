@@ -2,7 +2,7 @@
 #' Extract and clean only GBIF archives that have not been processed yet
 #' 
 process_gbif_raw_archives <- function(
-  archive_paths, dest_folder, land_data, gbif_keys, cache_path, 
+  archive_paths, dest_folder, land_data, cache_path, 
   db_file = "occurrences.sqlite", table_name = "cleaned", stats_name = "cleaning_stats.csv", 
   chunk_size = getOption("CHUNK_SIZE", default = 2E4)
 ) {
@@ -89,8 +89,7 @@ process_gbif_raw_archives <- function(
         )
       )
       clean_gbif_occurrences(
-        extracted_path, db, table_name, land_data, gbif_keys, stats_path, 
-        chunk_size
+        extracted_path, db, table_name, land_data, stats_path, chunk_size
       )
       cache <- data.table::fread(
         cache_path, na.strings = c("", "NA"), 
@@ -105,7 +104,7 @@ process_gbif_raw_archives <- function(
     RSQLite::dbExecute(db, paste(
       "DELETE FROM", table_name, "WHERE rowid NOT IN (SELECT MIN(rowid) FROM",
       table_name, 
-      "GROUP BY archive_name, verified_id, decimalLatitude, decimalLongitude)"
+      "GROUP BY archive_name, genusKey, speciesKey, taxonKey, decimalLatitude, decimalLongitude)"
     ))
     
     # Update last modification time of database:
@@ -135,7 +134,9 @@ empty_gbif_processing_cache <- function() {
 get_gbif_clean_occurrences_fields <- function() {
   list(
     archive_name="TEXT",
-    verified_id="INTEGER",
+    genusKey="INTEGRAL",
+    speciesKey="INTEGRAL",
+    taxonKey="INTEGRAL",
     decimalLatitude="REAL",
     decimalLongitude="REAL"
   )
@@ -158,7 +159,6 @@ empty_cleaning_stats <- function() {
     nb_coord_inst = integer(),
     nb_coord_sea = integer(),
     nb_w_clean_coordinates = integer(),
-    nb_matching_gbif_key = integer(),
     nb_unique_rows = integer(),
     cleaning_time_in_secs = numeric()
   )
@@ -247,7 +247,7 @@ extract_gbif_archives <- function(
 #' Clean raw GBIF occurrences chunk by chunk and store them in a database
 #' 
 clean_gbif_occurrences <- function(
-  occurrences_file, db, table_name, land_data, gbif_keys, stats_path, 
+  occurrences_file, db, table_name, land_data, stats_path, 
   chunk_size = 2E4
 ) {
   # Get column names from the occurrence file:
@@ -288,7 +288,7 @@ clean_gbif_occurrences <- function(
       sep = "\t", quote = "", strip.white = TRUE
     ) %>%
       clean_gbif_occurrences_chunk(
-        db, table_name, land_data, gbif_keys, stats_path, archive_name
+        db, table_name, land_data, stats_path, archive_name
       )
     if(x %% nb_cores == 0) pb$update(x/length(chunks_partition))
   }, mc.cores = nb_cores)
@@ -332,7 +332,7 @@ fread_chunk <- function(
 #' Clean and append to database a single chunk of GBIF raw data
 #' 
 clean_gbif_occurrences_chunk <- function(
-  chunk, db, table_name, land_data, gbif_keys, stats_path, archive_name
+  chunk, db, table_name, land_data, stats_path, archive_name
 ) {
   # Start cleaning time:
   start_time <- Sys.time()
@@ -393,19 +393,10 @@ clean_gbif_occurrences_chunk <- function(
     nb_w_clean_coordinates <- nrow(chunk)
     
     # Attribute rows to their organisms:
-    chunk %<>%
-      data.table::melt(
-        id.vars = c("decimalLongitude", "decimalLatitude"),
-        measure.vars = c("taxonKey", "genusKey", "speciesKey"),
-        value.name = "gbif_key",
-        na.rm = TRUE
-      ) %>% 
-      .[, .(gbif_key, decimalLongitude, decimalLatitude)]
-    nb_matching_gbif_key <- nrow(chunk)
-    chunk %<>%
-      unique() %>%
-      merge(gbif_keys[, .(verified_id, gbif_key)], by = "gbif_key") %>%
-      .[, .(archive_name = archive_name, verified_id, decimalLatitude, decimalLongitude)]
+    chunk %<>% .[, .(
+      archive_name = archive_name, genusKey, speciesKey, taxonKey, 
+      decimalLatitude, decimalLongitude
+    )] %>% unique()
     nb_unique_rows <- nrow(chunk)
     
     # Append cleaned chunk to the occurrences database:
@@ -419,7 +410,6 @@ clean_gbif_occurrences_chunk <- function(
     nb_coord_sea <- 0
     nb_coord_invalid <- 0
     nb_w_clean_coordinates <- 0
-    nb_matching_gbif_key <- 0
     nb_unique_rows <- 0
   }
   
@@ -440,7 +430,6 @@ clean_gbif_occurrences_chunk <- function(
     nb_coord_inst = nb_coord_inst,
     nb_coord_sea = nb_coord_sea,
     nb_w_clean_coordinates = nb_w_clean_coordinates,
-    nb_matching_gbif_key = nb_matching_gbif_key,
     nb_unique_rows = nb_unique_rows,
     cleaning_time_in_secs = as.numeric(time_diff)
   ) %>% data.table::fwrite(stats_path, append = TRUE)

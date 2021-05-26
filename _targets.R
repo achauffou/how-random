@@ -186,7 +186,6 @@ read_gbif_data_targets <- list(
       gbif_raw_archives,
       "data/processed/gbif",
       rnaturalearth_land_data,
-      gbif_keys,
       "data/cache/gbif_processing_cache.csv"
     )
   )
