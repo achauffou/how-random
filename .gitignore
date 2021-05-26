@@ -2,6 +2,7 @@
 data/raw/**
 data/cache/**
 data/processed/**
+results/**
 
 # R gitignore -----
 # Ignore _targets directory
