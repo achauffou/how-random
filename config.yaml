@@ -18,6 +18,19 @@ fun_groups_plausible_kingdoms:
   Resource: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 min_locations_per_species: 2
+stan_simulations_specs:
+  - name: pol_logit_a01
+    data_generation_model: pol_logit_a
+    data_generation_args:
+      nb_pla: 300
+      nb_pol: 500
+      nb_sites: 5
+    stan_model: pol_logit_a
+    chains: 2
+    stan_sample_args:
+      iter_warmup: 1000
+      itier_sampling: 1000
+      refresh: 500
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]

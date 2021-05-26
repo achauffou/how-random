@@ -44,6 +44,7 @@ read_YAML_config_targets <- list(
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(min_locations_per_species, config$min_locations_per_species),
+  tar_target(stan_sim_specs, config$stan_simulations_specs),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_interaction_type, config$wol_interaction_type),
@@ -315,6 +316,23 @@ prepare_interactions_data_targets <- list(
 )
 
 
+# Simulate Stan models =========================================================
+simulate_stan_models_targets <- list(
+  tar_target(
+    stan_sim_data,
+    generate_stan_sim_data(stan_sim_specs[[1]], "results/simulations"),
+    pattern = map(stan_sim_specs),
+    format = "file"
+  ),
+  tar_target(
+    stan_sim_starts,
+    generate_stan_sim_start_values(stan_sim_specs[[1]], "results/simulations"),
+    pattern = map(stan_sim_specs),
+    format = "file"
+  )
+)
+
+
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts_targets <-list(
   tar_target(
@@ -344,5 +362,6 @@ list(
   download_raw_data_targets,
   read_raw_data_targets,
   prepare_interactions_data_targets,
+  simulate_stan_models_targets,
   compile_TeX_manuscripts_targets
 )
