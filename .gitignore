@@ -3,6 +3,7 @@ data/raw/**
 data/cache/**
 data/processed/**
 results/**
+stan/bin/**
 
 # R gitignore -----
 # Ignore _targets directory
