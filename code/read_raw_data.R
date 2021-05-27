@@ -9,7 +9,7 @@ read_raw_wol_data <- function(file_path, format = "csv") {
   
   # Return invisibly a list with networks and metadata:
   list(
-    networks = read_raw_wol_networks(dir_path, format = "csv"),
+    networks = read_raw_wol_networks(dir_path, format = format),
     metadata = read_raw_wol_metadata(
       file.path(dir_path, paste0("references.", format))
     )
