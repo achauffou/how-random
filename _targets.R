@@ -41,6 +41,13 @@ read_YAML_config_targets <- list(
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
   tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
+  tar_target(manual_data_folder, config$folder_structure$manual_data),
+  tar_target(cache_folder, config$folder_structure$cache),
+  tar_target(raw_data_folder, config$folder_structure$raw_data),
+  tar_target(processed_data_folder, config$folder_structure$processed_data),
+  tar_target(stan_src_folder, config$folder_structure$stan_sources),
+  tar_target(stan_bin_folder, config$folder_structure$stan_binaries),
+  tar_target(results_sim_folder, config$folder_structure$results_simulations),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(min_locations_per_species, config$min_locations_per_species),
@@ -62,7 +69,8 @@ download_web_of_life_data_targets <- list(
   tar_target(
     wol_raw_archive,
     download_wol_networks_raw_archive(
-      wol_download_list,  "data/raw/wol.zip", download_date = download_date
+      wol_download_list, file.path(raw_data_folder, "wol.zip"), 
+      download_date = download_date
     ),
     format = "file"
   )
@@ -71,16 +79,19 @@ download_web_of_life_data_targets <- list(
 # ITIS database:
 download_itis_data_targets <- tar_target(
   itis_raw_archive,
-  download_from_url(itis_download_url, "data/raw/itis_sqlite.zip",
-                    download_date),
+  download_from_url(
+    itis_download_url, file.path(raw_data_folder, "itis_sqlite.zip"), 
+    download_date
+  ),
   format = "file"
 )
 
 # Terrestrial ecoregions:
 download_ecoregions_data_targets <- tar_target(
   ecoregions_raw_archive,
-  download_from_url(ecoregions_download_url,
-                    "data/raw/terrestrial_ecoregions.zip", download_date),
+  download_from_url(
+    ecoregions_download_url, 
+    file.path(raw_data_folder, "terrestrial_ecoregions.zip"), download_date),
   format = "file"
 )
 
@@ -88,20 +99,25 @@ download_ecoregions_data_targets <- tar_target(
 download_climate_data_targets <- list(
   tar_target(
     worldclim_raw_archive,
-    download_from_url(worldclim_download_url,
-                     "data/raw/worldclim_2-5.zip", download_date),
+    download_from_url(
+      worldclim_download_url, file.path(raw_data_folder, "worldclim_2-5.zip"), 
+      download_date
+    ),
     format = "file"
   ),
   tar_target(
     envirem_bioclim_raw_archive,
-    download_from_url(envirem_bioclim_download_url,
-                      "data/raw/envirem_bioclim_2-5.zip", download_date),
+    download_from_url(
+      envirem_bioclim_download_url, 
+      file.path(raw_data_folder, "envirem_bioclim_2-5.zip"), download_date
+    ),
     format = "file"
   ),
   tar_target(
     envirem_topo_raw_archive,
-    download_from_url(envirem_topo_download_url,
-                      "data/raw/envirem_topo_2-5.zip", download_date),
+    download_from_url(
+      envirem_topo_download_url,
+      file.path(raw_data_folder, "envirem_topo_2-5.zip"), download_date),
     format = "file"
   )
 )
@@ -110,7 +126,8 @@ download_climate_data_targets <- list(
 download_rnaturalearth_targets <- list(
   tar_target(
     rnaturalearth_land_data,
-    download_rnaturalearth_land_data("data/raw/rnaturalearth_land_data.rds"),
+    file.path(raw_data_folder, "rnaturalearth_land_data.rds") %>%
+      download_rnaturalearth_land_data(),
     format = "file"
   )
 )
@@ -124,18 +141,25 @@ download_occurrence_data_targets <- list(
   ),
   tar_target(
     gbif_keys_dict,
-    suggest_gbif_names(gbif_names_to_suggest, "data/cache/gbif_keys_cache.csv")
+    suggest_gbif_names(
+      gbif_names_to_suggest, 
+      file.path(cache_folder, "gbif_keys_cache.csv")
+    )
   ),
   tar_target(
     gbif_keys,
     select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict,
                                  accepted_ranks) %>%
-      save_obj("gbif_keys", "data/processed")
+      save_obj("gbif_keys", processed_data_folder)
   ),
   tar_target(
     gbif_raw_archives,
-    get_gbif_occurrences(gbif_keys[['gbif_key']], "data/raw/gbif",
-                         "data/cache/gbif_downloads_cache.csv", download_date)
+    get_gbif_occurrences(
+      gbif_keys[['gbif_key']], 
+      file.path(raw_data_folder, "gbif"),
+      file.path(cache_folder, "gbif_downloads_cache.csv"), 
+      download_date
+    )
   )
 )
 
@@ -175,9 +199,9 @@ read_gbif_data_targets <- list(
     gbif_last_cleaning_update,
     process_gbif_raw_archives(
       gbif_raw_archives,
-      "data/processed/gbif",
+      file.path(processed_data_folder, "gbif"),
       readRDS(rnaturalearth_land_data),
-      "data/cache/gbif_processing_cache.csv"
+      file.path(cache_folder, "gbif_processing_cache.csv")
     )
   )
 )
@@ -186,7 +210,7 @@ read_gbif_data_targets <- list(
 read_manual_data_targets <- list(
   tar_target(
     wol_supp_data_names_file,
-    "data/wol_supp_data_names.txt",
+    file.path(manual_data_folder, "wol_supp_data_names.txt"),
     format = "file"
   ),
   tar_target(
@@ -195,7 +219,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_fun_groups_info_file,
-    "data/wol_fun_groups_info.csv",
+    file.path(manual_data_folder, "wol_fun_groups_info.csv"),
     format = "file"
   ),
   tar_target(
@@ -204,7 +228,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_manual_locations_file,
-    "data/wol_manual_locations.csv",
+    file.path(manual_data_folder, "wol_manual_locations.csv"),
     format = "file"
   ),
   tar_target(
@@ -213,7 +237,7 @@ read_manual_data_targets <- list(
   ),
   tar_target(
     wol_manual_species_names_file,
-    "data/wol_manual_species_names.csv",
+    file.path(manual_data_folder, "wol_manual_species_names.csv"),
     format = "file"
   ),
   tar_target(
@@ -256,8 +280,8 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     taxonomic_dict,
-    check_proposed_names(wol_proposed_names, itis_raw_data,
-                         "data/cache/taxonomic_dict_cache.csv")
+    check_proposed_names(wol_proposed_names, itis_raw_data, 
+                         file.path(cache_folder, "taxonomic_dict_cache.csv"))
   ),
   tar_target(
     wol_verified_names,
@@ -280,7 +304,7 @@ clean_species_names_targets <- list(
     wol_species_cleaned %>%
       remove_problematic_species(wol_problematic_networks) %>%
       get_species_avg_rel_degree() %>%
-      save_obj("wol_species", "data/processed")
+      save_obj("wol_species", processed_data_folder)
   )
 )
 
@@ -295,7 +319,7 @@ prepare_interactions_targets <- list(
     get_wol_interactions(wol_networks_wo_supp_data, wol_metadata,
                          wol_species, wol_fun_groups_info,
                          wol_problematic_networks) %>%
-      save_obj("wol_interactions", "data/processed")
+      save_obj("wol_interactions", processed_data_folder)
   )
 )
 
@@ -311,13 +335,13 @@ prepare_interactions_data_targets <- list(
 simulate_stan_models_targets <- list(
   tar_target(
     stan_sim_data,
-    generate_stan_sim_data(stan_sim_specs[[1]], "results/simulations"),
+    generate_stan_sim_data(stan_sim_specs[[1]], results_sim_folder),
     pattern = map(stan_sim_specs),
     format = "file"
   ),
   tar_target(
     stan_sim_starts,
-    generate_stan_sim_start_values(stan_sim_specs[[1]], "results/simulations"),
+    generate_stan_sim_start_values(stan_sim_specs[[1]], results_sim_folder),
     pattern = map(stan_sim_specs),
     format = "file"
   ),
@@ -327,9 +351,9 @@ simulate_stan_models_targets <- list(
       stan_sim_specs[[1]],
       readRDS(stan_sim_data),
       readRDS(stan_sim_starts),
-      "stan/src",
-      "stan/bin",
-      "results/simulations"
+      stan_src_folder,
+      stan_bin_folder,
+      results_sim_folder
     ),
     pattern = map(stan_sim_specs, stan_sim_data, stan_sim_starts),
     format = "file"
