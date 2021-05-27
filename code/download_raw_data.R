@@ -69,7 +69,8 @@ download_wol_networks_list <- function(
 #' Download Web of Life networks raw data
 #' 
 download_wol_networks_raw_archive <- function(
-  networks_list, dest_file, format = "csv", with_species_names = TRUE
+  networks_list, dest_file, format = "csv", with_species_names = TRUE,
+  download_date = NA
 ) {
   # Prepare download url:
   networks <- lapply(networks_list, function(x) x[['networkName']]) %>% 

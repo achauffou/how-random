@@ -62,7 +62,7 @@ download_web_of_life_data_targets <- list(
   tar_target(
     wol_raw_archive,
     download_wol_networks_raw_archive(
-      wol_download_list,  "data/raw/wol.zip"
+      wol_download_list,  "data/raw/wol.zip", download_date = download_date
     ),
     format = "file"
   )
