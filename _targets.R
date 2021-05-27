@@ -129,7 +129,8 @@ download_occurrence_data_targets <- list(
   tar_target(
     gbif_keys,
     select_gbif_keys_to_download(gbif_names_to_suggest, gbif_keys_dict,
-                                 accepted_ranks)
+                                 accepted_ranks) %>%
+      save_obj("gbif_keys", "data/processed")
   ),
   tar_target(
     gbif_raw_archives,
@@ -278,7 +279,8 @@ clean_species_names_targets <- list(
     wol_species,
     wol_species_cleaned %>%
       remove_problematic_species(wol_problematic_networks) %>%
-      get_species_avg_rel_degree()
+      get_species_avg_rel_degree() %>%
+      save_obj("wol_species", "data/processed")
   )
 )
 
@@ -292,7 +294,8 @@ prepare_interactions_targets <- list(
     wol_interactions,
     get_wol_interactions(wol_networks_wo_supp_data, wol_metadata,
                          wol_species, wol_fun_groups_info,
-                         wol_problematic_networks)
+                         wol_problematic_networks) %>%
+      save_obj("wol_interactions", "data/processed")
   )
 )
 
