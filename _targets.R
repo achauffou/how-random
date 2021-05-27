@@ -276,7 +276,9 @@ clean_species_names_targets <- list(
   ),
   tar_target(
     wol_species,
-    remove_problematic_species(wol_species_cleaned, wol_problematic_networks)
+    wol_species_cleaned %>%
+      remove_problematic_species(wol_problematic_networks) %>%
+      get_species_avg_rel_degree()
   )
 )
 

@@ -18,17 +18,20 @@ create_wol_metadata_loc_id <- function(metadata, manual_loc) {
 #' Return a data.table with raw species names from Web of Life networks
 #' 
 #' Return a data.table with raw Web of Life species names, and for each record 
-#' the name of its network and whether it is a row or column.
+#' the name of its network and whether it is a row or column. The function also 
+#' computes the relative degree of each species in the network.
 #' 
 get_raw_wol_species <- function(networks) {
   # Function that returns a data table of species names in network:
   single_network_spp <- function(network) {
     row_spp <- data.table::data.table(
       raw_name = rownames(network), 
+      rel_degree = apply(network, 1, function(x) sum(x > 0)) / ncol(network),
       is_row = TRUE
     )
     col_spp <- data.table::data.table(
       raw_name = colnames(network), 
+      rel_degree = apply(network, 2, function(x) sum(x > 0)) / nrow(network),
       is_row = FALSE
     )
     rbind(row_spp, col_spp)
@@ -212,6 +215,7 @@ select_verified_species <- function(
     kingdom = verified_kingdom,
     loc_id,
     fun_group,
+    rel_degree,
     verified_name,
     verified_rank,
     is_verified, 
@@ -272,6 +276,17 @@ remove_problematic_species <- function(species, problematic_networks) {
   ]
 }
 
+#' Compute species average relative degree across networks
+#' 
+get_species_avg_rel_degree <- function(species) {
+  species[, avg_rel_degree := mean(.SD[['rel_degree']]), by = .(final_id)] %>%
+    data.table::setcolorder(c(
+      "int_type", "net_name", "raw_name", "final_id", "final_name", "kingdom",
+      "loc_id", "fun_group", "rel_degree", "avg_rel_degree", "verified_name",
+      "verified_rank", "is_verified", "verification_status", "selection_flag"
+    ))
+}
+
 
 # Prepare interactions =========================================================
 #' Remove supplementary rows/columns from Web of Life networks
@@ -325,20 +340,23 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     .[, ':='(sp1_fun_group = fun_group, fun_group = NULL, is_row = NULL)] %>%
     merge(fun_groups[is_row == FALSE,], by = "int_type") %>%
     .[, ':='(sp2_fun_group = fun_group, fun_group = NULL, is_row = NULL)] %>%
-    # Add cleaned species names:
+    # Add cleaned species names and average relative degree:
     merge(species[, .(
       net_name, sp1_raw_name = raw_name, sp1_name = final_name, 
-      sp1_fun_group = fun_group, sp1_id = final_id
+      sp1_fun_group = fun_group, sp1_id = final_id, 
+      sp1_avg_rel_degree = avg_rel_degree
     )], by = c("net_name", "sp1_raw_name", "sp1_fun_group"), all.x = TRUE) %>%
     merge(species[, .(
       net_name, sp2_raw_name = raw_name, sp2_name = final_name, 
-      sp2_fun_group = fun_group, sp2_id = final_id
+      sp2_fun_group = fun_group, sp2_id = final_id, 
+      sp2_avg_rel_degree = avg_rel_degree
     )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
     .[!is.na(sp1_name) & !is.na(sp2_name),]
   
   # Return data.table with columns reordered:
   interactions[, .(
     loc_id, net_id = net_name, int_type, sp1_fun_group, sp1_id, sp1_name, 
-    sp2_fun_group, sp2_id, sp2_name, int_strength
+    sp1_avg_rel_degree, sp2_fun_group, sp2_id, sp2_name, sp2_avg_rel_degree, 
+    int_strength
   )]
 }
