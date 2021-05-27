@@ -109,11 +109,9 @@ download_climate_data_targets <- list(
 # Rnaturalearth data:
 download_rnaturalearth_targets <- list(
   tar_target(
-    rnaturalearth_land_data_download,
-    rnaturalearth::ne_download(
-      type = "land", category = "physical", returnclass = "sp", scale = 10,
-      load = FALSE, destdir = "data/raw/rnaturalearth"
-    ) %>% list(file_name = ., download_date = download_date)
+    rnaturalearth_land_data,
+    download_rnaturalearth_land_data("data/raw/rnaturalearth_land_data.rds"),
+    format = "file"
   )
 )
 
@@ -170,17 +168,6 @@ read_itis_data_targets <- list(
   )
 )
 
-# Rnaturalearth data:
-read_rnaturalearth_targets <- list(
-  tar_target(
-    rnaturalearth_land_data,
-    rnaturalearth::ne_load(
-      destdir = "data/raw/rnaturalearth",
-      file_name = rnaturalearth_land_data_download[['file_name']]
-    )
-  )
-)
-
 # GBIF occurrences:
 read_gbif_data_targets <- list(
   tar_target(
@@ -188,7 +175,7 @@ read_gbif_data_targets <- list(
     process_gbif_raw_archives(
       gbif_raw_archives,
       "data/processed/gbif",
-      rnaturalearth_land_data,
+      readRDS(rnaturalearth_land_data),
       "data/cache/gbif_processing_cache.csv"
     )
   )

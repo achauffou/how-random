@@ -90,6 +90,21 @@ download_wol_networks_raw_archive <- function(
 }
 
 
+# Download rnaturalearth land data =============================================
+#' Download rnaturalearth land data and save it as an R object
+#' 
+download_rnaturalearth_land_data <- function(dest_file, scale = 10) {
+  # Download data:
+  data <- rnaturalearth::ne_download(
+    type = "land", category = "physical", returnclass = "sp", scale = scale
+  )
+  
+  # Save data as an R object:
+  saveRDS(data, file = dest_file)
+  dest_file
+}
+
+
 # Get GBIF keys to downloads ===================================================
 #' Get a data.table with the names to propose and download on GBIF
 #' 
