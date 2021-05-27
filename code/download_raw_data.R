@@ -3,8 +3,15 @@ download_from_url <- function(download_url, dest_file, download_date = NA) {
   # Create directory where the file should be stored:
   dir.create(dirname(dest_file), showWarnings = FALSE, recursive = TRUE)
   
-  # Download the file:
-  download.file(download_url, dest_file, quiet = QUIET_DOWNLOADS)
+  # Skip download if the file has been downloaded/created recently:
+  if (file.exists(dest_file) & !is.na(download_date)) {
+    if (as.Date(file.info(dest_file)$ctime) >= download_date) {
+      return(dest_file)
+    }
+  }
+  
+  # Download the file if necessary:
+  download.file(download_url, dest_file)
   
   # Return invisibly the destination file:
   dest_file
