@@ -518,11 +518,9 @@ download_pending_gbif_occurrences <- function(keys, gbif_data_folder, cache_path
   download_pending_request <- function(url, file) {
     success <- FALSE
     trial <- 0
-    if (QUIET_DOWNLOADS == FALSE) {
-      message(paste(
-        "Downloading GBIF request to", file.path(gbif_data_folder, file), "..."
-      ))
-    }
+    message(paste(
+      "Downloading GBIF request to", file.path(gbif_data_folder, file), "..."
+    ))
     while(success == FALSE && trial < 10) {
       tryCatch({
         download_from_url(url, file.path(gbif_data_folder, file))

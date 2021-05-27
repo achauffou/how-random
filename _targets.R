@@ -6,14 +6,16 @@ library(targets)
 library(magrittr)
 
 # Set R options:
-QUIET_DOWNLOADS <- FALSE
-options(download.file.method = "curl")
-options(download.file.extra = "-L")
-options(tinytex.engine = "lualatex")
-options(tinytex.engine_args = "-shell-escape")
-options(tinytex.bib_engine = "biber")
-options(tinytex.compile.min_times = 2)
-options(CHUNK_SIZE = 2E4)
+if (is.null(getOption("download.file.method"))) {
+  options(download.file.method = "curl")
+  options(download.file.extra = "-L")
+}
+if (is.null(getOption("tinytex.engine"))) {
+  options(tinytex.engine = "lualatex")
+  options(tinytex.engine_args = "-shell-escape")
+}
+options(tinytex.bib_engine = getOption("tinytex.bib_engine", default = "biber"))
+options(tinytex.compile.min_times = getOption("tinytex.compile.min_times", default = 2))
 
 # Set options to load R packages listed in .r_packages if necessary:
 tar_option_set(packages = readLines(".r_packages"))

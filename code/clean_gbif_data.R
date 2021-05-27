@@ -4,7 +4,7 @@
 process_gbif_raw_archives <- function(
   archive_paths, dest_folder, land_data, cache_path, 
   db_file = "occurrences.sqlite", table_name = "cleaned", stats_name = "cleaning_stats.csv", 
-  chunk_size = getOption("CHUNK_SIZE", default = 2E4)
+  chunk_size = getOption("chunk_size", default = 2E4)
 ) {
   # If the destination folder does not exist yet, create it:
   db_path <- file.path(dest_folder, db_file)
