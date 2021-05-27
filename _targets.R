@@ -225,7 +225,6 @@ read_manual_data_targets <- list(
 read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
-  read_rnaturalearth_targets,
   read_gbif_data_targets,
   read_manual_data_targets
 )
