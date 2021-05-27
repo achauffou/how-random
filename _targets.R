@@ -329,6 +329,19 @@ simulate_stan_models_targets <- list(
     generate_stan_sim_start_values(stan_sim_specs[[1]], "results/simulations"),
     pattern = map(stan_sim_specs),
     format = "file"
+  ),
+  tar_target(
+    stan_sim_fits,
+    run_stan_model(
+      stan_sim_specs[[1]],
+      readRDS(stan_sim_data),
+      readRDS(stan_sim_starts),
+      "stan/src",
+      "stan/bin",
+      "results/simulations"
+    ),
+    pattern = map(stan_sim_specs, stan_sim_data, stan_sim_starts),
+    format = "file"
   )
 )
 
