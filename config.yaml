@@ -30,15 +30,15 @@ stan_simulations_specs:
   - name: pol_logit_a01
     data_generation_model: pol_logit_a
     data_generation_args:
-      nb_pla: 43
-      nb_pol: 87
-      nb_sites: 15
+      nb_pla: 9
+      nb_pol: 17
+      nb_sites: 3
     stan_model: pol_logit_a
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
-      iter_sampling: 1000
-      refresh: 500
+      iter_sampling: 1500
+      refresh: 250
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]
