@@ -30,11 +30,11 @@ stan_simulations_specs:
   - name: pol_logit_a01
     data_generation_model: pol_logit_a
     data_generation_args:
-      nb_pla: 30
-      nb_pol: 50
-      nb_sites: 2
+      nb_pla: 43
+      nb_pol: 87
+      nb_sites: 15
     stan_model: pol_logit_a
-    chains: 2
+    chains: 4
     stan_sample_args:
       iter_warmup: 1000
       itier_sampling: 1000
