@@ -128,8 +128,7 @@ download_climate_data_targets <- list(
 download_rnaturalearth_targets <- list(
   tar_target(
     rnaturalearth_land_data,
-    file.path(raw_data_folder, "rnaturalearth_land_data.rds") %>%
-      download_rnaturalearth_land_data(),
+    download_rnaturalearth_land_data(raw_data_folder, 10, download_date),
     format = "file"
   )
 )

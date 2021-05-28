@@ -93,7 +93,20 @@ download_wol_networks_raw_archive <- function(
 # Download rnaturalearth land data =============================================
 #' Download rnaturalearth land data and save it as an R object
 #' 
-download_rnaturalearth_land_data <- function(dest_file, scale = 10) {
+download_rnaturalearth_land_data <- function(
+  dest_folder, scale = 10, download_date = NA
+) {
+  # Output file name:
+  dest_file <- dest_folder %>%
+    file.path(paste0("rnaturalearth_land_data_", scale, ".rds"))
+  
+  # Skip download if the file has been downloaded/created recently:
+  if (file.exists(dest_file) & !is.na(download_date)) {
+    if (as.Date(file.info(dest_file)$ctime) >= download_date) {
+      return(dest_file)
+    }
+  }
+  
   # Download data:
   data <- rnaturalearth::ne_download(
     type = "land", category = "physical", returnclass = "sp", scale = scale
