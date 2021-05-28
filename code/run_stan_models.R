@@ -35,6 +35,12 @@ run_stan_model <- function(
   # Sample the compiled Stan model:
   fit <- do.call(model$sample, args = fun_args)
   
+  # Print and save diagnostic to a file:
+  print(fit$cmdstan_diagnose())
+  sink(file = file.path(out_folder, "cmdstan-diagnostic.txt"))
+  print(fit$cmdstan_diagnose())
+  sink()
+  
   # Save cmdStanMCMC and RStan fit objects to results folder:
   out_path1 <- file.path(out_folder, "cmdstanr-fit.rds")
   fit$save_object(file = out_path1)
