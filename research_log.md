@@ -1,6 +1,32 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 28 May 2021
+##### First simulation attempt
+The first simulation attempt went well using 43 plants, 87 pollinators and 15 sites. This is about 10 times less than the amount of plants, pollinators and sites in the dataset, so sadly it can be expected that the actual model could take up to 1000 times longer. Since this simulation took already 13290 seconds (3h46) on the cluster with 4 chains and 2000 iterations per chain, we might need to optimize it before using real data.
+
+All 4 chains finished successfully, despite the following informational message being issued three times:
+```
+Chain 2 Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2 Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Chain 2 Exception: Exception: binomial_logit_lpmf: Probability parameter is inf, but must be finite! (in '/tmp/RtmpNjYU18/model-62d6f6f2af5.stan', line 10, column 6 to line 14, column 8) (in '/tmp/RtmpNjYU18/model-62d6f6f2af5.stan', line 10, column 6 to line 14, column 8)
+Chain 2 If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+Chain 2 but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+```
+
+Here is the message that was printed at the end:
+```
+All 4 chains finished successfully.
+Mean chain execution time: 13290.0 seconds.
+Total execution time: 13523.3 seconds.
+109 of 4000 (3.0%) transitions hit the maximum treedepth limit of 10 or 2^10-1 leapfrog steps.
+Trajectories that are prematurely terminated due to this limit will result in slow exploration.
+Increasing the max_treedepth limit can avoid this at the expense of more computation.
+If increasing max_treedepth does not remove warnings, try to reparameterize the model.
+```
+
+Sadly, it will be necessary to run the chain once again because I forgot to include the generated parameters in the dataset, and thus won't be able to properly investigate this chain. I need to ensure that they will be included in the next one.
+
 #### 21 May 2021
 ##### Some statistics on the number of verified species:
 Here are a few information I gathered about the number of species at different stages of the cleaning process:
