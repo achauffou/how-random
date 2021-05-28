@@ -36,7 +36,7 @@ run_stan_model <- function(
   fit <- do.call(model$sample, args = fun_args)
   
   # Save cmdStanMCMC and RStan fit objects to results folder:
-  out_path1 <- file.path(out_folder, "cmdstan-fit.rds")
+  out_path1 <- file.path(out_folder, "cmdstanr-fit.rds")
   saveRDS(fit, file = out_path1)
   out_path2 <- file.path(out_folder, "rstan-fit.rds")
   saveRDS(rstan::read_stan_csv(fit$output_files()), out_path2)
