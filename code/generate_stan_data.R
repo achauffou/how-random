@@ -103,7 +103,12 @@ generate_stan_data.pol_logit_a <- function(nb_pla, nb_pol, nb_sites) {
     pla_id = data[['pla_id']],
     pol_id = data[['pol_id']],
     D = data[['D']],
-    S = data[['S']]
+    S = data[['S']],
+    alpha = alpha,
+    beta_pol = beta_pol,
+    beta_pla = beta_pla,
+    lambda = lambda,
+    nu = nu
   )
 }
 
