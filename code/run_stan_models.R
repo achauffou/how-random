@@ -30,7 +30,7 @@ run_stan_model <- function(
     chains = chains,
     threads_per_chain = threads_per_chain,
     parallel_chains = parallel_chains
-  ), spec$data_sample_args)
+  ), spec$stan_sample_args)
   
   # Sample the compiled Stan model:
   fit <- do.call(model$sample, args = fun_args)
