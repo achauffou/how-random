@@ -27,17 +27,17 @@ fun_groups_plausible_kingdoms:
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 min_locations_per_species: 2
 stan_simulations_specs:
-  - name: pol_logit_a01
-    data_generation_model: pol_logit_a
+  - name: pol_logit_c01
+    data_generation_model: pol_logit_c
     data_generation_args:
-      nb_pla: 9
-      nb_pol: 17
-      nb_sites: 3
-    stan_model: pol_logit_a
+      nb_pla: 43
+      nb_pol: 87
+      nb_sites: 15
+    stan_model: pol_logit_c
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
-      iter_sampling: 1500
+      iter_sampling: 2000
       refresh: 250
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
