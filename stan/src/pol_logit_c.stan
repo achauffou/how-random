@@ -5,7 +5,7 @@ functions{
     vector beta_pla, vector lambda, vector nu, real[,] S_pla, real[,] S_pol, 
     real[] D_pla, real[] D_pol, int[] site_id, int[] pol_id, int[] pla_id
   ) {
-    real lp;
+    real lp = 0.0;
     for (i in start:end) {
       lp += bernoulli_logit_lpmf(
         y_slice[i - start + 1] |
