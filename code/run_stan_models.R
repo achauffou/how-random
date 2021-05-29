@@ -2,7 +2,7 @@
 #' Compile, run and save the outcome in a given folder
 #' 
 run_stan_model <- function(
-  spec, data, start_vals, src_folder, bin_folder, res_folder
+  spec, data, start_vals, src_file, bin_folder, res_folder
 ) {
   # Create bin folder if it does not exist:
   dir.create(bin_folder, showWarnings = FALSE, recursive = TRUE)
@@ -12,9 +12,8 @@ run_stan_model <- function(
   dir.create(out_folder, showWarnings = FALSE, recursive = TRUE)
   
   # Compile the Stan model:
-  model_path <- paste0(src_folder, "/", spec$stan_model, ".stan")
   model <- cmdstanr::cmdstan_model(
-    model_path, cpp_options = list(stan_threads = TRUE), dir = bin_folder
+    src_file, cpp_options = list(stan_threads = TRUE), dir = bin_folder
   )
   
   # Prepare sampling arguments:
