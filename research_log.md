@@ -1,6 +1,10 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 30 May 2021
+##### Another simulation attempt
+I have performed another simulation attempt. Again, there were 43 plants, 87 pollinators and 15 sites, but I used 3000 iterations per chain and I requested 32 cores with 2048 Mo per core. The sampler took 3h30, which is considerably less in proportion. 9.0% of transitions hit the maximum treedepth limit; maybe I should do something about it. I will make another trial with IDs passed in the sliced array to see if it could help further reducing the computation time, because for now it still takes too long for the real dataset (it would take weeks to finish).
+
 #### 28 May 2021
 ##### First simulation attempt
 The first simulation attempt went well using 43 plants, 87 pollinators and 15 sites. This is about 10 times less than the amount of plants, pollinators and sites in the dataset, so sadly it can be expected that the actual model could take up to 1000 times longer. Since this simulation took already 13290 seconds (3h46) on the cluster with 4 chains and 2000 iterations per chain, we might need to optimize it before using real data.
