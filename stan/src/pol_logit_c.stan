@@ -30,11 +30,6 @@ data{
   real S_pol[nb_pol, nb_sites]; // Suitability variable
   real D_pla[nb_pla]; // Degree variable
   real D_pol[nb_pol]; // Degree variable
-  // Note: There are ways to optimize this. One of them is by defining the data 
-  // a bit differently. For example, defining the suitabilities as Sp[N] and 
-  // Spl[M] (and similarly for the degree) would reduce the size of the data 
-  // objects and the model would run faster. But let's try it like it is now 
-  // and deal with the problems as they come.
 }
 parameters{
   // Model parameters

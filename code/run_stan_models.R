@@ -15,13 +15,23 @@ run_stan_model <- function(
   out_path1 <- file.path(out_folder, "cmdstanr-fit.rds")
   out_path2 <- file.path(out_folder, "rstan-fit.rds")
   last_spec_path <- file.path(out_folder, "last_spec.rds")
+  last_src_md5sum_path <- file.path(out_folder, "last_src_md5sum.txt")
   
   # If the previous run had the same specification, return its files:
-  if (file.exists(last_spec_path) & file.exists(out_path1) & file.exists(out_path2)) {
+  if (
+    file.exists(last_spec_path) & file.exists(out_path1) & 
+    file.exists(out_path2) & file.exists(last_src_md5sum_path)
+  ) {
     if (identical(readRDS(last_spec_path), spec)) {
-      message(paste(spec$name, "results seem already up-to-date,", 
-                    "skipping HMC sampling."))
-      return(c(cmdstan_fit = out_path1, rstan_fit = out_path2))
+      con <- file(last_src_md5sum_path, "r")
+      last_md5sum <- readLines(con, n=1)
+      close(con)
+      this_md5sum <- tools::md5sum(src_file)
+      if (last_md5sum == this_md5sum) {
+        message(paste(spec$name, "results seem already up-to-date,", 
+                      "skipping HMC sampling."))
+        return(c(cmdstan_fit = out_path1, rstan_fit = out_path2))
+      }
     }
   }
   
@@ -58,7 +68,12 @@ run_stan_model <- function(
   fit$save_object(file = out_path1)
   saveRDS(rstan::read_stan_csv(fit$output_files()), out_path2)
   
-  # Save specification as last specification and return output files:
+  # Save specification and source md5sum to skip this step in the future:
   saveRDS(spec, last_spec_path)
+  con <- file(last_src_md5sum_path, "w")
+  writeLines(tools::md5sum(src_file), con)
+  close(con)
+  
+  # Return file names of CmdStanMCMC and Stanfit objects:
   c(cmdstan_fit = out_path1, rstan_fit = out_path2)
 }
