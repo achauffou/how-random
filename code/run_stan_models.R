@@ -11,6 +11,20 @@ run_stan_model <- function(
   out_folder <- file.path(res_folder, spec$name)
   dir.create(out_folder, showWarnings = FALSE, recursive = TRUE)
   
+  # Last specification file and output files:
+  out_path1 <- file.path(out_folder, "cmdstanr-fit.rds")
+  out_path2 <- file.path(out_folder, "rstan-fit.rds")
+  last_spec_path <- file.path(out_folder, "last_spec.rds")
+  
+  # If the previous run had the same specification, return its files:
+  if (file.exists(last_spec_path) & file.exists(out_path1) & file.exists(out_path2)) {
+    if (identical(readRDS(last_spec_path), spec)) {
+      message(paste(spec$name, "results seem already up-to-date,", 
+                    "skipping HMC sampling."))
+      return(c(cmdstan_fit = out_path1, rstan_fit = out_path2))
+    }
+  }
+  
   # Compile the Stan model:
   model <- cmdstanr::cmdstan_model(
     src_file, cpp_options = list(stan_threads = TRUE), dir = bin_folder
@@ -41,9 +55,10 @@ run_stan_model <- function(
   sink()
   
   # Save cmdStanMCMC and RStan fit objects to results folder:
-  out_path1 <- file.path(out_folder, "cmdstanr-fit.rds")
   fit$save_object(file = out_path1)
-  out_path2 <- file.path(out_folder, "rstan-fit.rds")
   saveRDS(rstan::read_stan_csv(fit$output_files()), out_path2)
+  
+  # Save specification as last specification and return output files:
+  saveRDS(spec, last_spec_path)
   c(cmdstan_fit = out_path1, rstan_fit = out_path2)
 }

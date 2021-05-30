@@ -6,8 +6,18 @@ generate_stan_sim_data <- function(spec, results_folder = "results/stan_sim") {
   sim_folder <- file.path(results_folder, spec$name)
   dir.create(sim_folder, showWarnings = FALSE, recursive = TRUE)
   
-  # Generate and save data to the results folder:
+  # If the previous run had the same specification, return its file:
   out_path <- file.path(sim_folder, "data.rds")
+  last_spec_path <- file.path(sim_folder, "last_spec.rds")
+  if (file.exists(last_spec_path) & file.exists(out_path)) {
+    if (identical(readRDS(last_spec_path), spec)) {
+      message(paste(spec$name, "results seem already up-to-date,", 
+                    "skipping data generation."))
+      return(out_path)
+    }
+  }
+  
+  # Generate and save data to the results folder:
   if (is.null(spec$data_generation_args)) {
     fun_args <- list()
   } else {
@@ -27,8 +37,18 @@ generate_stan_sim_start_values <- function(spec, results_folder = "results/stan_
   sim_folder <- file.path(results_folder, spec$name)
   dir.create(sim_folder, showWarnings = FALSE, recursive = TRUE)
   
-  # Generate and save starting values to the results folder:
+  # If the previous run had the same specification, return its file:
   out_path <- file.path(sim_folder, "start_values.rds")
+  last_spec_path <- file.path(sim_folder, "last_spec.rds")
+  if (file.exists(last_spec_path) & file.exists(out_path)) {
+    if (identical(readRDS(last_spec_path), spec)) {
+      message(paste(spec$name, "results seem already up-to-date,", 
+                    "skipping starting values generation."))
+      return(out_path)
+    }
+  }
+  
+  # Generate and save starting values to the results folder:
   if (is.null(spec$data_generation_args)) {
     fun_args <- list()
   } else {
