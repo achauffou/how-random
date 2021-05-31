@@ -1,6 +1,10 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 31 May 2021
+##### Slowly improving performance
+Another model that slices the plants and pollinators IDs took 3h22, which is a little bit less than the previous one. Still, it might be too much to enable reasonable computation time for the entire dataset. According to my estimations, if computation time scales linearly with the number of interactions, it could take about 3 days, which is acceptable. Now I will try to remove the for-loop from the partial sum function, to see if it helps, but it might not be feasible with sliced IDs.
+
 #### 30 May 2021
 ##### Another simulation attempt
 I have performed another simulation attempt. Again, there were 43 plants, 87 pollinators and 15 sites, but I used 3000 iterations per chain and I requested 32 cores with 2048 Mo per core. The sampler took 3h30, which is considerably less in proportion. 9.0% of transitions hit the maximum treedepth limit; maybe I should do something about it. I will make another trial with IDs passed in the sliced array to see if it could help further reducing the computation time, because for now it still takes too long for the real dataset (it would take weeks to finish).
