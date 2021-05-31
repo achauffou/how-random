@@ -39,6 +39,7 @@ read_YAML_config_targets <- list(
   ),
   tar_target(accepted_ranks, config$accepted_ranks),
   tar_target(aggregation_level, config$aggregation_level),
+  tar_target(bioclim_extent, config$bioclim_extent),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
@@ -332,6 +333,24 @@ prepare_interactions_data_targets <- list(
 )
 
 
+# Perform bioclimatic suitability analyses =====================================
+# Stack and extrapolate climatic data:
+get_bioclim_stacks_targets <- list(
+  tar_target(
+    raw_bioclim_stacks,
+    stack_bioclim_archives(c(
+      worldclim_raw_archive, envirem_bioclim_raw_archive, 
+      envirem_topo_raw_archive
+    ), bioclim_extent),
+  )
+)
+
+# List all targets to perform bioclimatic suitability analyses:
+perform_bioclim_analyses_targets <- list(
+  get_bioclim_stacks_targets
+)
+
+
 # Simulate Stan models =========================================================
 simulate_stan_models_targets <- list(
   tar_target(
@@ -399,6 +418,7 @@ list(
   download_raw_data_targets,
   read_raw_data_targets,
   prepare_interactions_data_targets,
+  perform_bioclim_analyses_targets,
   simulate_stan_models_targets,
   compile_TeX_manuscripts_targets
 )
