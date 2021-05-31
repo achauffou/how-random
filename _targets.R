@@ -334,20 +334,23 @@ prepare_interactions_data_targets <- list(
 
 
 # Perform bioclimatic suitability analyses =====================================
-# Stack and extrapolate climatic data:
-get_bioclim_stacks_targets <- list(
+# Stack climatic data:
+get_bioclim_stack_targets <- list(
   tar_target(
-    raw_bioclim_stacks,
-    stack_bioclim_archives(c(
-      worldclim_raw_archive, envirem_bioclim_raw_archive, 
-      envirem_topo_raw_archive
-    ), bioclim_extent),
+    raw_bioclim_stack,
+    stack_bioclim_archives(
+      c(worldclim_raw_archive, envirem_bioclim_raw_archive, 
+        envirem_topo_raw_archive), 
+      bioclim_extent, 
+      file.path(processed_data_folder, "bioclim/raw_bioclim_stack.rds")
+    ),
+    format = "file"
   )
 )
 
 # List all targets to perform bioclimatic suitability analyses:
 perform_bioclim_analyses_targets <- list(
-  get_bioclim_stacks_targets
+  get_bioclim_stack_targets
 )
 
 
