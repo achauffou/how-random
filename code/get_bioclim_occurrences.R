@@ -267,3 +267,206 @@ get_gbif_entities_to_thin <- function(
   RSQLite::dbGetQuery(db, query) %>%
     data.table::as.data.table()
 }
+
+#' Thin and retrieve bioclimatic variables for all given GBIF entities (cached)
+#' 
+thin_retrieve_gbif_entities <- function(
+  entities, occ_folder, stack, cache_folder, stack_path, 
+  thinned_db_file = "bioclim.sqlite", occ_file = "occurrences.sqlite", 
+  occ_table = "cleaned", use_raster_brick = TRUE, buffers = c(5000, 10000)
+) {
+  # Order buffers:
+  buffers %<>% unique() %>% sort()
+  
+  # Create a raster brick from the raster stack (to ensure faster retrieval):
+  if (use_raster_brick) {
+    message("Creating raster brick object from raster stack...")
+    brick <- raster::brick(stack)
+    message("Raster brick object successfully created!")
+  } else {
+    message(paste("Informational message: if enough memory is available,",
+                  "consider setting use_raster_brick = TRUE.",
+                  "Bioclimatic variables retrieval is faster from raster brick!"))
+    brick <- stack
+  }
+  
+  # Check if the entities database up-to-date and create it if necessary:
+  thinned_db_path <- file.path(occ_folder, thinned_db_file)
+  thinned_db <- get_gbif_thinned_db_con(thinned_db_path, stack_path, brick)
+  on.exit(RSQLite::dbDisconnect(thinned_db))
+  
+  # Open connection with GBIF occurrences database:
+  occ_path <- file.path(occ_folder, occ_file)
+  occ_db <- RSQLite::dbConnect(RSQLite::SQLite(), occ_path)
+  on.exit(RSQLite::dbDisconnect(occ_db), add = TRUE)
+  
+  # Create entities cache if it does not exist or is outdated:
+  thinned_cache_path <- paste0(c(0, buffers), collapse = "_") %>%
+    paste0(file.path(cache_folder, "gbif_thinned_cache"), ., sep = "_") %>%
+    paste0(".csv")
+  thinned_cache <- get_gbif_thinned_cache(thinned_cache_path, stack_path, buffers)
+  
+  # Entities to thin:
+  entities_to_thin <- cache[, .(genusKey, speciesKey, taxonKey)] %>%
+    data.table::fsetdiff(entities, .) %>%
+    unique()
+  
+  # Create log file:
+  log_path <- file.path(
+    occ_folder, 
+    paste0("gbif_thinning_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".log")
+  )
+  if (file.exists(log_path)) file.remove(log_path)
+  file.create(log_path, showWarnings = FALSE)
+  log_file <- file(log_path, open = "wt")
+  sink(file = log_file, type = "message")
+  message(paste("LOG FILE - THINNING", nrow(entities_to_thin), 
+                "GBIF entities -", Sys.time()))
+  sink(type =  "message")
+  close(log_file)
+  
+  # Thin entities that need to be thinned:
+  if (nrow(entities_to_thin) > 0) {
+    nb_cores <- parallel::detectCores()
+    message(paste("Thinning and retrieving bioclimatic variables for", 
+                  nrow(entities_to_thin), "GBIF entities..."))
+    pb <- progress::progress_bar$new(
+      total = nrow(entities_to_thin),
+      format = "  :current/:total :percent |:bar| :elapsedfull",
+      incomplete = " ",
+      force = TRUE
+    )
+    1:nrow(entities_to_thin) %>%
+      parallel::mclapply(
+        function(x) {
+          tryCatch({
+            thin_retrieve_gbif_single_entity(
+              entities_to_thin[x, ], occ_db, occ_table, thinned_db, cache_path,
+              brick, buffers
+            )
+          }, error = function(e) {
+            cat("Entity genusKey=", entities_to_thin[x,][["genusKey"]], 
+                ", speciesKey=", entities_to_thin[x,][["speciesKey"]], 
+                ", taxonKey=", entities_to_thin[x,][["taxonKey"]], 
+                " issued an error!\n\t", conditionMessage(e), "\n", 
+                file = log_path, append = TRUE, sep = "")
+          }, finally = {})
+          if(x %% nb_cores == 0) pb$update(x/nrow(entities_to_thin))
+        }, mc.cores = nb_cores
+      )
+    pb$update(1.0)
+    pb$terminate()
+    message()
+  }
+  
+  # Return last modification time of thinned occurrences database:
+  file.info(thinned_db_path)$mtime
+}
+
+#' Get connection of the GBIF thinned entities database
+#' 
+#' This function returns a database connection to the GBIF thinned entities 
+#' database. It checks that the database is up-to-date with stack files and 
+#' (re)creates it if necessary.
+#' 
+get_gbif_thinned_db_con <- function(db_path, stack_path, brick) {
+  # Create cache database if it does not exist or is outdated:
+  if (file.exists(db_path)) {
+    if (file.info(db_path)$ctime > file.info(stack_path)$ctime) {
+      db <- RSQLite::dbConnect(RSQLite::SQLite(), db_path)
+    } else {
+      file.remove(db_path)
+      db <- create_gbif_thinned_db(db_path, brick)
+    }
+  } else {
+    db <- create_gbif_thinned_db(db_path, brick)
+  }
+  db
+}
+
+#' Create a database for thinned GBIF occurrences with bioclimatic variables
+#' 
+create_gbif_thinned_db <- function(
+  db_path, brick, table_name = "thinned_bioclim"
+) {
+  # Create cache folder if it does not exist:
+  dir.create(dirname(db_path), showWarnings = FALSE, recursive = TRUE)
+  
+  # Create the database:
+  db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = db_path)
+  paste0(names(brick), collapse = ", ") %>%
+    paste0("CREATE TABLE ", table_name, 
+           " (genusKey INTEGER, speciesKey INTEGER, taxonKey INTEGER, ",
+           "cell INTEGER, ", ., ")") %>%
+    RSQLite::dbExecute(db, .)
+  db
+}
+
+#' Return the cache of thinned GBIF entities or (re)create it if outdated
+#' 
+get_gbif_thinned_cache <- function(cache_path, stack_path, buffers) {
+  if (file.exists(cache_path)) {
+    if (file.info(cache_path)$ctime > file.info(stack_path)$ctime) {
+      cache <- data.table::fread(cache_path, na.strings = c("", "NA"), 
+                                 colClasses = tax_dict_cols_classes())
+    } else {
+      file.remove(cache_path)
+      cache <- create_gbif_thinned_cache(cache_path, buffers)
+    }
+  } else {
+    cache <- create_gbif_thinned_cache(cache_path, buffers)
+  }
+  cache
+}
+
+#' Create the cache of GBIF entities that have already been thinned
+#' 
+create_gbif_thinned_cache <- function(cache_path, buffers) {
+  cache <- data.table::data.table(
+    genusKey = integer(),
+    speciesKey = integer(),
+    taxonKey = integer(),
+    nb_occurrences = integer(),
+    nb_thinned = integer()
+  )
+  cache[, paste0("nb_buffer_", c(0, buffers)) := integer()]
+  data.table::fwrite(cache, cache_path)
+  cache
+}
+
+
+# Thin and retrieve bioclimatic conditions of a single GBIF entity =============
+#' Thin and retrieve bioclimatic conditions of a single GBIF entity
+#' 
+thin_retrieve_gbif_single_entity <- function(
+  entity, occ_db, occ_table, thinned_db, cache_path, brick, buffers
+) {
+  # Get occurrences for the given entity:
+  occurrences <- paste0(
+    "SELECT DISTINCT decimalLongitude, decimalLatitude FROM ", occ_table,
+    " WHERE genusKey = ", entity[['genusKey']], 
+    " OR speciesKey = ", entity[['speciesKey']], 
+    " OR taxonKey = ", entity[['taxonKey']]
+  ) %>% as.data.table()
+  n_occurrences <- nrow(occurrences)
+  
+  # Thin occurrences and retrieve their bioclimatic variables:
+  occurrences %<>% get_thinned_bioclim_wo_cache(occurrences, brick, buffers)
+  nb_thinned <- nrow(occurrences)
+  nb_buffers <- c(0, buffers) %>% 
+    lapply(function (x) {sum(occurrences[['buffer']] == x)})
+  
+  # Append outcome to the thinned occurrences data.table:
+  RSQLite::dbAppendTable(thinned_db, "thinned_bioclim", occurrences[, -"buffer"])
+  
+  # Write statistics to cache:
+  cache <- data.table::data.table(
+    genusKey = entity[['genusKey']],
+    speciesKey = entity[['speciesKey']],
+    taxonKey = entity[['taxonKey']],
+    nb_occurrences = nb_occurrences,
+    nb_thinned = nb_thinned
+  )
+  cache[, paste0("nb_buffer_", c(0, buffers)) := nb_buffers]
+  data.table::fwrite(cache, cache_path, append = TRUE)
+}
