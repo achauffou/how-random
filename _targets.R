@@ -348,9 +348,18 @@ get_bioclim_stack_targets <- list(
   )
 )
 
+# Thin and retrieve bioclimatic conditions for all GBIF entities:
+thin_retrieve_gbif_bioclim_targets <- list(
+  tar_target(
+    gbif_entities_to_thin,
+    get_gbif_entities_to_thin(gbif_keys, file.path(processed_data_folder, "gbif"))
+  )
+)
+
 # List all targets to perform bioclimatic suitability analyses:
 perform_bioclim_analyses_targets <- list(
-  get_bioclim_stack_targets
+  get_bioclim_stack_targets,
+  thin_retrieve_gbif_bioclim_targets
 )
 
 

@@ -231,3 +231,32 @@ extract_cell_bioclim <- function(cell, brick, buffers) {
   data.table::data.table(cell = cell, buffer = buffer) %>%
     cbind(data.table::as.data.table(vars))
 }
+
+
+# Thin and retrieve bioclimatic conditions of all GBIF occurrences =============
+#' Get GBIF entities to thin
+#' 
+get_gbif_entities_to_thin <- function(
+  gbif_keys, db_folder, db_file = "occurrences.sqlite", table_name = "cleaned"
+) {
+  # Open connection to the database:
+  db_path <- file.path(db_folder, db_file)
+  db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = db_path)
+  on.exit(RSQLite::dbDisconnect(db))
+  
+  # Prepare query to retrieve the entities to thin:
+  keys <- gbif_keys[['gbif_key']] %>% 
+    unique() %>% 
+    sort() %>% 
+    paste0(collapse = ", ") %>%
+    paste0("(", ., ")", collapse = )
+  query <- paste0(
+      "SELECT DISTINCT genusKey, speciesKey, taxonKey FROM ", table_name,
+      " WHERE genusKey IN ", keys, " OR speciesKey IN ", keys, 
+      " OR taxonKey IN ", keys, " ORDER BY genusKey, speciesKey, taxonKey"
+    )
+  
+  # Execute query and return outcome as a data.table:
+  RSQLite::dbGetQuery(db, query) %>%
+    data.table::as.data.table()
+}
