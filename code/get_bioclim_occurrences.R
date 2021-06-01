@@ -57,9 +57,6 @@ get_bioclim_cache_db_con <- function(
   # Order buffers:
   buffers %<>% unique() %>% sort()
   
-  # Create cache folder if it does not exist:
-  dir.create(cache_folder, showWarnings = FALSE, recursive = TRUE)
-  
   # Create cache database if it does not exist or is outdated:
   db_path <- paste0(c(0, buffers), collapse = "_") %>%
     paste("bioclim_vars_cache", ., sep = "_") %>%
@@ -83,8 +80,11 @@ get_bioclim_cache_db_con <- function(
 create_bioclim_cache_db <- function(
   db_path, brick, table_name = "bioclim_vars"
 ) {
+  # Create cache folder if it does not exist:
+  dir.create(dirname(db_path), showWarnings = FALSE, recursive = TRUE)
+  
   # Create the database:
-  db <- RSQLite::dbConnect(RSQLite::SQLite(), db_path)
+  db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = db_path)
   paste0(names(brick), " REAL", collapse = ", ") %>%
     paste0("CREATE TABLE ", table_name, 
            " (cell INTEGER PRIMARY KEY, buffer REAL, ", ., ")") %>%
