@@ -110,15 +110,11 @@ get_thinned_bioclim_w_cache <- function(
   occurrences, brick, db, table_name = "bioclim_vars", 
   buffers = c(5000, 10000)
 ) {
-  # Get thinned occurrences:
-  thinned <- thin_occurrences(occurrences, brick)
-  
-  # For each occurrence, retrieve bioclimatic conditions:
-  nb_cores <- parallel::detectCores()
-  parallel::mclapply(
-    thinned[['cell']], get_cell_bioclim, brick, db, table_name, 
-    buffers, mc.cores = nb_cores
-  ) %>% data.table::rbindlist()
+  # Get thinned occurrences and retrieve bioclimatic conditions:
+  thin_occurrences(occurrences, brick) %$%
+    cell %>%
+    lapply(extract_cell_bioclim, brick, brick, db, buffers) %>%
+    data.table::rbindlist()
 }
 
 #' Return thinned bioclimatic conditions for a set of coordinates (no cache)
