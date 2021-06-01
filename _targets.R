@@ -342,9 +342,9 @@ get_bioclim_stack_targets <- list(
       c(worldclim_raw_archive, envirem_bioclim_raw_archive, 
         envirem_topo_raw_archive), 
       bioclim_extent, 
-      file.path(processed_data_folder, "bioclim/raw_bioclim_stack.rds")
-    ),
-    format = "file"
+      file.path(processed_data_folder, "bioclim_vars"),
+      download_date = download_date
+    )
   )
 )
 
