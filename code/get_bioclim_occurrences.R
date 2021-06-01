@@ -52,7 +52,7 @@ crop_raster_from_file <- function(file_path, extent_coords, save_path) {
 #' up-to-date with stack files and (re)creates it if necessary.
 #' 
 get_bioclim_cache_db_con <- function(
-  cache_folder, stack_path, strack, buffers = c(5000, 10000)
+  cache_folder, stack_path, brick, buffers = c(5000, 10000)
 ) {
   # Order buffers:
   buffers %<>% unique() %>% sort()
