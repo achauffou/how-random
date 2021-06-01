@@ -115,19 +115,10 @@ get_thinned_bioclim_w_cache <- function(
   
   # For each occurrence, retrieve bioclimatic conditions:
   nb_cores <- parallel::detectCores()
-  thinned <- parallel::mclapply(
+  parallel::mclapply(
     thinned[['cell']], get_cell_bioclim, brick, db, table_name, 
     buffers, mc.cores = nb_cores
-  ) %>% data.table::rbindlist() %>%
-    merge(thinned, ., by = "cell")
-  thinned[, ':='(
-    lon = raster::xFromCell(brick, cell),
-    lat = raster::yFromCell(brick, cell)
-  )]
-  data.table::setcolorder(thinned, c(
-    "cell", "lon", "lat", "buffer", names(brick)
-  ))
-  thinned
+  ) %>% data.table::rbindlist()
 }
 
 #' Return thinned bioclimatic conditions for a set of coordinates (no cache)
@@ -152,16 +143,7 @@ get_thinned_bioclim_wo_cache <- function(
   nb_cores <- parallel::detectCores()
   thinned <- parallel::mclapply(
     thinned[['cell']], extract_cell_bioclim, brick, buffers, mc.cores = nb_cores
-  ) %>% data.table::rbindlist() %>%
-    merge(thinned, ., by = "cell")
-  thinned[, ':='(
-    lon = raster::xFromCell(brick, cell),
-    lat = raster::yFromCell(brick, cell)
-  )]
-  data.table::setcolorder(thinned, c(
-    "cell", "lon", "lat", "buffer", names(brick)
-  ))
-  thinned
+  ) %>% data.table::rbindlist()
 }
 
 #' Get the unique brick cells within which occurrences fall
