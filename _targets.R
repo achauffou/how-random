@@ -352,7 +352,10 @@ get_bioclim_stack_targets <- list(
 thin_retrieve_gbif_bioclim_targets <- list(
   tar_target(
     gbif_entities_to_thin,
-    get_gbif_entities_to_thin(gbif_keys, file.path(processed_data_folder, "gbif"))
+    get_gbif_entities_to_thin(
+      gbif_keys, file.path(processed_data_folder, "gbif"), 
+      gbif_last_cleaning_update
+    )
   )
 )
 

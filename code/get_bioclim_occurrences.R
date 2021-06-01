@@ -219,7 +219,8 @@ extract_cell_bioclim <- function(cell, brick, buffers) {
 #' Get GBIF entities to thin
 #' 
 get_gbif_entities_to_thin <- function(
-  gbif_keys, db_folder, db_file = "occurrences.sqlite", table_name = "cleaned"
+  gbif_keys, db_folder, db_file = "occurrences.sqlite", table_name = "cleaned",
+  last_occ_update = NA
 ) {
   # Open connection to the database:
   db_path <- file.path(db_folder, db_file)
