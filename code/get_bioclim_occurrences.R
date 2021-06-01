@@ -131,19 +131,16 @@ get_thinned_bioclim_w_cache <- function(
 #' using cache information). See the details of how bioclimatic conditions are 
 #' retrieved at a location in the extract_cell_bioclim() function. An 
 #' additional buffer column is returned with the buffer radius used to retrieve 
-#' conditions.
+#' conditions. The function retrieves in a single call bioclimatic variables 
+#' for all cells, which is much faster than its cached counterpart.
 #' 
 get_thinned_bioclim_wo_cache <- function(
   occurrences, brick, buffers = c(5000, 10000)
 ) {
-  # Get thinned occurrences:
-  thinned <- thin_occurrences(occurrences, brick)
-  
-  # For each occurrence, retrieve bioclimatic conditions:
-  nb_cores <- parallel::detectCores()
-  thinned <- parallel::mclapply(
-    thinned[['cell']], extract_cell_bioclim, brick, buffers, mc.cores = nb_cores
-  ) %>% data.table::rbindlist()
+  # Get thinned occurrences and retrieve bioclimatic conditions:
+  thin_occurrences(occurrences, brick) %$%
+    cell %>%
+    extract_cells_bioclim(brick, buffers)
 }
 
 #' Get the unique brick cells within which occurrences fall
@@ -211,6 +208,37 @@ extract_cell_bioclim <- function(cell, brick, buffers) {
   
   # Create and return a data.table with the variables:
   data.table::data.table(cell = cell, buffer = buffer) %>%
+    cbind(data.table::as.data.table(vars))
+}
+
+#' Extract bioclimatic conditions of several cells from a brick
+#' 
+extract_cells_bioclim <- function(cells, brick, buffers) {
+  # Try retrieving values at the exact location:
+  vars <- raster::extract(brick, cells)
+  cells_buffer <- rep(0.0, times = length(cells))
+  
+  # If there were NAs in the variables, try using buffers:
+  na_rows <- which(apply(vars, 1, function(x) {any(is.na(x))}))
+  if (length(na_rows) > 0) {
+    na_vars <- which(is.na(vars[na_rows, ]))
+    for (buffer in buffers) {
+      new_vars <- raster::xyFromCell(brick, cells[na_rows]) %>%
+        raster::extract(
+          brick, ., buffer = buffer, 
+          cellnumbers = TRUE, fun = function(x) mean(x, na.rm = TRUE)
+        )
+      cells_buffer[na_rows] <- buffer
+      vars[na_rows, ][na_vars] <- new_vars[na_vars]
+      na_rows <- which(apply(vars, 1, function(x) {any(is.na(x))}))
+      if (length(na_rows) == 0) break
+      na_vars <- which(is.na(vars[na_rows, ]))
+    }
+    cells_buffer[na_rows] <- -1
+  }
+  
+  # Create and return a data.table with the variables:
+  data.table::data.table(cell = cells, buffer = cells_buffer) %>%
     cbind(data.table::as.data.table(vars))
 }
 
