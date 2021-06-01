@@ -44,6 +44,55 @@ crop_raster_from_file <- function(file_path, extent_coords, save_path) {
 }
 
 
+# Get connection to bioclimatic cache database =================================
+#' Get connection of the cache database for bioclimatic conditions
+#' 
+#' This function returns a database connection to the cache database for 
+#' bioclimatic conditions. It checks that the database for given buffers is 
+#' up-to-date with stack files and (re)creates it if necessary.
+#' 
+get_bioclim_cache_db_con <- function(
+  cache_folder, stack_path, strack, buffers = c(5000, 10000)
+) {
+  # Order buffers:
+  buffers %<>% unique() %>% sort()
+  
+  # Create cache folder if it does not exist:
+  dir.create(cache_folder, showWarnings = FALSE, recursive = TRUE)
+  
+  # Create cache database if it does not exist or is outdated:
+  db_path <- paste0(c(0, buffers), collapse = "_") %>%
+    paste("bioclim_vars_cache", ., sep = "_") %>%
+    paste0(".sqlite") %>%
+    file.path(cache_folder, .)
+  if (file.exists(db_path)) {
+    if (file.info(db_path)$ctime > file.info(stack_path)$ctime) {
+      db <- RSQLite::dbConnect(RSQLite::SQLite(), db_path)
+    } else {
+      file.remove(db_path)
+      db <- create_bioclim_cache_db(db_path, brick)
+    }
+  } else {
+    db <- create_bioclim_cache_db(db_path, brick)
+  }
+  db
+}
+
+#' Create a cache database for bioclimatic variables
+#' 
+create_bioclim_cache_db <- function(
+  db_path, brick, table_name = "bioclim_vars"
+) {
+  # Create the database:
+  db <- RSQLite::dbConnect(RSQLite::SQLite(), db_path)
+  paste0(names(brick), " REAL", collapse = ", ") %>%
+    paste0("CREATE TABLE ", table_name, 
+           " (cell INTEGER PRIMARY KEY, buffer REAL, ", ., ")") %>%
+    RSQLite::dbExecute(db, .)
+  db
+}
+
+
 # Get bioclimatic conditions of a cell =========================================
 #' Extract bioclimatic conditions of a given cell from a brick
 #' 
