@@ -93,7 +93,112 @@ create_bioclim_cache_db <- function(
 }
 
 
+# Retrieve thinned bioclimatic conditions at given coordinates =================
+#' Return thinned bioclimatic conditions for a set of coordinates (cache)
+#' 
+#' Given a list with occurrences coordinates, this function returns a data.table
+#' with the bioclimatic conditions at those coordinates. The function first 
+#' thins the set of coordinates to return only one entry per grid cell of the 
+#' brick. Then, it for each cell included, the function retrieves the 
+#' bioclimatic conditions from the raster brick at the given location (using a 
+#' cache to ensure that bioclimatic conditions of any cell are not retrieved 
+#' several times). See the details of how bioclimatic conditions are retrieved 
+#' at a location in the extract_cell_bioclim() function. An additional buffer 
+#' column is returned with the buffer radius used to retrieve conditions.
+#' 
+get_thinned_bioclim_w_cache <- function(
+  occurrences, brick, db, table_name = "bioclim_vars", 
+  buffers = c(5000, 10000)
+) {
+  # Get thinned occurrences:
+  thinned <- thin_occurrences(occurrences, brick)
+  
+  # For each occurrence, retrieve bioclimatic conditions:
+  nb_cores <- parallel::detectCores()
+  thinned <- parallel::mclapply(
+    thinned[['cell']], get_cell_bioclim, brick, db, table_name, 
+    buffers, mc.cores = nb_cores
+  ) %>% data.table::rbindlist() %>%
+    merge(thinned, ., by = "cell")
+  thinned[, ':='(
+    lon = raster::xFromCell(brick, cell),
+    lat = raster::yFromCell(brick, cell)
+  )]
+  data.table::setcolorder(thinned, c(
+    "cell", "lon", "lat", "buffer", names(brick)
+  ))
+  thinned
+}
+
+#' Return thinned bioclimatic conditions for a set of coordinates (no cache)
+#' 
+#' Given a list with occurrences coordinates, this function returns a data.table
+#' with the bioclimatic conditions at those coordinates. The function first 
+#' thins the set of coordinates to return only one entry per grid cell of the 
+#' brick. Then, it for each cell included, the function retrieves the 
+#' bioclimatic conditions from the raster brick at the given location (without 
+#' using cache information). See the details of how bioclimatic conditions are 
+#' retrieved at a location in the extract_cell_bioclim() function. An 
+#' additional buffer column is returned with the buffer radius used to retrieve 
+#' conditions.
+#' 
+get_thinned_bioclim_wo_cache <- function(
+  occurrences, brick, buffers = c(5000, 10000)
+) {
+  # Get thinned occurrences:
+  thinned <- thin_occurrences(occurrences, brick)
+  
+  # For each occurrence, retrieve bioclimatic conditions:
+  nb_cores <- parallel::detectCores()
+  thinned <- parallel::mclapply(
+    thinned[['cell']], extract_cell_bioclim, brick, buffers, mc.cores = nb_cores
+  ) %>% data.table::rbindlist() %>%
+    merge(thinned, ., by = "cell")
+  thinned[, ':='(
+    lon = raster::xFromCell(brick, cell),
+    lat = raster::yFromCell(brick, cell)
+  )]
+  data.table::setcolorder(thinned, c(
+    "cell", "lon", "lat", "buffer", names(brick)
+  ))
+  thinned
+}
+
+#' Get the unique brick cells within which occurrences fall
+#' 
+thin_occurrences <- function(occurrences, brick) {
+  thinned <- unique(raster::cellFromXY(brick, occurrences)) %>%
+    data.table::data.table(cell = .)
+  thinned[!is.na(cell)]
+  thinned
+}
+
+
 # Get bioclimatic conditions of a cell =========================================
+#' Get bioclimatic conditions for a given cell (using cache database)
+#' 
+get_cell_bioclim <- function(cell, brick, db, table_name, buffers) {
+  # # Attempt to retrieve the entry directly from the cache:
+  entry <- data.table::data.table()
+  tryCatch({
+    entry <- paste0("SELECT * FROM ", table_name, " WHERE cell=", cell) %>%
+      RSQLite::dbGetQuery(db, ., "PRAGMA busy_timeout = 10 * 1000") %>%
+      data.table::as.data.table()
+  }, error = function(e) {}, finally = {})
+
+  # If an entry was found in the cache, return it:
+  if (nrow(entry) > 0) {
+    return(entry[1,])
+  }
+  
+  # If the entry does not exist in cache, add it and return it:
+  entry <- extract_cell_bioclim(cell, brick, buffers)
+  tryCatch({
+    RSQLite::dbAppendTable(db, table_name, entry, "PRAGMA busy_timeout = 10 * 1000")
+  }, error = function(e) {}, finally = {})
+  entry
+}
+
 #' Extract bioclimatic conditions of a given cell from a brick
 #' 
 #' If for any bioclimatic condition there is no value (NA) at a querried 
