@@ -354,7 +354,7 @@ thin_retrieve_gbif_bioclim_targets <- list(
     gbif_entities_to_thin,
     get_gbif_entities_to_thin(
       gbif_keys, file.path(processed_data_folder, "gbif"), 
-      gbif_last_cleaning_update
+      last_occ_update = gbif_last_cleaning_update
     )
   )
 )
