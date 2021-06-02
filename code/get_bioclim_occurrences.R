@@ -12,7 +12,7 @@ stack_bioclim_archives <- function(
   skip <- FALSE
   if (file.exists(save_path)) {
     raster_files <- list.files(temp_dir, full.names = T)
-    if (min(file.info(archives)$ctime) < max(file.info(raster_files)$mtime)) {
+    if (max(file.info(archives)$ctime) < min(file.info(raster_files)$mtime)) {
       skip <- TRUE
     }
   }
