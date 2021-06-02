@@ -414,8 +414,8 @@ clean_gbif_occurrences_chunk <- function(
     )] %>% unique()
     nb_unique_rows <- nrow(chunk)
     
-    # Append cleaned chunk to the occurrences database:
-    RSQLite::dbAppendTable(db, table_name, chunk)
+    # Append cleaned chunk to the occurrences database (with 20s busy timeout):
+    RSQLite::dbAppendTable(db, table_name, chunk, "PRAGMA busy_timeout = 20 * 1000")
   } else {
     nb_coord_capitals <- 0
     nb_coord_centroid <- 0
