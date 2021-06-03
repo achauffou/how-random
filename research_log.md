@@ -1,6 +1,13 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 3 June 2021
+##### Bioclimatic variables retrieved at all GBIF and Web of Life locations:
+Cleaning GBIF occurrences, thinning them to have only one occurrence per entity per grid cell, and retrieving bioclimatic variables at their location is done.
+The last step to data collection and preparation is to perform the bioclimatic suitability analyses for all verified_name/proposed_kingdom combination in stored in GBIF keys and saving the output in a smart way (potentially using a cache).
+It will be necessary to perform a sensitivity analysis to find out the minimum number of occurrences to ensure reasonable accuracy and precision of the bioclimatic suitability.
+Additionally, I have not decided yet whether I should compute the niche space for all species collectively or on an individual basis.
+
 #### 30 May 2021
 ##### Another simulation attempt
 I have performed another simulation attempt. Again, there were 43 plants, 87 pollinators and 15 sites, but I used 3000 iterations per chain and I requested 32 cores with 2048 Mo per core. The sampler took 3h30, which is considerably less in proportion. 9.0% of transitions hit the maximum treedepth limit; maybe I should do something about it. I will make another trial with IDs passed in the sliced array to see if it could help further reducing the computation time, because for now it still takes too long for the real dataset (it would take weeks to finish).
