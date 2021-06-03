@@ -498,3 +498,39 @@ thin_retrieve_gbif_single_entity <- function(
   cache[, paste0("nb_buffer_", c(0, buffers)) := nb_buffers]
   data.table::fwrite(cache, cache_path, append = TRUE)
 }
+
+
+# Retrieve Web of Life bioclimatic variables ===================================
+retrieve_wol_bioclim <- function(
+  wol_metadata, prob_nets, stack, use_raster_brick = TRUE, buffers = c(5000, 10000)
+) {
+  # Remove problematic networks:
+  wol_metadata %<>% .[!is.na(lon) & !is.na(lat) & !net_name %in% prob_nets]
+  
+  # Order buffers:
+  buffers %<>% unique() %>% sort()
+  
+  # Create a raster brick from the raster stack (to ensure faster retrieval):
+  if (use_raster_brick) {
+    message("Creating raster brick object from raster stack...")
+    brick <- raster::brick(stack)
+    message("Raster brick object successfully created!")
+  } else {
+    message(paste("Informational message: if enough memory is available,",
+                  "consider setting use_raster_brick = TRUE.",
+                  "Bioclimatic variables retrieval is faster from raster brick!"))
+    brick <- stack
+  }
+  
+  # Get bioclimatic conditions:
+  wol_bioclim <- wol_metadata[, .(lon, lat)] %>%
+    unique() %>%
+    get_thinned_bioclim_wo_cache(brick, buffers)
+  
+  # Merge bioclimatic conditions with Web of Life locations:
+  wol_metadata_w_grid <- wol_metadata[, .(
+    loc_id, 
+    cell = raster::cellFromXY(brick, data.table::data.table(lon, lat))
+  )]
+  merge(wol_metadata_w_grid, wol_bioclim[, -"buffer"], by = c("cell"), all.x = TRUE)
+}

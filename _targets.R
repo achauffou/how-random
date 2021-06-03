@@ -348,7 +348,7 @@ get_bioclim_stack_targets <- list(
   )
 )
 
-# Thin and retrieve bioclimatic conditions for all GBIF entities:
+# Thin and retrieve bioclimatic conditions:
 thin_retrieve_gbif_bioclim_targets <- list(
   tar_target(
     gbif_entities_to_thin,
@@ -360,10 +360,14 @@ thin_retrieve_gbif_bioclim_targets <- list(
   tar_target(
     last_gbif_bioclim_update,
     thin_retrieve_gbif_entities(
-      gbif_entities_to_thin, file.path(processed_data_folder, "gbif"), 
-      raw_bioclim_stack, cache_folder, 
+      gbif_entities_to_thin, file.path(processed_data_folder, "gbif"),
+      raw_bioclim_stack, cache_folder,
       file.path(processed_data_folder, "bioclim_vars")
     )
+  ),
+  tar_target(
+    wol_bioclim,
+    retrieve_wol_bioclim(wol_metadata, wol_problematic_networks, raw_bioclim_stack)
   )
 )
 
