@@ -505,7 +505,8 @@ retrieve_wol_bioclim <- function(
   wol_metadata, prob_nets, stack, use_raster_brick = TRUE, buffers = c(5000, 10000)
 ) {
   # Remove problematic networks:
-  wol_metadata %<>% .[!is.na(lon) & !is.na(lat) & !net_name %in% prob_nets]
+  wol_metadata %<>% .[!is.na(lon) & !is.na(lat) & !net_name %in% prob_nets] %>%
+    unique(by = "loc_id")
   
   # Order buffers:
   buffers %<>% unique() %>% sort()
@@ -524,7 +525,6 @@ retrieve_wol_bioclim <- function(
   
   # Get bioclimatic conditions:
   wol_bioclim <- wol_metadata[, .(lon, lat)] %>%
-    unique() %>%
     get_thinned_bioclim_wo_cache(brick, buffers)
   
   # Merge bioclimatic conditions with Web of Life locations:
