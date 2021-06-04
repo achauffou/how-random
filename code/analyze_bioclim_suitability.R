@@ -83,6 +83,20 @@ get_sp_bioclim <- function(
   ) %>% unique(by = "cell")
 }
 
+#' Get bioclimatic conditions of all occurrences of all species
+#' 
+get_all_spp_bioclim <- function(
+  wol_bioclim, gbif_keys, db_path, table_name = "thinned", 
+  aggregation_level = "species"
+) {
+  rbind(
+    wol_bioclim[complete.cases(wol_bioclim),][, -c("loc_id")],
+    gbif_keys[['gbif_key']] %>%
+      unique() %>%
+      get_gbif_bioclim(db_path, table_name, aggregation_level)
+  ) %>% unique(by = "cell")
+}
+
 #' Count the number of bioclimatic occurrences of all species
 #' 
 count_nb_occs_per_species <- function(
