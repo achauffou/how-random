@@ -40,6 +40,8 @@ read_YAML_config_targets <- list(
   tar_target(accepted_ranks, config$accepted_ranks),
   tar_target(aggregation_level, config$aggregation_level),
   tar_target(bioclim_extent, config$bioclim_extent),
+  tar_target(bioclim_sensitivity_nb_samples, config$bioclim_sensitivity_nb_samples),
+  tar_target(bioclim_suitability_grid_resolution, config$bioclim_suitability_grid_resolution),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
@@ -50,6 +52,7 @@ read_YAML_config_targets <- list(
   tar_target(processed_data_folder, config$folder_structure$processed_data),
   tar_target(stan_src_folder, config$folder_structure$stan_sources),
   tar_target(stan_bin_folder, config$folder_structure$stan_binaries),
+  tar_target(results_bioclim_folder, config$folder_structure$results_bioclim),
   tar_target(results_sim_folder, config$folder_structure$results_simulations),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
@@ -384,10 +387,45 @@ thin_retrieve_gbif_bioclim_targets <- list(
   )
 )
 
+# Analyze the sensitivity of bioclimatic suitability to number of occurrences:
+bioclim_suitability_sensitivity_targets <- list(
+  tar_target(
+    bioclim_sensitivity_sp_name,
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_name']][1]
+  ),
+  tar_target(
+    bioclim_sensitivity_sp_kingdom,
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_kingdom']][1]
+  ),
+  tar_target(
+    bioclim_sensitivity_samples,
+    sample_bioclim_suitability_sensitivity(
+      bioclim_sensitivity_sp_name, 
+      bioclim_sensitivity_sp_kingdom, 
+      wol_species, 
+      wol_bioclim, 
+      gbif_keys, 
+      bioclim_db_path, 
+      "thinned", 
+      aggregation_level, 
+      bioclim_sensitivity_nb_samples, 
+      bioclim_suitability_grid_resolution
+    ) %>% lapply(1:2, function(x, object, sp_name) {
+      save_obj(
+        object[[x]],
+        paste0("sensitivity_", stringr::str_replace(sp_name, " ", "_"), 
+               "_", names(object)[[x]]),
+        results_bioclim_folder
+      )
+    }, object = ., sp_name = bioclim_sensitivity_sp_name)
+  )
+)
+
 # List all targets to perform bioclimatic suitability analyses:
 perform_bioclim_analyses_targets <- list(
   get_bioclim_stack_targets,
-  thin_retrieve_gbif_bioclim_targets
+  thin_retrieve_gbif_bioclim_targets,
+  bioclim_suitability_sensitivity_targets
 )
 
 

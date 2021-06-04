@@ -228,3 +228,60 @@ realised_niche_density <- function(realised_niche, grid_resolution){
     ecospat::ecospat.grid.clim.dyn(lisup, lisup, lisup, R = grid_resolution) %$%
     list(z = z.uncor, w = w)
 }
+
+
+# Analyze the sensitivity of bioclimatic suitability ===========================
+#' Compute the climatic suitability of a species for various sample size
+#' 
+sample_bioclim_suitability_sensitivity <- function(
+  sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, 
+  table_name = "thinned", aggregation_level = "species", nb_samples = 10,
+  grid_resolution = 200
+) {
+  # Get species GBIF and Web of Life occurrences:
+  gbif_bioclim <- get_sp_gbif_bioclim(
+    sp_name, sp_kingdom, gbif_keys, db_path, 
+    table_name, aggregation_level
+  )
+  target_bioclim <- get_sp_wol_bioclim(
+    sp_name, sp_kingdom, wol_species, wol_bioclim
+  )
+  
+  # Get sample sizes:
+  sampling_levels <- logspace(5, nrow(gbif_bioclim), nb_samples) %>% round()
+  
+  # Perform sensitivity analysis using the species individual niche:
+  nb_cores <- parallel::detectCores()
+  message("Performing sensitivity analysis based on individual species niche space...")
+  indiv_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
+    res <- gbif_bioclim[sample(.N, sample_size)] %>%
+      rbind(target_bioclim) %>%
+      unique(by = "cell") %>%
+      calc_suitability(target_bioclim, niche_space = NULL,
+                       grid_resolution = grid_resolution)
+    res[, sample_size := sample_size]
+    res
+  }, mc.cores = nb_cores) %>% data.table::rbindlist()
+  
+  # Perform sensitivity analysis using the collective niche of all species:
+  message("Performing sensitivity analysis based on collective niche space...")
+  collective_niche <- get_all_spp_bioclim(
+    wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
+  ) %>% calc_niche_space()
+  collec_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
+    res <- gbif_bioclim[sample(.N, sample_size)] %>%
+      rbind(target_bioclim) %>%
+      unique(by = "cell") %>%
+      calc_suitability(target_bioclim, niche_space = collective_niche, 
+                       grid_resolution = grid_resolution)
+    res[, sample_size := sample_size]
+    res
+  }, mc.cores = nb_cores) %>% data.table::rbindlist()
+  
+  # Return outcome of sensitivity analyses:
+  list(indiv = indiv_analysis, collec = collec_analysis)
+}
+
+#' Return a log-spaced sequence
+#' 
+logspace <- function(x, y, n) exp(seq(log(x), log(y), length.out = n))
