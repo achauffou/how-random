@@ -285,3 +285,23 @@ sample_bioclim_suitability_sensitivity <- function(
 #' Return a log-spaced sequence
 #' 
 logspace <- function(x, y, n) exp(seq(log(x), log(y), length.out = n))
+
+#' Calculate the mean absolute error of bioclimatic suitability samples
+#' 
+calc_bioclim_suitability_sensitivity_errors <- function(sensitivity_samples) {
+  # Get the mean absolute error:
+  sensitivity_samples[
+    , baseline_suitability := .SD[order(-sample_size)][['suitability']][1], 
+    by = .(cell)
+  ]
+  sensitivity_samples[
+    , abs_error := abs(.SD[['suitability']] - baseline_suitability), 
+    by = .(cell, sample_size)
+  ]
+  sensitivity_errors <- sensitivity_samples[
+    , .(mae = mean(abs_error)), by = .(sample_size)
+  ]
+  sensitivity_errors[
+    , log_prop_occ := log(sample_size / max(.SD[['sample_size']]))
+  ]
+}

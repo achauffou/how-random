@@ -418,6 +418,15 @@ bioclim_suitability_sensitivity_targets <- list(
         results_bioclim_folder
       )
     }, object = ., sp_name = bioclim_sensitivity_sp_name)
+  ),
+  tar_target(
+    bioclim_sensitivity_errors,
+    {
+      res <- bioclim_sensitivity_samples %>% 
+        lapply(calc_bioclim_suitability_sensitivity_errors)
+      names(res) <- names(bioclim_sensitivity_samples)
+      res
+    }
   )
 )
 
