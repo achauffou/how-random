@@ -370,10 +370,14 @@ thin_retrieve_gbif_bioclim_targets <- list(
     retrieve_wol_bioclim(wol_metadata, wol_problematic_networks, raw_bioclim_stack)
   ),
   tar_target(
+    bioclim_db_path,
+    {last_gbif_bioclim_update; file.path(processed_data_folder, "gbif", "bioclim.sqlite")}
+  ),
+  tar_target(
     nb_occurrences_per_species,
     count_nb_occs_per_species(
       gbif_keys, wol_species, wol_bioclim, 
-      file.path(processed_data_folder, "gbif", "bioclim.sqlite"), 
+      bioclim_db_path, 
       file.path(cache_folder, "nb_occs_per_species_cache.csv"),
       aggregation_level = aggregation_level
     )
