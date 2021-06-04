@@ -157,3 +157,14 @@ count_nb_occs_per_species <- function(
     colClasses = c("character", "character", "integer")
   )
 }
+
+
+# Calculate niche space and bioclimatic suitability from occurrences ===========
+#' Performs a PCA to calculate a bioclimatic niche space from occurrences
+#' 
+calc_niche_space <- function(bioclim) {
+  bioclim %>%
+    .[complete.cases(.),] %>%
+    .[,-c("cell")] %>%
+    ade4::dudi.pca(center = T, scale = T, scannf = F, nf = 2)
+}
