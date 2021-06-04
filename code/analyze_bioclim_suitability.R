@@ -80,3 +80,64 @@ get_sp_bioclim <- function(
     get_sp_wol_bioclim(name, kingdom, wol_species, wol_bioclim)
   ) %>% unique(by = "cell")
 }
+
+#' Count the number of bioclimatic occurrences of all species
+#' 
+count_nb_occs_per_species <- function(
+  gbif_keys, wol_species, wol_bioclim, db_path, cache_path, 
+  table_name = "thinned", aggregation_level = "species"
+) {
+  # Open cache file or create one if it does not exist:
+  if(file.exists(cache_path)) {
+    cache <- data.table::fread(
+      cache_path, na.strings = c("", "NA"), 
+      colClasses = c("character", "character", "integer")
+    )
+  } else {
+    dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
+    cache <- data.table::data.table(
+      sp_name = character(), 
+      sp_kingdom = character(), 
+      nb_bioclim_occurrences = integer()
+    )
+    data.table::fwrite(cache, cache_path)
+  }
+  
+  # Find out which species have not been counted yet:
+  spp_to_count <- gbif_keys %>% 
+    .[, .(sp_name = verified_name, sp_kingdom = proposed_kingdom)] %>%
+    unique() %>%
+    data.table::fsetdiff(cache[, .(sp_name, sp_kingdom)])
+  
+  # Count occurrences of species:
+  if (nrow(spp_to_count) > 0) {
+    nb_cores <- parallel::detectCores()
+    message(paste("Counting all distinct occurrences of", nrow(spp_to_count), "species..."))
+    pb <- progress::progress_bar$new(
+      total = nrow(spp_to_count),
+      format = "  :current/:total :percent |:bar| :elapsedfull",
+      incomplete = " ",
+      force = TRUE
+    )
+    parallel::mclapply(1:nrow(spp_to_count), function(x) {
+      sp_name <- spp_to_count[x, ][['sp_name']]
+      sp_kingdom <- spp_to_count[x, ][['sp_kingdom']]
+      nb_occs <- get_sp_bioclim(
+        sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, 
+        table_name, aggregation_level
+      ) %>% nrow()
+      data.table::data.table(sp_name = sp_name, sp_kingdom = sp_kingdom, 
+                             nb_bioclim_occurrences = nb_occs) %>%
+        data.table::fwrite(cache_path, append = TRUE)
+      if(x %% nb_cores == 0) pb$update(x/nrow(spp_to_count))
+    }, mc.cores = nb_cores)
+    pb$terminate()
+    message()
+  }
+  
+  # Return table with occurrences counts for all species:
+  data.table::fread(
+    cache_path, na.strings = c("", "NA"), 
+    colClasses = c("character", "character", "integer")
+  )
+}
