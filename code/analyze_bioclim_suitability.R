@@ -39,7 +39,8 @@ get_gbif_bioclim <- function(
   RSQLite::dbGetQuery(db, query) %>% 
     data.table::as.data.table() %>% 
     .[, -c("genusKey", "speciesKey", "taxonKey")] %>%
-    unique(by = "cell")
+    unique(by = "cell") %>%
+    .[complete.cases(.),]
 }
 
 #' Get the GBIF bioclimatic conditions of a given species
@@ -66,7 +67,8 @@ get_sp_wol_bioclim <- function(name, kingdom, wol_species, wol_bioclim) {
   # Get locations of species:
   wol_bioclim[loc_id %in% get_sp_wol_loc_ids(name, kingdom, wol_species)] %>% 
     .[, -c("loc_id")] %>%
-    unique(by = "cell")
+    unique(by = "cell") %>%
+    .[complete.cases(.),]
 }
 
 #' Get the bioclimatic conditions at all occurrences of a given species
