@@ -160,6 +160,49 @@ count_nb_occs_per_species <- function(
 
 
 # Calculate niche space and bioclimatic suitability from occurrences ===========
+#' Calculate bioclimatic suitability of given occurrences
+#' 
+#' This function calculates the bioclimatic suitability of a species at given 
+#' locations. It takes as input the species and target bioclimatic conditions, 
+#' the niche space to use (calculates it based on species bioclimatic 
+#' conditions if it is null), as well as the niche space resolution to use. 
+#' Species and target bioclimatic occurrences must contain only columns for the 
+#' bioclimatic variables and an additional column for the cell number. The 
+#' niche size (size of niche containing 90% of occurrences) is also returned. 
+#' 
+calc_suitability <- function(
+  sp_bioclim, target_bioclim, niche_space = NULL, grid_resolution = 200
+) {
+  # If no niche space was given, calculate it based on the species occurrences:
+  if(is.null(niche_space)){
+    niche_space <- calc_niche_space(sp_bioclim)
+  }
+  
+  # Get and smooth the species niche:
+  sp_niche <- project_bioclim_to_niche_space(sp_bioclim, niche_space) %>%
+    realised_niche_density(grid_resolution)
+  
+  # Calculate niche size:
+  area_cell <- raster::res(sp_niche$z) %>% prod()
+  niche_size <- sum(as.vector(sp_niche$z > 0.1)) * area_cell
+  
+  # Get targets bioclimatic conditions as coordinates in the niche space:
+  target_niche_coords <- target_bioclim %>%
+    project_bioclim_to_niche_space(niche_space) %$%
+    lisup
+  
+  # Calculate the suitability
+  suitability <- raster::cellFromXY(sp_niche$z, target_niche_coords) %>%
+    raster::extract(sp_niche$z, .)
+  
+  # Return a data.table with cell, suitability and 90% niche size:
+  data.table::data.table(
+    cell = target_bioclim[['cell']], 
+    suitability = suitability,
+    niche_size = niche_size
+  )
+}
+
 #' Performs a PCA to calculate a bioclimatic niche space from occurrences
 #' 
 calc_niche_space <- function(bioclim) {
@@ -167,4 +210,21 @@ calc_niche_space <- function(bioclim) {
     .[complete.cases(.),] %>%
     .[,-c("cell")] %>%
     ade4::dudi.pca(center = T, scale = T, scannf = F, nf = 2)
+}
+
+#' Project bioclimatic conditions into a bidimensional niche space
+#' 
+project_bioclim_to_niche_space <- function(bioclim, niche_space){
+  bioclim %>%
+    .[complete.cases(.), ] %>%
+    .[,-c("cell")] %>%
+    ade4::suprow(niche_space, .)
+}
+
+#' Create a grid of occurrences density in a realised niche
+#' 
+realised_niche_density <- function(realised_niche, grid_resolution){
+  realised_niche %$%
+    ecospat::ecospat.grid.clim.dyn(lisup, lisup, lisup, R = grid_resolution) %$%
+    list(z = z.uncor, w = w)
 }
