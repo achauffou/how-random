@@ -1,7 +1,7 @@
 accepted_ranks: [genus, subgenus, species, subspecies, variety, form]
 aggregation_level: species
 bioclim_extent: [-180, 180, -60, 90]
-bioclim_sensitivity_nb_samples: 20
+bioclim_sensitivity_nb_samples: 50
 bioclim_suitability_grid_resolution: 200
 bioclim_suitability_max_error: 0.1
 download_date: 2021-04-14
