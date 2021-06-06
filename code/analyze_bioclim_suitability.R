@@ -305,3 +305,24 @@ calc_bioclim_suitability_sensitivity_errors <- function(sensitivity_samples) {
     , log_prop_occ := log(sample_size / max(.SD[['sample_size']]))
   ]
 }
+
+#' Determine the number of occurrences to meet suitability precision criterion
+#' 
+calc_bioclim_suitability_min_occurrences <- function(
+  sensitivity_errors, max_suitability_error
+) {
+  # Make a simple regression between log_prop_occ and mae:
+  threshold <- sensitivity_errors %>% 
+    mgcv::gam(mae ~ s(log_prop_occ), data = . , family = "gaussian") %>% 
+    broom::augment(
+      type.predict = "response", newdata = tibble::tibble(
+        log_prop_occ = seq(
+          min(sensitivity_errors[['log_prop_occ']]), 
+          max(sensitivity_errors[['log_prop_occ']]), 
+          length.out = 1000)
+      )
+    ) %$%
+    approx(x = .fitted, y = log_prop_occ, max_suitability_error) %$%
+    exp(y) * max(sensitivity_errors[['sample_size']])
+  round(threshold)
+}

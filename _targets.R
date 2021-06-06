@@ -42,6 +42,7 @@ read_YAML_config_targets <- list(
   tar_target(bioclim_extent, config$bioclim_extent),
   tar_target(bioclim_sensitivity_nb_samples, config$bioclim_sensitivity_nb_samples),
   tar_target(bioclim_suitability_grid_resolution, config$bioclim_suitability_grid_resolution),
+  tar_target(bioclim_suitability_max_error, config$bioclim_suitability_max_error),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
@@ -428,6 +429,17 @@ bioclim_suitability_sensitivity_targets <- list(
       res <- bioclim_sensitivity_samples %>% 
         lapply(calc_bioclim_suitability_sensitivity_errors)
       names(res) <- names(bioclim_sensitivity_samples)
+      res
+    }
+  ),
+  tar_target(
+    bioclim_sensitivity_thres,
+    {
+      res <- lapply(
+        bioclim_sensitivity_errors, calc_bioclim_suitability_min_occurrences, 
+        bioclim_suitability_max_error
+      )
+      names(res) <- names(bioclim_sensitivity_errors)
       res
     }
   )
