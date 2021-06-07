@@ -39,6 +39,10 @@ read_YAML_config_targets <- list(
   ),
   tar_target(accepted_ranks, config$accepted_ranks),
   tar_target(aggregation_level, config$aggregation_level),
+  tar_target(bioclim_extent, config$bioclim_extent),
+  tar_target(bioclim_sensitivity_nb_samples, config$bioclim_sensitivity_nb_samples),
+  tar_target(bioclim_suitability_grid_resolution, config$bioclim_suitability_grid_resolution),
+  tar_target(bioclim_suitability_max_error, config$bioclim_suitability_max_error),
   tar_target(download_date, config$download_date),
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
@@ -49,6 +53,7 @@ read_YAML_config_targets <- list(
   tar_target(processed_data_folder, config$folder_structure$processed_data),
   tar_target(stan_src_folder, config$folder_structure$stan_sources),
   tar_target(stan_bin_folder, config$folder_structure$stan_binaries),
+  tar_target(results_bioclim_folder, config$folder_structure$results_bioclim),
   tar_target(results_sim_folder, config$folder_structure$results_simulations),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
@@ -332,6 +337,166 @@ prepare_interactions_data_targets <- list(
 )
 
 
+# Perform bioclimatic suitability analyses =====================================
+# Stack climatic data:
+get_bioclim_stack_targets <- list(
+  tar_target(
+    raw_bioclim_stack,
+    stack_bioclim_archives(
+      c(worldclim_raw_archive, envirem_bioclim_raw_archive, 
+        envirem_topo_raw_archive), 
+      bioclim_extent, 
+      file.path(processed_data_folder, "bioclim_vars"),
+      download_date = download_date
+    )
+  )
+)
+
+# Thin and retrieve bioclimatic conditions:
+thin_retrieve_gbif_bioclim_targets <- list(
+  tar_target(
+    gbif_entities_to_thin,
+    get_gbif_entities_to_thin(
+      gbif_keys, file.path(processed_data_folder, "gbif"), 
+      last_occ_update = gbif_last_cleaning_update
+    )
+  ),
+  tar_target(
+    last_gbif_bioclim_update,
+    thin_retrieve_gbif_entities(
+      gbif_entities_to_thin, file.path(processed_data_folder, "gbif"),
+      raw_bioclim_stack, cache_folder,
+      file.path(processed_data_folder, "bioclim_vars")
+    )
+  ),
+  tar_target(
+    wol_bioclim,
+    retrieve_wol_bioclim(wol_metadata, wol_problematic_networks, raw_bioclim_stack)
+  ),
+  tar_target(
+    bioclim_db_path,
+    {last_gbif_bioclim_update; file.path(processed_data_folder, "gbif", "bioclim.sqlite")}
+  ),
+  tar_target(
+    nb_occurrences_per_species,
+    count_nb_occs_per_species(
+      gbif_keys, wol_species, wol_bioclim, 
+      bioclim_db_path, 
+      file.path(cache_folder, "nb_occs_per_species_cache.csv"),
+      aggregation_level = aggregation_level
+    )
+  )
+)
+
+# Analyze the sensitivity of bioclimatic suitability to number of occurrences:
+bioclim_suitability_sensitivity_targets <- list(
+  tar_target(
+    bioclim_sensitivity_sp_name,
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_name']][1]
+  ),
+  tar_target(
+    bioclim_sensitivity_sp_kingdom,
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_kingdom']][1]
+  ),
+  tar_target(
+    bioclim_sensitivity_samples,
+    {
+      res <- sample_bioclim_suitability_sensitivity(
+        bioclim_sensitivity_sp_name, 
+        bioclim_sensitivity_sp_kingdom, 
+        wol_species, 
+        wol_bioclim, 
+        gbif_keys, 
+        bioclim_db_path, 
+        "thinned", 
+        aggregation_level, 
+        bioclim_sensitivity_nb_samples, 
+        bioclim_suitability_grid_resolution
+      ) %>% lapply(1:2, function(x, object, sp_name) {
+        save_obj(
+          object[[x]],
+          paste0("sensitivity_", stringr::str_replace(sp_name, " ", "_"), 
+                 "_", names(object)[[x]]),
+          results_bioclim_folder
+        )
+      }, object = ., sp_name = bioclim_sensitivity_sp_name)
+      names(res) <- c("indiv", "collec")
+      res
+    }
+  ),
+  tar_target(
+    bioclim_sensitivity_errors,
+    {
+      res <- bioclim_sensitivity_samples %>% 
+        lapply(calc_bioclim_suitability_sensitivity_errors)
+      names(res) <- names(bioclim_sensitivity_samples)
+      res
+    }
+  ),
+  tar_target(
+    bioclim_sensitivity_thres,
+    {
+      res <- lapply(
+        bioclim_sensitivity_errors, calc_bioclim_suitability_min_occurrences, 
+        bioclim_suitability_max_error
+      )
+      names(res) <- names(bioclim_sensitivity_errors)
+      res
+    }
+  )
+)
+
+# Calculate bioclimatic suitability of all eligible species:
+calc_bioclim_suitability_targets <- list(
+  tar_target(
+    bioclim_suitability_indiv,
+    nb_occurrences_per_species %>% 
+      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['indiv']]] %>%
+      calc_spp_bioclim_suitability(
+        gbif_keys, 
+        wol_species, 
+        wol_bioclim, 
+        bioclim_db_path, 
+        file.path(cache_folder, "bioclim_suitability_indiv_cache.csv"), 
+        aggregation_level = aggregation_level, 
+        grid_resolution = bioclim_suitability_grid_resolution, 
+        collective = FALSE
+      )
+  ),
+  tar_target(
+    bioclim_suitability_collec,
+    nb_occurrences_per_species %>% 
+      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['collec']]] %>%
+      calc_spp_bioclim_suitability(
+        gbif_keys, 
+        wol_species, 
+        wol_bioclim, 
+        bioclim_db_path, 
+        file.path(cache_folder, "bioclim_suitability_collec_cache.csv"), 
+        aggregation_level = aggregation_level, 
+        grid_resolution = bioclim_suitability_grid_resolution, 
+        collective = TRUE
+      )
+  ),
+  tar_target(
+    interactions,
+    add_suitability_to_interactions(
+      wol_interactions, wol_bioclim, wol_species, bioclim_suitability_indiv, 
+      bioclim_suitability_collec
+    ) %>%
+      save_obj("interactions_final.csv", processed_data_folder)
+  )
+)
+
+# List all targets to perform bioclimatic suitability analyses:
+perform_bioclim_analyses_targets <- list(
+  get_bioclim_stack_targets,
+  thin_retrieve_gbif_bioclim_targets,
+  bioclim_suitability_sensitivity_targets,
+  calc_bioclim_suitability_targets
+)
+
+
 # Simulate Stan models =========================================================
 simulate_stan_models_targets <- list(
   tar_target(
@@ -399,6 +564,7 @@ list(
   download_raw_data_targets,
   read_raw_data_targets,
   prepare_interactions_data_targets,
+  perform_bioclim_analyses_targets,
   simulate_stan_models_targets,
   compile_TeX_manuscripts_targets
 )

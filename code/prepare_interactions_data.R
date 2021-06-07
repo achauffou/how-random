@@ -6,7 +6,7 @@ create_wol_metadata_loc_id <- function(metadata, manual_loc) {
   metadata <- manual_loc[, .(net_name, man_lat = lat, man_lon = lon)] %>%
     merge(metadata, by = "net_name", all.y = TRUE)
   metadata[!is.na(man_lat), lat := man_lat]
-  metadata[!is.na(man_lon), lat := man_lon]
+  metadata[!is.na(man_lon), lon := man_lon]
   metadata[, ':='(man_lat = NULL, man_lon = NULL)]
   
   # Add column with location ID:

@@ -1,6 +1,34 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 7 June 2021
+##### Data preparation finished:
+I have finished preparing all data for the analyses.
+However, the number of species and interactions left is very low because:
+1. Only species that are present in 2 or more network locations are included
+2. The maximum suitability error threshold of 0.1 filters out 80% of the species that are found in two different locations
+
+Regarding the first point, I believe it makes sense to include all species, even the ones that are found at only one network location.
+This means that I will need to download and clean GBIF data for the rest of the species.
+This operation will probably take a very long time (a week in my opinion).
+
+However, the question is more tricky regarding the second point.
+A threshold of 0.1 maximum error is already quite high.
+In addition, I have found out that the bioclimatic suitability value seems to be directly correlated to the number of occurrences.
+I need to think about whether it makes sense or is a source of errors/biases for future analyses.
+
+##### [Update] Negative correlation between bioclimatic suitability and number of occurrences:
+There is indeed a significant (p < 0.001) negative correlation between bioclimatic suitability and the number of occurrences of about -0.097.
+The correlation is lower than I thought and the variance in bioclimatic suitability is quite high, which could mean (although I need to discuss that with Bernat) that such bias is limited and should not cause trouble during analyses.
+There are few data points with very high number of occurrences (>50000), but the correlation is still almost the same (-0.104, p < 0.001) when they are disregarded, meaning that this bias is not driven by the low amount of data with many occurrences.
+
+#### 3 June 2021
+##### Bioclimatic variables retrieved at all GBIF and Web of Life locations:
+Cleaning GBIF occurrences, thinning them to have only one occurrence per entity per grid cell, and retrieving bioclimatic variables at their location is done.
+The last step to data collection and preparation is to perform the bioclimatic suitability analyses for all verified_name/proposed_kingdom combination in stored in GBIF keys and saving the output in a smart way (potentially using a cache).
+It will be necessary to perform a sensitivity analysis to find out the minimum number of occurrences to ensure reasonable accuracy and precision of the bioclimatic suitability.
+Additionally, I have not decided yet whether I should compute the niche space for all species collectively or on an individual basis.
+
 #### 31 May 2021
 ##### Slowly improving performance
 Another model that slices the plants and pollinators IDs took 3h22, which is a little bit less than the previous one. Still, it might be too much to enable reasonable computation time for the entire dataset. According to my estimations, if computation time scales linearly with the number of interactions, it could take about 3 days, which is acceptable. Now I will try to remove the for-loop from the partial sum function, to see if it helps, but it might not be feasible with sliced IDs.
