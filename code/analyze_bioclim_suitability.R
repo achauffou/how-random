@@ -326,3 +326,89 @@ calc_bioclim_suitability_min_occurrences <- function(
     exp(y) * max(sensitivity_errors[['sample_size']])
   round(threshold)
 }
+
+
+# Calculate bioclimatic suitability of all species =============================
+#' Calculate the bioclimatic suitability of many species (with cache)
+#' 
+calc_spp_bioclim_suitability <- function(
+  species_dt, gbif_keys, wol_species, wol_bioclim, db_path, cache_path, 
+  table_name = "thinned", aggregation_level = "species", 
+  grid_resolution = 200, collective = FALSE
+) {
+  # Open cache file or create one if it does not exist:
+  if(file.exists(cache_path)) {
+    cache <- data.table::fread(
+      cache_path, na.strings = c("", "NA"), 
+      colClasses = c("character", "character", "integer", "numeric", "numeric")
+    )
+  } else {
+    dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
+    cache <- data.table::data.table(
+      sp_name = character(), 
+      sp_kingdom = character(), 
+      cell = integer(),
+      suitability = numeric(),
+      niche_size = numeric()
+    )
+    data.table::fwrite(cache, cache_path)
+  }
+  
+  # Find out species for which suitability must be computed:
+  spp_to_calc <- species_dt[, .(sp_name, sp_kingdom)] %>% 
+    unique() %>%
+    data.table::fsetdiff(cache[, .(sp_name, sp_kingdom)])
+  
+  # Calculate the collective niche space if asked:
+  if (collective) {
+    message("Calculating the collective niche space of all species...")
+    collective_niche <- calc_niche_space(get_all_spp_bioclim(
+      wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
+    ))
+  } else {
+    collective_niche <- NULL
+  }
+  
+  # Count occurrences of species:
+  if (nrow(spp_to_calc) > 0) {
+    nb_cores <- parallel::detectCores()
+    message(paste("Calculating bioclimatic suitability of", nrow(spp_to_calc), "species..."))
+    pb <- progress::progress_bar$new(
+      total = nrow(spp_to_calc),
+      format = "  :current/:total :percent |:bar| :elapsedfull",
+      incomplete = " ",
+      force = TRUE
+    )
+    parallel::mclapply(1:nrow(spp_to_calc), function(x) {
+      sp_name <- spp_to_calc[x, ][['sp_name']]
+      sp_kingdom <- spp_to_calc[x, ][['sp_kingdom']]
+      sp_bioclim <- get_sp_bioclim(
+        sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, 
+        table_name, aggregation_level
+      )
+      sp_targets <- get_sp_wol_bioclim(sp_name, sp_kingdom, wol_species, wol_bioclim)
+      sp_suitability <- calc_suitability(
+        sp_bioclim, 
+        sp_targets, 
+        niche_space = collective_niche, 
+        grid_resolution = grid_resolution
+      )
+      sp_suitability[, ':='(sp_name = sp_name, sp_kingdom = sp_kingdom)]
+      data.table::setcolorder(sp_suitability, c(
+        "sp_name", "sp_kingdom", "cell", "suitability", "niche_size"
+      ))
+      data.table::fwrite(sp_suitability, cache_path, append = TRUE)
+      if(x %% nb_cores == 0) pb$update(x/nrow(spp_to_calc))
+    }, mc.cores = nb_cores)
+    pb$terminate()
+    message()
+  }
+  
+  # Return table with occurrences counts for all species:
+  output <- data.table::fread(
+    cache_path, na.strings = c("", "NA"), 
+    colClasses = c("character", "character", "integer", "numeric", "numeric")
+  )
+  species_dt[, .(sp_name, sp_kingdom)] %>%
+    merge(output, by = c("sp_name", "sp_kingdom"), all.x = TRUE)
+}

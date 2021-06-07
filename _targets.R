@@ -446,11 +446,46 @@ bioclim_suitability_sensitivity_targets <- list(
   )
 )
 
+# Calculate bioclimatic suitability of all eligible species:
+calc_bioclim_suitability_targets <- list(
+  tar_target(
+    bioclim_suitability_indiv,
+    nb_occurrences_per_species %>% 
+      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['indiv']]] %>%
+      calc_spp_bioclim_suitability(
+        gbif_keys, 
+        wol_species, 
+        wol_bioclim, 
+        bioclim_db_path, 
+        file.path(cache_folder, "bioclim_suitability_indiv_cache.csv"), 
+        aggregation_level = aggregation_level, 
+        grid_resolution = bioclim_suitability_grid_resolution, 
+        collective = FALSE
+      )
+  ),
+  tar_target(
+    bioclim_suitability_collec,
+    nb_occurrences_per_species %>% 
+      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['collec']]] %>%
+      calc_spp_bioclim_suitability(
+        gbif_keys, 
+        wol_species, 
+        wol_bioclim, 
+        bioclim_db_path, 
+        file.path(cache_folder, "bioclim_suitability_collec_cache.csv"), 
+        aggregation_level = aggregation_level, 
+        grid_resolution = bioclim_suitability_grid_resolution, 
+        collective = TRUE
+      )
+  )
+)
+
 # List all targets to perform bioclimatic suitability analyses:
 perform_bioclim_analyses_targets <- list(
   get_bioclim_stack_targets,
   thin_retrieve_gbif_bioclim_targets,
-  bioclim_suitability_sensitivity_targets
+  bioclim_suitability_sensitivity_targets,
+  calc_bioclim_suitability_targets
 )
 
 
