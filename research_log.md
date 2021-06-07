@@ -1,6 +1,22 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 7 June 2021
+##### Data preparation finished:
+I have finished preparing all data for the analyses.
+However, the number of species and interactions left is very low because:
+1. Only species that are present in 2 or more network locations are included
+2. The maximum suitability error threshold of 0.1 filters out 80% of the species that are found in two different locations
+
+Regarding the first point, I believe it makes sense to include all species, even the ones that are found at only one network location.
+This means that I will need to download and clean GBIF data for the rest of the species.
+This operation will probably take a very long time (a week in my opinion).
+
+However, the question is more tricky regarding the second point.
+A threshold of 0.1 maximum error is already quite high.
+In addition, I have found out that the bioclimatic suitability value seems to be directly correlated to the number of occurrences.
+I need to think about whether it makes sense or is a source of errors/biases for future analyses.
+
 #### 3 June 2021
 ##### Bioclimatic variables retrieved at all GBIF and Web of Life locations:
 Cleaning GBIF occurrences, thinning them to have only one occurrence per entity per grid cell, and retrieving bioclimatic variables at their location is done.
