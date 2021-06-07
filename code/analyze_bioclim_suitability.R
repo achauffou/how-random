@@ -412,3 +412,54 @@ calc_spp_bioclim_suitability <- function(
   species_dt[, .(sp_name, sp_kingdom)] %>%
     merge(output, by = c("sp_name", "sp_kingdom"), all.x = TRUE)
 }
+
+
+# Add suitability values to interactions =======================================
+#' Add individual and collective suitability to all interactions
+#' 
+add_suitability_to_interactions <- function(
+  interactions, wol_bioclim, wol_species, bioclim_suitability_indiv, 
+  bioclim_suitability_collec
+) {
+  # Add cell number to interactions:
+  interactions %<>% merge(wol_bioclim[, .(loc_id, cell)], by = "loc_id", all.x = TRUE)
+  
+  # Get ID of species:
+  spp_w_id <- wol_species[, .(
+    sp_name = final_name, sp_kingdom = kingdom, sp_id = final_id
+  )] %>% unique()
+  indiv_suitability <- merge(bioclim_suitability_indiv, spp_w_id, 
+                             by = c("sp_name", "sp_kingdom"), all.x = TRUE)
+  collec_suitability <- merge(bioclim_suitability_collec, spp_w_id, 
+                              by = c("sp_name", "sp_kingdom"), all.x = TRUE)
+  
+  # Add suitability of both species for each interaction:
+  interactions %<>% merge(indiv_suitability[, .(
+    sp1_id = sp_id, cell = cell, sp1_indiv_suitability = suitability, 
+    sp1_indiv_niche_area = niche_size
+  )], by = c("sp1_id", "cell"), all.x = TRUE)
+  interactions %<>% merge(collec_suitability[, .(
+    sp1_id = sp_id, cell = cell, sp1_collec_suitability = suitability, 
+    sp1_collec_niche_area = niche_size
+  )], by = c("sp1_id", "cell"), all.x = TRUE)
+  interactions %<>% merge(indiv_suitability[, .(
+    sp2_id = sp_id, cell = cell, sp2_indiv_suitability = suitability, 
+    sp2_indiv_niche_area = niche_size
+  )], by = c("sp2_id", "cell"), all.x = TRUE)
+  interactions %<>% merge(collec_suitability[, .(
+    sp2_id = sp_id, cell = cell, sp2_collec_suitability = suitability, 
+    sp2_collec_niche_area = niche_size
+  )], by = c("sp2_id", "cell"), all.x = TRUE)
+  
+  # Reorder columns:
+  interactions[, cell := NULL]
+  data.table::setcolorder(interactions, c(
+    "loc_id", "net_id", "int_type", "sp1_fun_group", "sp1_id", "sp1_name", 
+    "sp1_avg_rel_degree", "sp1_indiv_suitability", "sp1_indiv_niche_area", 
+    "sp1_collec_suitability", "sp1_collec_niche_area", "sp2_fun_group", 
+    "sp2_id", "sp2_name", "sp2_avg_rel_degree", "sp2_indiv_suitability", 
+    "sp2_indiv_niche_area", "sp2_collec_suitability", "sp2_collec_niche_area",
+    "int_strength"
+  ))
+  interactions
+}

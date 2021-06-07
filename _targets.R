@@ -477,6 +477,14 @@ calc_bioclim_suitability_targets <- list(
         grid_resolution = bioclim_suitability_grid_resolution, 
         collective = TRUE
       )
+  ),
+  tar_target(
+    interactions,
+    add_suitability_to_interactions(
+      wol_interactions, wol_bioclim, wol_species, bioclim_suitability_indiv, 
+      bioclim_suitability_collec
+    ) %>%
+      save_obj("interactions_final.csv", processed_data_folder)
   )
 )
 
