@@ -17,6 +17,11 @@ A threshold of 0.1 maximum error is already quite high.
 In addition, I have found out that the bioclimatic suitability value seems to be directly correlated to the number of occurrences.
 I need to think about whether it makes sense or is a source of errors/biases for future analyses.
 
+##### [Update] Negative correlation between bioclimatic suitability and number of occurrences:
+There is indeed a significant (p < 0.001) negative correlation between bioclimatic suitability and the number of occurrences of about -0.097.
+The correlation is lower than I thought and the variance in bioclimatic suitability is quite high, which could mean (although I need to discuss that with Bernat) that such bias is limited and should not cause trouble during analyses.
+There are few data points with very high number of occurrences (>50000), but the correlation is still almost the same (-0.104, p < 0.001) when they are disregarded, meaning that this bias is not driven by the low amount of data with many occurrences.
+
 #### 3 June 2021
 ##### Bioclimatic variables retrieved at all GBIF and Web of Life locations:
 Cleaning GBIF occurrences, thinning them to have only one occurrence per entity per grid cell, and retrieving bioclimatic variables at their location is done.
