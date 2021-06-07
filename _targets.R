@@ -421,6 +421,7 @@ bioclim_suitability_sensitivity_targets <- list(
         )
       }, object = ., sp_name = bioclim_sensitivity_sp_name)
       names(res) <- c("indiv", "collec")
+      res
     }
   ),
   tar_target(
