@@ -81,6 +81,9 @@ process_gbif_raw_archives <- function(
   
   # Clean and save to database archives that need to be processed:
   if (length(c(archives_to_process,archives_to_extract)) > 0) {
+    # Reproject land data to match CRS from CoordinateCleaner:
+    land_data %<>% sp::spTransform(sp::CRS("+proj=longlat +datum=WGS84 +no_defs"))
+    
     # Clean and process archives one by one:
     for (this_archive_path in c(archives_to_process,archives_to_extract)) {
       extracted_path <- file.path(
