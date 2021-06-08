@@ -6,4 +6,5 @@ libglpk40
 libproj-dev
 libudunits2-dev
 libv8-dev
+libxt6
 python3-pygments
