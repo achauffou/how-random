@@ -312,11 +312,11 @@ generate_stan_data.pol_logit_e <- function(nb_pla, nb_pol, nb_sites) {
   # Generate degree and optimal suitability:
   K_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
   K_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
-  S_opt_pla <- rnorm(nb_pla, 0, 1)
-  S_opt_pol <- rnorm(nb_pol, 0, 1)
-  env_sit <- rnorm(nb_sites, 0, 1)
-  S_pla <- abs(outer(S_opt_pla, env_sit, "-"))
-  S_pol <- abs(outer(S_opt_pol, env_sit, "-"))
+  S_opt_pla <- runif(nb_pla, 0, 1)
+  S_opt_pol <- runif(nb_pol, 0, 1)
+  env_sit <- runif(nb_sites, 0, 1)
+  S_pla <- 1 - abs(outer(S_opt_pla, env_sit, "-"))
+  S_pol <- 1 - abs(outer(S_opt_pol, env_sit, "-"))
   
   # Create data.table with all interactions:
   data <- lapply(1:nb_sites, function(x) {
