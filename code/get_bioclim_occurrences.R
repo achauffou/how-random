@@ -278,18 +278,6 @@ thin_retrieve_gbif_entities <- function(
   # Order buffers:
   buffers %<>% unique() %>% sort()
   
-  # Create a raster brick from the raster stack (to ensure faster retrieval):
-  if (use_raster_brick) {
-    message("Creating raster brick object from raster stack...")
-    brick <- raster::brick(stack)
-    message("Raster brick object successfully created!")
-  } else {
-    message(paste("Informational message: if enough memory is available,",
-                  "consider setting use_raster_brick = TRUE.",
-                  "Bioclimatic variables retrieval is faster from raster brick!"))
-    brick <- stack
-  }
-  
   # Check if the entities database up-to-date and create it if necessary:
   thinned_path <- file.path(occ_folder, thinned_db_file)
   thinned_db <- get_gbif_thinned_db_con(thinned_path, stack_path, brick)
@@ -326,6 +314,19 @@ thin_retrieve_gbif_entities <- function(
   
   # Thin entities that need to be thinned:
   if (nrow(entities_to_thin) > 0) {
+    # Create a raster brick from the raster stack (to ensure faster retrieval):
+    if (use_raster_brick) {
+      message("Creating raster brick object from raster stack...")
+      brick <- raster::brick(stack)
+      message("Raster brick object successfully created!")
+    } else {
+      message(paste("Informational message: if enough memory is available,",
+                    "consider setting use_raster_brick = TRUE.",
+                    "Bioclimatic variables retrieval is faster from raster brick!"))
+      brick <- stack
+    }
+    
+    # Thin and retrieve bioclimatic variables:
     nb_cores <- parallel::detectCores()
     message(paste("Thinning and retrieving bioclimatic variables for", 
                   nrow(entities_to_thin), "GBIF entities..."))
