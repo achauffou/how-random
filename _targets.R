@@ -17,9 +17,6 @@ if (is.null(getOption("tinytex.engine"))) {
 options(tinytex.bib_engine = getOption("tinytex.bib_engine", default = "biber"))
 options(tinytex.compile.min_times = getOption("tinytex.compile.min_times", default = 2))
 
-# Set options to load R packages listed in .r_packages if necessary:
-tar_option_set(packages = readLines(".r_packages"))
-
 # Load all functions scripts in the code folder:
 f <- list.files("code", recursive = TRUE, full.names = TRUE) %>%
   grep("\\.R$", ., value = TRUE) %>%
