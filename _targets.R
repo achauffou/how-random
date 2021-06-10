@@ -4,6 +4,7 @@ library(targets)
 
 # Load other crucial packages:
 library(magrittr)
+library(ggplot2)
 
 # Set R options:
 if (is.null(getOption("download.file.method"))) {
