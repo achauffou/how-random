@@ -64,24 +64,24 @@ misc_stan_analyses_plot_param_error <- function(
 
 
 # Functions to analyse specific Stan simulations ===============================
-#' Analyse simulation results of Stan model pol_logit_d
+#' Analyse simulation results of Stan model pol_logit_f
 #' 
-analyse_stan_sim.pol_logit_d <- function(
+analyse_stan_sim.pol_logit_f <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder
 ) {
   # Plot the error distribution of the parameters:
   misc_stan_analyses_plot_param_error(
-    rstan_fit, "alpha", data$alpha, 
+    rstan_fit, "beta", data$beta, 
     data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
-    ggsave(file.path(res_folder, "param_errors_alpha.pdf"), ., device = "pdf")
+    ggsave(file.path(res_folder, "param_errors_beta.pdf"), ., device = "pdf")
   misc_stan_analyses_plot_param_error(
-    rstan_fit, "beta_pla", data$beta_pla, 
+    rstan_fit, "gamma_pla", data$gamma_pla, 
     data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
-    ggsave(file.path(res_folder, "param_errors_beta_pla.pdf"), ., device = "pdf")
+    ggsave(file.path(res_folder, "param_errors_gamma_pla.pdf"), ., device = "pdf")
   misc_stan_analyses_plot_param_error(
-    rstan_fit, "beta_pol", data$beta_pol, 
+    rstan_fit, "gamma_pol", data$gamma_pol, 
     data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
-    ggsave(file.path(res_folder, "param_errors_beta_pol.pdf"), ., device = "pdf")
+    ggsave(file.path(res_folder, "param_errors_gamma_pol.pdf"), ., device = "pdf")
   misc_stan_analyses_plot_param_error(
     rstan_fit, "lambda", data$lambda, 
     data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
@@ -90,4 +90,21 @@ analyse_stan_sim.pol_logit_d <- function(
     rstan_fit, "nu", data$nu, 
     data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
     ggsave(file.path(res_folder, "param_errors_nu.pdf"), ., device = "pdf")
+}
+
+#' Analyse simulation results of Stan model pol_logit_g
+#'
+analyse_stan_sim.pol_logit_g <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Perform same analyses as pol_logit_f:
+  analyse_stan_sim.pol_logit_f(
+    spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  )
+  
+  # Plot the error distribution of the parameter alpha:
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "alpha", data$alpha, 
+    data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_alpha.pdf"), ., device = "pdf")
 }

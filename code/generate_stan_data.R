@@ -78,240 +78,12 @@ rbetacut <- function(x, shape1, shape2, ncp = 0, low_cut = 0, high_cut = 1) {
 
 
 # Specific functions to generate data and starting values ======================
-#' Simple model to generate plant-pollinator interaction data
+#' Generate data for a pollination logit model with no alpha intercept
 #' 
-generate_stan_data.pol_logit_a <- function(nb_pla, nb_pol, nb_sites) {
+generate_stan_data.pol_logit_f <- function(nb_sites, nb_pla, nb_pol) {
   # Generate degree and optimal suitability:
-  K_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
-  K_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
-  S_opt_pla <- rnorm(nb_pla, 0, 1)
-  S_opt_pol <- rnorm(nb_pol, 0, 1)
-  env_sit <- rnorm(nb_sites, 0, 1)
-  S_pla <- abs(outer(S_opt_pla, env_sit, "-"))
-  S_pol <- abs(outer(S_opt_pol, env_sit, "-"))
-  
-  # Create data.table with all interactions:
-  data <- expand.grid(
-    pla_id = 1:nb_pla, pol_id = 1:nb_pol, site_id = 1:nb_sites) %>%
-    data.table::as.data.table()
-  data[, ':='(
-    D = K_pla[pla_id] * K_pol[pol_id],
-    S = S_pla[cbind(pla_id, site_id)] * S_pol[cbind(pol_id, site_id)]
-  )]
-  
-  # Sample parameters:
-  alpha <- rnorm(nb_sites, 0, 1)
-  beta_pla <- rnorm(nb_pla, 0, 1)
-  beta_pol <- rnorm(nb_pol, 0, 1)
-  lambda <- rnorm(nb_sites, 0, 1)
-  nu <- rnorm(nb_sites, 0, 1)
-  
-  # Compute response variable:
-  data[, p := boot::inv.logit(
-    alpha[site_id] + beta_pla[pla_id] + beta_pol[pol_id] + lambda[site_id] * D + 
-      nu[site_id] * S
-    )]
-  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
-  
-  # Return data specified as a list:
-  list(
-    nb_pla = nb_pla,
-    nb_pol = nb_pol,
-    nb_sites = nb_sites,
-    nb_int = nrow(data),
-    Y = data[['Y']],
-    site_id = data[['site_id']],
-    pla_id = data[['pla_id']],
-    pol_id = data[['pol_id']],
-    D = data[['D']],
-    S = data[['S']],
-    alpha = alpha,
-    beta_pol = beta_pol,
-    beta_pla = beta_pla,
-    lambda = lambda,
-    nu = nu
-  )
-}
-
-generate_stan_start_values.pol_logit_a <- function(nb_pla, nb_pol, nb_sites) {
-  list(
-    zalpha = rep(0, nb_sites),
-    zbeta_pol = rep(0, nb_pol),
-    zbeta_pla = rep(0, nb_pla),
-    znu = rep(0, nb_sites),
-    zlambda = rep(0, nb_sites),
-    alpha_bar = 0,
-    beta_pol_bar = 0,
-    beta_pla_bar = 0,
-    nu_bar = 0,
-    lambda_bar = 0,
-    sigma_a = 0.1,
-    sigma_bp = 0.1,
-    sigma_bpl = 0.1,
-    sigma_n = 0.1,
-    sigma_l = 0.1
-  )
-}
-
-#' Simple model to generate plant-pollinator interaction data (minimal data)
-#' 
-generate_stan_data.pol_logit_c <- function(nb_pla, nb_pol, nb_sites) {
-  # Generate degree and optimal suitability:
-  K_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
-  K_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
-  S_opt_pla <- rnorm(nb_pla, 0, 1)
-  S_opt_pol <- rnorm(nb_pol, 0, 1)
-  env_sit <- rnorm(nb_sites, 0, 1)
-  S_pla <- abs(outer(S_opt_pla, env_sit, "-"))
-  S_pol <- abs(outer(S_opt_pol, env_sit, "-"))
-  
-  # Create data.table with all interactions:
-  data <- expand.grid(
-    pla_id = 1:nb_pla, pol_id = 1:nb_pol, site_id = 1:nb_sites) %>%
-    data.table::as.data.table()
-  data[, ':='(
-    D = K_pla[pla_id] * K_pol[pol_id],
-    S = S_pla[cbind(pla_id, site_id)] * S_pol[cbind(pol_id, site_id)]
-  )]
-  
-  # Sample parameters:
-  alpha <- rnorm(nb_sites, 0, 1)
-  beta_pla <- rnorm(nb_pla, 0, 1)
-  beta_pol <- rnorm(nb_pol, 0, 1)
-  lambda <- rnorm(nb_sites, 0, 1)
-  nu <- rnorm(nb_sites, 0, 1)
-  
-  # Compute response variable:
-  data[, p := boot::inv.logit(
-    alpha[site_id] + beta_pla[pla_id] + beta_pol[pol_id] + lambda[site_id] * D + 
-      nu[site_id] * S
-  )]
-  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
-  
-  # Return data specified as a list:
-  list(
-    nb_pla = nb_pla,
-    nb_pol = nb_pol,
-    nb_sites = nb_sites,
-    nb_int = nrow(data),
-    Y = data[['Y']],
-    site_id = data[['site_id']],
-    pla_id = data[['pla_id']],
-    pol_id = data[['pol_id']],
-    D_pla = K_pla,
-    D_pol = K_pol,
-    S_pla = S_pla,
-    S_pol = S_pol,
-    alpha = alpha,
-    beta_pol = beta_pol,
-    beta_pla = beta_pla,
-    lambda = lambda,
-    nu = nu
-  )
-}
-
-generate_stan_start_values.pol_logit_c <- function(nb_pla, nb_pol, nb_sites) {
-  list(
-    zalpha = rep(0, nb_sites),
-    zbeta_pol = rep(0, nb_pol),
-    zbeta_pla = rep(0, nb_pla),
-    znu = rep(0, nb_sites),
-    zlambda = rep(0, nb_sites),
-    alpha_bar = 0,
-    beta_pol_bar = 0,
-    beta_pla_bar = 0,
-    nu_bar = 0,
-    lambda_bar = 0,
-    sigma_a = 0.1,
-    sigma_bp = 0.1,
-    sigma_bpl = 0.1,
-    sigma_n = 0.1,
-    sigma_l = 0.1
-  )
-}
-
-#' Simple model to generate plant-pollinator interaction data (IDs in array)
-#' 
-generate_stan_data.pol_logit_d <- function(nb_pla, nb_pol, nb_sites) {
-  # Generate degree and optimal suitability:
-  K_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
-  K_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
-  S_opt_pla <- rnorm(nb_pla, 0, 1)
-  S_opt_pol <- rnorm(nb_pol, 0, 1)
-  env_sit <- rnorm(nb_sites, 0, 1)
-  S_pla <- abs(outer(S_opt_pla, env_sit, "-"))
-  S_pol <- abs(outer(S_opt_pol, env_sit, "-"))
-  
-  # Create data.table with all interactions:
-  data <- expand.grid(
-    pla_id = 1:nb_pla, pol_id = 1:nb_pol, site_id = 1:nb_sites) %>%
-    data.table::as.data.table()
-  data[, ':='(
-    D = K_pla[pla_id] * K_pol[pol_id],
-    S = S_pla[cbind(pla_id, site_id)] * S_pol[cbind(pol_id, site_id)]
-  )]
-  
-  # Sample parameters:
-  alpha <- rnorm(nb_sites, 0, 1)
-  beta_pla <- rnorm(nb_pla, 0, 1)
-  beta_pol <- rnorm(nb_pol, 0, 1)
-  lambda <- rnorm(nb_sites, 0, 1)
-  nu <- rnorm(nb_sites, 0, 1)
-  
-  # Compute response variable:
-  data[, p := boot::inv.logit(
-    alpha[site_id] + beta_pla[pla_id] + beta_pol[pol_id] + lambda[site_id] * D + 
-      nu[site_id] * S
-  )]
-  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
-  
-  # Return data specified as a list:
-  list(
-    nb_pla = nb_pla,
-    nb_pol = nb_pol,
-    nb_sites = nb_sites,
-    nb_int = nrow(data),
-    Y_array = data[, .(Y, site_id, pla_id, pol_id)],
-    D_pla = K_pla,
-    D_pol = K_pol,
-    S_pla = S_pla,
-    S_pol = S_pol,
-    alpha = alpha,
-    beta_pol = beta_pol,
-    beta_pla = beta_pla,
-    lambda = lambda,
-    nu = nu
-  )
-}
-
-generate_stan_start_values.pol_logit_d <- function(nb_pla, nb_pol, nb_sites) {
-  list(
-    zalpha = rep(0, nb_sites),
-    zbeta_pol = rep(0, nb_pol),
-    zbeta_pla = rep(0, nb_pla),
-    znu = rep(0, nb_sites),
-    zlambda = rep(0, nb_sites),
-    alpha_bar = 0,
-    beta_pol_bar = 0,
-    beta_pla_bar = 0,
-    nu_bar = 0,
-    lambda_bar = 0,
-    sigma_a = 0.1,
-    sigma_bp = 0.1,
-    sigma_bpl = 0.1,
-    sigma_n = 0.1,
-    sigma_l = 0.1
-  )
-}
-
-#' Simple model to generate plant-pollinator interaction data
-#' 
-#' IDs in array, random number of plants/pollinators in each network
-#' 
-generate_stan_data.pol_logit_e <- function(nb_pla, nb_pol, nb_sites) {
-  # Generate degree and optimal suitability:
-  K_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
-  K_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
+  D_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
+  D_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
   S_opt_pla <- runif(nb_pla, 0, 1)
   S_opt_pol <- runif(nb_pol, 0, 1)
   env_sit <- runif(nb_sites, 0, 1)
@@ -328,59 +100,131 @@ generate_stan_data.pol_logit_e <- function(nb_pla, nb_pol, nb_sites) {
     ) %>% data.table::as.data.table()
   }) %>% data.table::rbindlist()
   data[, ':='(
-    D = K_pla[pla_id] * K_pol[pol_id],
+    D = D_pla[pla_id] * D_pol[pol_id],
     S = S_pla[cbind(pla_id, site_id)] * S_pol[cbind(pol_id, site_id)]
   )]
   
   # Sample parameters:
-  alpha <- rnorm(nb_sites, 0, 1)
-  beta_pla <- rnorm(nb_pla, 0, 1)
-  beta_pol <- rnorm(nb_pol, 0, 1)
+  beta <- rnorm(nb_sites, 0, 1)
+  gamma_pla <- rnorm(nb_pla, 0, 1)
+  gamma_pol <- rnorm(nb_pol, 0, 1)
   lambda <- rnorm(nb_sites, 0, 1)
   nu <- rnorm(nb_sites, 0, 1)
   
   # Compute response variable:
   data[, p := boot::inv.logit(
-    alpha[site_id] + beta_pla[pla_id] + beta_pol[pol_id] + lambda[site_id] * D + 
-      nu[site_id] * S
+    beta[site_id] + gamma_pla[pla_id] + gamma_pol[pol_id] + 
+      lambda[site_id] * S + nu[site_id] * D
   )]
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
   
   # Return data specified as a list:
   list(
+    nb_sites = nb_sites,
     nb_pla = nb_pla,
     nb_pol = nb_pol,
-    nb_sites = nb_sites,
     nb_int = nrow(data),
     Y_array = data[, .(Y, site_id, pla_id, pol_id)],
-    D_pla = K_pla,
-    D_pol = K_pol,
     S_pla = S_pla,
     S_pol = S_pol,
-    alpha = alpha,
-    beta_pol = beta_pol,
-    beta_pla = beta_pla,
+    D_pla = D_pla,
+    D_pol = D_pol,
+    beta_site = beta,
+    gamma_pla = gamma_pla,
+    gamma_pol = gamma_pol,
     lambda = lambda,
     nu = nu
   )
 }
 
-generate_stan_start_values.pol_logit_e <- function(nb_pla, nb_pol, nb_sites) {
+generate_stan_start_values.pol_logit_f <- function(nb_sites, nb_pla, nb_pol) {
   list(
-    zalpha = rep(0, nb_sites),
-    zbeta_pol = rep(0, nb_pol),
-    zbeta_pla = rep(0, nb_pla),
-    znu = rep(0, nb_sites),
+    zbeta = rep(0, nb_sites),
+    zgamma_pol = rep(0, nb_pol),
+    zgamma_pla = rep(0, nb_pla),
     zlambda = rep(0, nb_sites),
-    alpha_bar = 0,
-    beta_pol_bar = 0,
-    beta_pla_bar = 0,
-    nu_bar = 0,
-    lambda_bar = 0,
-    sigma_a = 0.1,
-    sigma_bp = 0.1,
-    sigma_bpl = 0.1,
-    sigma_n = 0.1,
-    sigma_l = 0.1
+    znu = rep(0, nb_sites),
+    sigma_beta = 0.1,
+    sigma_gamma_pla = 0.1,
+    sigma_gamma_pol = 0.1,
+    sigma_lambda = 0.1,
+    sigma_nu = 0.1
+  )
+}
+
+#' Generate data for a pollination logit model with a random alpha intercept
+#' 
+generate_stan_data.pol_logit_g <- function(nb_sites, nb_pla, nb_pol) {
+  # Generate degree and optimal suitability:
+  D_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
+  D_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
+  S_opt_pla <- runif(nb_pla, 0, 1)
+  S_opt_pol <- runif(nb_pol, 0, 1)
+  env_sit <- runif(nb_sites, 0, 1)
+  S_pla <- 1 - abs(outer(S_opt_pla, env_sit, "-"))
+  S_pol <- 1 - abs(outer(S_opt_pol, env_sit, "-"))
+  
+  # Create data.table with all interactions:
+  data <- lapply(1:nb_sites, function(x) {
+    prop_sample <- rbeta(1, 2, 6)
+    data <- expand.grid(
+      pla_id = sample(1:nb_pla, round(nb_pla * prop_sample)), 
+      pol_id = sample(1:nb_pol, round(nb_pol * prop_sample)), 
+      site_id = x
+    ) %>% data.table::as.data.table()
+  }) %>% data.table::rbindlist()
+  data[, ':='(
+    D = D_pla[pla_id] * D_pol[pol_id],
+    S = S_pla[cbind(pla_id, site_id)] * S_pol[cbind(pol_id, site_id)]
+  )]
+  
+  # Sample parameters:
+  alpha <- rnorm(1, 0, 1)
+  beta <- rnorm(nb_sites, 0, 1)
+  gamma_pla <- rnorm(nb_pla, 0, 1)
+  gamma_pol <- rnorm(nb_pol, 0, 1)
+  lambda <- rnorm(nb_sites, 0, 1)
+  nu <- rnorm(nb_sites, 0, 1)
+  
+  # Compute response variable:
+  data[, p := boot::inv.logit(
+    alpha + beta[site_id] + gamma_pla[pla_id] + gamma_pol[pol_id] + 
+      lambda[site_id] * S + nu[site_id] * D
+  )]
+  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
+  
+  # Return data specified as a list:
+  list(
+    nb_sites = nb_sites,
+    nb_pla = nb_pla,
+    nb_pol = nb_pol,
+    nb_int = nrow(data),
+    Y_array = data[, .(Y, site_id, pla_id, pol_id)],
+    S_pla = S_pla,
+    S_pol = S_pol,
+    D_pla = D_pla,
+    D_pol = D_pol,
+    alpha = alpha,
+    beta_site = beta,
+    gamma_pla = gamma_pla,
+    gamma_pol = gamma_pol,
+    lambda = lambda,
+    nu = nu
+  )
+}
+
+generate_stan_start_values.pol_logit_g <- function(nb_sites, nb_pla, nb_pol) {
+  list(
+    alpha = 0,
+    zbeta = rep(0, nb_sites),
+    zgamma_pol = rep(0, nb_pol),
+    zgamma_pla = rep(0, nb_pla),
+    zlambda = rep(0, nb_sites),
+    znu = rep(0, nb_sites),
+    sigma_beta = 0.1,
+    sigma_gamma_pla = 0.1,
+    sigma_gamma_pol = 0.1,
+    sigma_lambda = 0.1,
+    sigma_nu = 0.1
   )
 }
