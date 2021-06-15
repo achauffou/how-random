@@ -195,3 +195,75 @@ analyse_stan_sim.pol_logit_i <- function(
     res_folder
   )
 }
+
+#' Analyse simulation results of Stan model pol_logit_j
+#'
+analyse_stan_sim.pol_logit_j <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot error distributions of beta, gamma_pla, gamma_pol
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "beta", data$beta, 
+    data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_beta.pdf"), ., device = "pdf")
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "gamma_pla", data$gamma_pla, 
+    data$Y_array[, .N, by = .(pla_id)][order(pla_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_gamma_pla.pdf"), ., device = "pdf")
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "gamma_pol", data$gamma_pol, 
+    data$Y_array[, .N, by = .(pol_id)][order(pol_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_gamma_pol.pdf"), ., device = "pdf")
+  
+  # Plot the posterior distribution and true value of lambda and nu:
+  misc_stan_analyses_plot_save_params_post_true(
+    rstan_fit, data, 
+    c("beta", "sigma_beta", "gamma_pla", "sigma_gamma_pla", 
+      "gamma_pol", "sigma_gamma_pol"), 
+    res_folder
+  )
+}
+
+#' Analyse simulation results of Stan model pol_logit_k
+#'
+analyse_stan_sim.pol_logit_k <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot error distributions of beta, gamma_pla, gamma_pol
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "beta", data$beta, 
+    data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_beta.pdf"), ., device = "pdf")
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "gamma", data$gamma, 
+    data$Y_array[, .N, by = .(pla_id)][order(pla_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_gamma.pdf"), ., device = "pdf")
+  
+  # Plot the posterior distribution and true value of lambda and nu:
+  misc_stan_analyses_plot_save_params_post_true(
+    rstan_fit, data, 
+    c("beta", "sigma_beta", "gamma", "sigma_gamma"), 
+    res_folder
+  )
+}
+
+analyse_stan_sim.pol_logit_l <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot error distributions of beta, gamma_pla, gamma_pol
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "beta", data$beta, 
+    data$Y_array[, .N, by = .(site_id)][order(site_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_beta.pdf"), ., device = "pdf")
+  misc_stan_analyses_plot_param_error(
+    rstan_fit, "gamma", data$gamma, 
+    data$Y_array[, .N, by = .(pla_id)][order(pla_id)][['N']], FALSE) %>%
+    ggsave(file.path(res_folder, "param_errors_gamma.pdf"), ., device = "pdf")
+  
+  # Plot the posterior distribution and true value of lambda and nu:
+  misc_stan_analyses_plot_save_params_post_true(
+    rstan_fit, data, 
+    c("beta", "sigma_beta", "gamma", "sigma_gamma"), 
+    res_folder
+  )
+}
