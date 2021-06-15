@@ -71,3 +71,15 @@ analyse_stan_sim.pol_binom_02 <- function(
     "sigma_gamma_pol") %>%
     stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
 }
+
+#' Analyse pollination binomial with intercepts and slopes
+#' 
+analyse_stan_sim.pol_binom_03 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_bar", "nu_bar", "beta", "gamma_pla", "gamma_pol", 
+    "lambda", "nu", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
+    "sigma_lambda", "sigma_nu") %>%
+    stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
+}
