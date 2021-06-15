@@ -1,8 +1,8 @@
 functions{
   // Partial sum enables within-chain parallel computation of log-likelihood
   real partial_sum(
-    int[,] y_slice, int start, int end, vector beta, 
-    vector gamma_pla, vector gamma_pol
+    int[,] y_slice, int start, int end, vector beta, vector gamma_pla, 
+    vector gamma_pol
   ) {
     real lp = 0.0;
     int y[end - start + 1] = y_slice[, 1];
@@ -26,12 +26,12 @@ data{
 }
 parameters{
   // Model parameters
-  real<lower=0> sigma_beta;
-  real<lower=0> sigma_gamma_pla;
-  real<lower=0> sigma_gamma_pol;
   vector[nb_sites] zbeta;
   vector[nb_pla] zgamma_pla;
   vector[nb_pol] zgamma_pol;
+  real<lower=0> sigma_beta;
+  real<lower=0> sigma_gamma_pla;
+  real<lower=0> sigma_gamma_pol;
 }
 transformed parameters{
   // Non-centered parametrization

@@ -27,12 +27,12 @@ data{
 parameters{
   // Model parameters
   real alpha;
-  real<lower=0> sigma_beta;
-  real<lower=0> sigma_gamma_pla;
-  real<lower=0> sigma_gamma_pol;
   vector[nb_sites] zbeta;
   vector[nb_pla] zgamma_pla;
   vector[nb_pol] zgamma_pol;
+  real<lower=0> sigma_beta;
+  real<lower=0> sigma_gamma_pla;
+  real<lower=0> sigma_gamma_pol;
 }
 transformed parameters{
   // Non-centered parametrization

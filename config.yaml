@@ -32,97 +32,25 @@ fun_groups_plausible_kingdoms:
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 min_locations_per_species: 2
 stan_simulations_specs:
-  - name: pol_logit_f01
-    data_generation_model: pol_logit_f
+  - name: pol_binom_01a
+    data_generation_model: pol_binom_01
     data_generation_args:
-      nb_sites: 15
-      nb_pla: 43
-      nb_pol: 87
-    stan_model: pol_logit_f
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_g01
-    data_generation_model: pol_logit_g
-    data_generation_args:
-      nb_sites: 15
-      nb_pla: 43
-      nb_pol: 87
-    stan_model: pol_logit_g
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_h01
-    data_generation_model: pol_logit_h
-    data_generation_args:
-      nb_sites: 15
-      nb_pla: 43
-      nb_pol: 87
-    stan_model: pol_logit_h
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_i01
-    data_generation_model: pol_logit_g
-    data_generation_args:
-      nb_sites: 15
-      nb_pla: 43
-      nb_pol: 87
-    stan_model: pol_logit_i
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_j01
-    data_generation_model: pol_logit_j
-    data_generation_args:
-      nb_sites: 15
-      nb_pla: 43
-      nb_pol: 87
-    stan_model: pol_logit_j
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_k01
-    data_generation_model: pol_logit_k
-    data_generation_args:
-      nb_sites: 3
+      nb_sites: 6
       nb_pla: 9
       nb_pol: 17
-    stan_model: pol_logit_k
+    stan_model: pol_binom_01
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
-  - name: pol_logit_l01
-    data_generation_model: pol_logit_l
+  - name: pol_binom_02a
+    data_generation_model: pol_binom_02
     data_generation_args:
       nb_sites: 6
-      nb_pla: 17
-      nb_pol: 34
-    stan_model: pol_logit_l
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_logit_j02
-    data_generation_model: pol_logit_j2
-    data_generation_args:
-      nb_sites: 6
-      nb_pla: 17
-      nb_pol: 34
-    stan_model: pol_logit_j
+      nb_pla: 9
+      nb_pol: 17
+    stan_model: pol_binom_02
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
