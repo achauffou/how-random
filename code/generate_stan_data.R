@@ -173,7 +173,7 @@ generate_stan_start_values.pol_binom_02 <- function(nb_sites, nb_pla, nb_pol) {
 
 #' Generate data for pollination binomial with intercepts and slopes
 #' 
-generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol) {
+generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample = "1.0") {
   # Generate degree and optimal suitability:
   S_opt_pla <- runif(nb_pla, 0, 1)
   S_opt_pol <- runif(nb_pol, 0, 1)
@@ -184,8 +184,14 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol) {
   D_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
   
   # Create data.table with all interactions:
-  data <- expand.grid(site_id = 1:nb_sites, pla_id = 1:nb_pla, pol_id = 1:nb_pol) %>%
-    data.table::as.data.table()
+  data <- lapply(1:nb_sites, function(x) {
+    site_prop <- eval(parse(text = as.character(p_sample)))
+    data <- expand.grid( 
+      site_id = x,
+      pla_id = sample(1:nb_pla, round(nb_pla * site_prop)), 
+      pol_id = sample(1:nb_pol, round(nb_pol * site_prop))
+    ) %>% data.table::as.data.table()
+  }) %>% data.table::rbindlist()
   data[, ':='(
     S_pla = S_pla[cbind(pla_id, site_id)],
     S_pol = S_pol[cbind(pol_id, site_id)],
@@ -245,7 +251,9 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol) {
   )
 }
 
-generate_stan_start_values.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol) {
+generate_stan_start_values.pol_binom_03 <- function(
+  nb_sites, nb_pla, nb_pol, p_sample = "1.0"
+) {
   list(
     alpha = 0,
     lambda_bar = 0,
