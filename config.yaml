@@ -47,9 +47,9 @@ stan_simulations_specs:
   - name: pol_binom_02a
     data_generation_model: pol_binom_02
     data_generation_args:
-      nb_sites: 10
-      nb_pla: 9
-      nb_pol: 17
+      nb_sites: 20
+      nb_pla: 18
+      nb_pol: 34
     stan_model: pol_binom_02
     chains: 4
     stan_sample_args:
@@ -59,9 +59,9 @@ stan_simulations_specs:
   - name: pol_binom_03a
     data_generation_model: pol_binom_03
     data_generation_args:
-      nb_sites: 10
-      nb_pla: 9
-      nb_pol: 17
+      nb_sites: 20
+      nb_pla: 18
+      nb_pol: 34
     stan_model: pol_binom_03
     chains: 4
     stan_sample_args:
