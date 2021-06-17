@@ -268,7 +268,18 @@ clean_gbif_occurrences <- function(
   message(paste("LOG FILE - ARCHIVE", archive_name, "-", Sys.time()))
   sink(type =  "message")
   close(log_file)
-  
+
+  # Create a temporary file to store the cleaned occurrences:
+  tmp_dt_path <- stringr::str_replace(occurrences_file, "\\.txt*$", "-cleaned.csv")
+  data.table::data.table(
+    archive_name = character(),
+    genusKey = integer(),
+    speciesKey = integer(),
+    taxonKey = integer(),
+    decimalLatitude = numeric(),
+    decimalLongitude = numeric()
+  ) %>% data.table::fwrite(tmp_dt_path)
+
   # Get chunks partition:
   chunks_partition <- get_chunks_partition(occurrences_file, chunk_size)
   
@@ -302,7 +313,7 @@ clean_gbif_occurrences <- function(
         sep = "\t", quote = "", strip.white = TRUE
       ) %>%
         clean_gbif_occurrences_chunk(
-          db, table_name, land_data, stats_path, archive_name
+          tmp_dt_path, table_name, land_data, stats_path, archive_name
         )
     }, error = function(e) {
       cat("Chunk ", x, " issued an error!\n\t", conditionMessage(e), "\n", 
@@ -312,6 +323,20 @@ clean_gbif_occurrences <- function(
   }, mc.cores = nb_cores)
   pb$terminate()
   message()
+
+  # Add cleaned occurrences from the temp file to the database chunk by chunk:
+  message("Saving cleaned GBIF occurrences to the database...")
+  tmp_dt_partition <- get_chunks_partition(tmp_dt_path, chunk_size)
+  lapply(1:length(tmp_dt_partition), function(x) {
+  fread_chunk(
+    tmp_dt_path, tmp_dt_partition[[x]], c("archive_name", "genusKey",
+    "speciesKey", "taxonKey", "decimalLatitude", "decimalLongitude"),
+    colClasses = list(character = 1, integer = 2:4, numeric = 5:6)
+  ) %>% RSQLite::dbAppendTable(db, table_name, .)
+  })
+
+  # Remove temporary CSV file:
+  file.remove(tmp_dt_path)
 }
 
 #' Get start and end lines of all chunks in a file
@@ -350,7 +375,7 @@ fread_chunk <- function(
 #' Clean and append to database a single chunk of GBIF raw data
 #' 
 clean_gbif_occurrences_chunk <- function(
-  chunk, db, table_name, land_data, stats_path, archive_name
+  chunk, tmp_dt_path, table_name, land_data, stats_path, archive_name
 ) {
   # Start cleaning time:
   start_time <- Sys.time()
@@ -416,9 +441,10 @@ clean_gbif_occurrences_chunk <- function(
       decimalLatitude, decimalLongitude
     )] %>% unique()
     nb_unique_rows <- nrow(chunk)
-    
-    # Append cleaned chunk to the occurrences database (with 20s busy timeout):
-    RSQLite::dbAppendTable(db, table_name, chunk, "PRAGMA busy_timeout = 20 * 1000")
+
+    # Append cleaned chunk to the temporary datatable file:
+    chunk %>%
+      data.table::fwrite(tmp_dt_path, append = TRUE)
   } else {
     nb_coord_capitals <- 0
     nb_coord_centroid <- 0
@@ -451,4 +477,5 @@ clean_gbif_occurrences_chunk <- function(
     nb_unique_rows = nb_unique_rows,
     cleaning_time_in_secs = as.numeric(time_diff)
   ) %>% data.table::fwrite(stats_path, append = TRUE)
+  return()
 }
