@@ -122,6 +122,22 @@ analyse_stan_sim.pol_binom_01 <- function(
   )
 }
 
+#' Link function of pollination binomial with centered intercepts only
+#' 
+link.pol_binom_01 <- function(data, fit) {
+  beta <- as.matrix(fit, pars = "beta")
+  gamma_pla <- as.matrix(fit, pars = "gamma_pla")
+  gamma_pol <- as.matrix(fit, pars = "gamma_pol")
+  lapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      beta[x, data$Y_array$site_id] + gamma_pla[x, data$Y_array$pla_id] + 
+      gamma_pol[x, data$Y_array$pol_id]
+    )
+    names(p) <- NULL
+    p
+  }) %>% do.call(rbind, args = .)
+}
+
 #' Analyse pollination binomial with intercepts only
 #' 
 analyse_stan_sim.pol_binom_02 <- function(
@@ -137,6 +153,23 @@ analyse_stan_sim.pol_binom_02 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"), 
     c("site_id", "pla_id", "pol_id"), res_folder
   )
+}
+
+#' Link function of pollination binomial with intercepts only
+#' 
+link.pol_binom_02 <- function(data, fit) {
+  alpha <- as.matrix(fit, pars = "alpha")
+  beta <- as.matrix(fit, pars = "beta")
+  gamma_pla <- as.matrix(fit, pars = "gamma_pla")
+  gamma_pol <- as.matrix(fit, pars = "gamma_pol")
+  lapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      alpha[x] + beta[x, data$Y_array$site_id] + 
+        gamma_pla[x, data$Y_array$pla_id] + gamma_pol[x, data$Y_array$pol_id]
+    )
+    names(p) <- NULL
+    p
+  }) %>% do.call(rbind, args = .)
 }
 
 #' Analyse pollination binomial with intercepts and slopes
@@ -155,4 +188,23 @@ analyse_stan_sim.pol_binom_03 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol", "lambda"), 
     c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
   )
+}
+
+#' Link function of pollination binomial with intercepts and slope
+#' 
+link.pol_binom_03 <- function(data, fit) {
+  alpha <- as.matrix(fit, pars = "alpha")
+  beta <- as.matrix(fit, pars = "beta")
+  gamma_pla <- as.matrix(fit, pars = "gamma_pla")
+  gamma_pol <- as.matrix(fit, pars = "gamma_pol")
+  lambda <- as.matrix(fit, pars = "lambda")
+  lapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      alpha[x] + beta[x, data$Y_array$site_id] + 
+        gamma_pla[x, data$Y_array$pla_id] + gamma_pol[x, data$Y_array$pol_id] +
+        lambda[x, data$Y_array$site_id] * data$SS
+    )
+    names(p) <- NULL
+    p
+  }) %>% do.call(rbind, args = .)
 }
