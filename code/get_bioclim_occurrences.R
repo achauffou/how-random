@@ -280,7 +280,7 @@ thin_retrieve_gbif_entities <- function(
   
   # Check if the entities database up-to-date and create it if necessary:
   thinned_path <- file.path(occ_folder, thinned_db_file)
-  thinned_db <- get_gbif_thinned_db_con(thinned_path, stack_path, brick)
+  thinned_db <- get_gbif_thinned_db_con(thinned_path, stack_path, stack)
   on.exit(RSQLite::dbDisconnect(thinned_db))
   
   # Open connection with GBIF occurrences database:
