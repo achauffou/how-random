@@ -174,14 +174,12 @@ generate_stan_start_values.pol_binom_02 <- function(nb_sites, nb_pla, nb_pol) {
 #' Generate data for pollination binomial with intercepts and slopes
 #' 
 generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample = "1.0") {
-  # Generate degree and optimal suitability:
+  # Generate optimal suitability:
   S_opt_pla <- runif(nb_pla, 0, 1)
   S_opt_pol <- runif(nb_pol, 0, 1)
   env_sit <- runif(nb_sites, 0, 1)
   S_pla <- 1 - abs(outer(S_opt_pla, env_sit, "-"))
   S_pol <- 1 - abs(outer(S_opt_pol, env_sit, "-"))
-  D_pla <- rbetacut(nb_pla, 3, 2, high_cut = 0.9)
-  D_pol <- rbetacut(nb_pol, 3, 2, high_cut = 0.9)
   
   # Create data.table with all interactions:
   data <- lapply(1:nb_sites, function(x) {
@@ -194,15 +192,12 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
   }) %>% data.table::rbindlist()
   data[, ':='(
     S_pla = S_pla[cbind(pla_id, site_id)],
-    S_pol = S_pol[cbind(pol_id, site_id)],
-    D_pla = D_pla[pla_id],
-    D_pol = D_pol[pol_id]
+    S_pol = S_pol[cbind(pol_id, site_id)]
   )]
   
   # Standardize predictor variables:
   data[, ':='(
-    SS = scale(S_pla * S_pol),
-    DD = scale(D_pla * D_pol)
+    SS = scale(S_pla * S_pol)
   )]
   
   # Sample parameters (center intercept parameters):
@@ -211,14 +206,12 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
   gamma_pla <- rnorm(nb_pla, 0, 1) %>% scale(scale = FALSE)
   gamma_pol <- rnorm(nb_pol, 0, 1) %>% scale(scale = FALSE)
   lambda_bar <- rbeta(1, 2, 4)
-  nu_bar <- rbeta(1, 2, 4)
   lambda <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% add(lambda_bar)
-  nu <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% add(nu_bar)
   
   # Compute response variable:
   data[, p := boot::inv.logit(
     alpha + beta[site_id] + gamma_pla[pla_id] + gamma_pol[pol_id] +
-      lambda[site_id] * SS + nu[site_id] * DD
+      lambda[site_id] * SS
   )]
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
   
@@ -230,24 +223,18 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
     nb_int = nrow(data),
     Y_array = data[, .(Y, site_id, pla_id, pol_id)],
     SS = data$SS,
-    DD = data$DD,
     alpha = alpha,
     lambda_bar = lambda_bar,
-    nu_bar = nu_bar,
     sigma_beta = sd(beta),
     sigma_gamma_pla = sd(gamma_pla),
     sigma_gamma_pol = sd(gamma_pol),
     sigma_lambda = sd(lambda),
-    sigma_nu = sd(nu),
     beta = beta,
     gamma_pla = gamma_pla,
     gamma_pol = gamma_pol,
     lambda = lambda,
-    nu = nu,
     SS_mean = mean(data$S_pla * data$S_pol),
-    SS_sd = sd(data$S_pla * data$S_pol),
-    DD_mean = mean(data$D_pla * data$D_pol),
-    DD_sd = sd(data$D_pla * data$D_pol)
+    SS_sd = sd(data$S_pla * data$S_pol)
   )
 }
 
@@ -257,16 +244,13 @@ generate_stan_start_values.pol_binom_03 <- function(
   list(
     alpha = 0,
     lambda_bar = 0,
-    nu_bar = 0,
     zbeta = rep(0, nb_sites),
     zgamma_pla = rep(0, nb_pla),
     zgamma_pol = rep(0, nb_pol),
     zlambda = rep(0, nb_sites),
-    znu = rep(0, nb_sites),
     sigma_beta = 0.1,
     sigma_gamma_pla = 0.1,
     sigma_gamma_pol = 0.1,
-    sigma_lambda = 0.1,
-    sigma_nu = 0.1
+    sigma_lambda = 0.1
   )
 }

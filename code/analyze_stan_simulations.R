@@ -145,14 +145,14 @@ analyse_stan_sim.pol_binom_03 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder
 ) {
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda_bar", "nu_bar", "beta", "gamma_pla", "gamma_pol", 
-    "lambda", "nu", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
-    "sigma_lambda", "sigma_nu") %>%
+  c("alpha", "lambda_bar", "beta", "gamma_pla", "gamma_pol", 
+    "lambda", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
+    "sigma_lambda") %>%
     stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
   
   # Plot posterior error of multilevel parameters:
   stan_sim_analyses_plot_save_params_errors(
-    rstan_fit, data, c("beta", "gamma_pla", "gamma_pol", "lambda", "nu"), 
+    rstan_fit, data, c("beta", "gamma_pla", "gamma_pol", "lambda"), 
     c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
   )
 }

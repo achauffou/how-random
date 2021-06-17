@@ -2,8 +2,7 @@ functions{
   // Partial sum enables within-chain parallel computation of log-likelihood
   real partial_sum(
     int[,] y_slice, int start, int end, real alpha, vector beta, 
-    vector gamma_pla, vector gamma_pol, vector lambda, vector nu, vector SS, 
-    vector DD
+    vector gamma_pla, vector gamma_pol, vector lambda, vector SS
   ) {
     real lp = 0.0;
     int y[end - start + 1] = y_slice[, 1];
@@ -13,8 +12,7 @@ functions{
     for (i in 1:(end - start + 1)) {
       lp += bernoulli_logit_lpmf(
         y[i] | alpha + beta[site_id[i]] + gamma_pla[pla_id[i]] + 
-        gamma_pol[pol_id[i]] + lambda[site_id[i]] * SS[start + i - 1] + 
-        nu[site_id[i]] * DD[start + i - 1]
+        gamma_pol[pol_id[i]] + lambda[site_id[i]] * SS[start + i - 1]
       );
     }
     return lp;
@@ -27,23 +25,19 @@ data{
   int nb_int; // Total number of interactions
   int Y_array[nb_int, 4]; // Response variable, site IDs, plant IDs, pollinator IDs
   vector[nb_int] SS; // Standardized product of bioclimatic suitabilities
-  vector[nb_int] DD; // Standardized product of average relative degrees
 }
 parameters{
   // Model parameters
   real alpha;
   real lambda_bar;
-  real nu_bar;
   vector[nb_sites] zbeta;
   vector[nb_pla] zgamma_pla;
   vector[nb_pol] zgamma_pol;
   vector[nb_sites] zlambda;
-  vector[nb_sites] znu;
   real<lower=0> sigma_beta;
   real<lower=0> sigma_gamma_pla;
   real<lower=0> sigma_gamma_pol;
   real<lower=0> sigma_lambda;
-  real<lower=0> sigma_nu;
 }
 transformed parameters{
   // Non-centered parametrization
@@ -51,28 +45,23 @@ transformed parameters{
   vector[nb_pla] gamma_pla;
   vector[nb_pol] gamma_pol;
   vector[nb_sites] lambda;
-  vector[nb_sites] nu;
   beta = zbeta * sigma_beta;
   gamma_pla = zgamma_pla * sigma_gamma_pla;
   gamma_pol = zgamma_pol * sigma_gamma_pol;
   lambda = zlambda * sigma_lambda + lambda_bar;
-  nu = znu * sigma_nu + nu_bar;
 }
 model{
   // Priors
   alpha ~ normal(0, 1.3);
   lambda_bar ~ normal(0, 1.3);
-  nu_bar ~ normal(0, 1.3);
   sigma_beta ~ exponential(1);
   sigma_gamma_pla ~ exponential(1);
   sigma_gamma_pol ~ exponential(1);
   sigma_lambda ~ exponential(1);
-  sigma_nu ~ exponential(1);
   zbeta ~ std_normal();
   zgamma_pla ~ std_normal();
   zgamma_pol ~ std_normal();
   zlambda ~ std_normal();
-  znu ~ std_normal();
   
   // Within-chain parallelization grainsize (1 lets Stan choose it)
   int grainsize = 1;
@@ -80,6 +69,6 @@ model{
   // Compute log-likelihood sum in parallel
   target += reduce_sum(
     partial_sum, Y_array, grainsize, alpha, beta, gamma_pla, gamma_pol, lambda, 
-    nu, SS, DD
+    SS
   );
 }
