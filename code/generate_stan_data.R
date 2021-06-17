@@ -188,8 +188,8 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
     site_prop <- eval(parse(text = as.character(p_sample)))
     data <- expand.grid( 
       site_id = x,
-      pla_id = sample(1:nb_pla, round(nb_pla * site_prop)), 
-      pol_id = sample(1:nb_pol, round(nb_pol * site_prop))
+      pla_id = sample(1:nb_pla, max(round(nb_pla * site_prop), 1)), 
+      pol_id = sample(1:nb_pol, max(round(nb_pol * site_prop), 1))
     ) %>% data.table::as.data.table()
   }) %>% data.table::rbindlist()
   data[, ':='(
