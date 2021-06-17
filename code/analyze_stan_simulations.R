@@ -103,6 +103,63 @@ stan_sim_analyses_plot_save_params_errors <- function(
   })})})
 }
 
+#' Compute and plot the AUC of a Bayesian binomial model
+#' 
+stan_analyses_auc <- function(y, link, res_folder) {
+  # Compute and save the Area Under Curve values for all posterior draws:
+  if (!file.exists(file.path(res_folder, "auc.rds"))) {
+    auc <- 1:dim(link)[1] %>%
+      parallel::mclapply(function(x) {
+        pROC::auc(y, link[x,], quiet = TRUE)
+      }, mc.cores = parallel::detectCores()) %>% 
+      unlist()
+    saveRDS(auc, file = file.path(res_folder, "auc.rds"))
+  } else {
+    auc <- readRDS(file.path(res_folder, "auc.rds"))
+  }
+  
+  # Plot and save the distribution of the AUC:
+  plt <- ggplot(data.frame(auc = auc), aes(x = auc)) +
+    geom_density() +
+    xlab("Area Under Curve") +
+    ylab("Density")
+    theme_classic()
+  suppressMessages({ggsave(file.path(res_folder, "auc.pdf"), plt, device = "pdf")})
+}
+
+#' Plot the ROC curve of a Bayesian binomial model
+#' 
+stan_analyses_roc <- function(y, link, res_folder) {
+  # Compute and save the ROC curve coordinates for all posterior draws:
+  if (!file.exists(file.path(res_folder, "roc.rds"))) {
+    roc <- 1:dim(link)[1] %>%
+      parallel::mclapply(function(x) {
+        coords <- y %>% 
+          pROC::roc(link[x,], auc = FALSE, ci = FALSE, quiet = TRUE) %>%
+          pROC::coords(x = seq(0, 1, by = 0.001), input = "specificity")
+        coords$sample <- x
+        coords
+      }, mc.cores = parallel::detectCores()) %>% data.table::rbindlist()
+    data.table::fwrite(roc, file.path(res_folder, "roc.csv"))
+  } else {
+    roc <- data.table::fread(file.path(res_folder, "roc.csv"))
+  }
+  
+  # Plot and save the distribution of the AUC:
+  plt_data <- roc[, .(
+    mean = mean(sensitivity),
+    q05 = quantile(sensitivity, 0.05),
+    q95 = quantile(sensitivity, 0.95)
+  ), by = .(specificity)]
+  plt <- ggplot(plt_data, aes(x = specificity, y = mean, ymin = q05, ymax = q95)) +
+    geom_line() +
+    geom_ribbon() +
+    scale_x_reverse(name = "Specificity", limits = c(1, 0), expand = c(0, NA)) +
+    scale_y_continuous(name = "Sensitivity", limits = c(0, 1), expand = c(0, NA)) +
+    theme_classic()
+  suppressMessages({ggsave(file.path(res_folder, "roc.pdf"), plt, device = "pdf")})
+}
+
 
 # Functions to analyse specific Stan simulations ===============================
 #' Analyse pollination binomial with centered intercepts only
@@ -120,6 +177,13 @@ analyse_stan_sim.pol_binom_01 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"), 
     c("site_id", "pla_id", "pol_id"), res_folder
   )
+  
+  # Compute link:
+  link <- link.pol_binom_02(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder)
 }
 
 #' Link function of pollination binomial with centered intercepts only
@@ -153,6 +217,13 @@ analyse_stan_sim.pol_binom_02 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"), 
     c("site_id", "pla_id", "pol_id"), res_folder
   )
+  
+  # Compute link:
+  link <- link.pol_binom_02(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder)
 }
 
 #' Link function of pollination binomial with intercepts only
@@ -188,6 +259,13 @@ analyse_stan_sim.pol_binom_03 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol", "lambda"), 
     c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
   )
+  
+  # Compute link:
+  link <- link.pol_binom_03(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder)
 }
 
 #' Link function of pollination binomial with intercepts and slope
