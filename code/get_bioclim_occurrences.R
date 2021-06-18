@@ -298,22 +298,22 @@ thin_retrieve_gbif_entities <- function(
     data.table::fsetdiff(entities, .) %>%
     unique()
   
-  # Create log file:
-  log_path <- file.path(
-    occ_folder, 
-    paste0("gbif_thinning_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".log")
-  )
-  if (file.exists(log_path)) file.remove(log_path)
-  file.create(log_path, showWarnings = FALSE)
-  log_file <- file(log_path, open = "wt")
-  sink(file = log_file, type = "message")
-  message(paste("LOG FILE - THINNING", nrow(entities_to_thin), 
-                "GBIF entities -", Sys.time()))
-  sink(type =  "message")
-  close(log_file)
-  
   # Thin entities that need to be thinned:
   if (nrow(entities_to_thin) > 0) {
+    # Create log file:
+    log_path <- file.path(
+      occ_folder, 
+      paste0("gbif_thinning_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".log")
+    )
+    if (file.exists(log_path)) file.remove(log_path)
+    file.create(log_path, showWarnings = FALSE)
+    log_file <- file(log_path, open = "wt")
+    sink(file = log_file, type = "message")
+    message(paste("LOG FILE - THINNING", nrow(entities_to_thin), 
+                  "GBIF entities -", Sys.time()))
+    sink(type =  "message")
+    close(log_file)
+    
     # Create a raster brick from the raster stack (to ensure faster retrieval):
     if (use_raster_brick) {
       message("Creating raster brick object from raster stack...")
