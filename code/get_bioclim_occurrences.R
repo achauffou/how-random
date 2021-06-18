@@ -10,8 +10,8 @@ stack_bioclim_archives <- function(
   
   # Skip the task if the rasters have already been extracted and are up-to-date:
   skip <- FALSE
-  if (file.exists(save_path)) {
-    raster_files <- list.files(temp_dir, full.names = T)
+  raster_files <- list.files(save_path, full.names = T)
+  if (length(raster_files) > 0) {
     if (max(file.info(archives)$ctime) < min(file.info(raster_files)$mtime)) {
       skip <- TRUE
     }
