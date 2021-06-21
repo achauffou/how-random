@@ -43,6 +43,12 @@ GBIF_EMAIL='<your_gbif_email>'
 ```
 To get these creditentials, create free [NCBI](https://www.ncbi.nlm.nih.gov/account/) and [GBIF](https://www.gbif.org/user/profile) user accounts. Once the NCBI user account has been created, follow [these instructions](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) to request a NCBI ENTREZ API key.
 
+### 6. Set the number of CPUS
+This project can parallelize some tasks to reduce computation time. To use more than 1 CPU, set the environment variable NCPUS to the desired amount of cores. It can easily be achieved by adding the following line to the `.Renvion` file:
+```
+NCPUS=<number_of_cores>
+```
+
 ## Contribution
 ### Accessing Rstudio server
 Once the project docker container is running, it is possible to develop and run R code directly from Rstudio server. It can be accessed via port 8787 of the local host: [localhost:8787](localhost:8787). To access it on another port, modify the `docker run` command port mapping argument accordingly.
