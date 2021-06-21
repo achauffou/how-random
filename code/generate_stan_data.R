@@ -173,7 +173,7 @@ generate_stan_start_values.pol_binom_02 <- function(nb_sites, nb_pla, nb_pol) {
 
 #' Generate data for pollination binomial with intercepts and slopes
 #' 
-generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample = "1.0") {
+generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, rm_empty = TRUE) {
   # Generate optimal suitability:
   S_opt_pla <- runif(nb_pla, 0, 1)
   S_opt_pol <- runif(nb_pol, 0, 1)
@@ -182,14 +182,8 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
   S_pol <- 1 - abs(outer(S_opt_pol, env_sit, "-"))
   
   # Create data.table with all interactions:
-  data <- lapply(1:nb_sites, function(x) {
-    site_prop <- eval(parse(text = as.character(p_sample)))
-    data <- expand.grid( 
-      site_id = x,
-      pla_id = sample(1:nb_pla, max(round(nb_pla * site_prop), 1)), 
-      pol_id = sample(1:nb_pol, max(round(nb_pol * site_prop), 1))
-    ) %>% data.table::as.data.table()
-  }) %>% data.table::rbindlist()
+  data <- expand.grid(site_id = 1:nb_sites, pla_id = 1:nb_pla, pol_id = 1:nb_pol) %>%
+    data.table::as.data.table()
   data[, ':='(
     S_pla = S_pla[cbind(pla_id, site_id)],
     S_pol = S_pol[cbind(pol_id, site_id)]
@@ -201,7 +195,7 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
   )]
   
   # Sample parameters (center intercept parameters):
-  alpha <- rnorm(1, 0, 1)
+  alpha <- rbeta(1, 2, 4) * -1
   beta <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE)
   gamma_pla <- rnorm(nb_pla, 0, 1) %>% scale(scale = FALSE)
   gamma_pol <- rnorm(nb_pol, 0, 1) %>% scale(scale = FALSE)
@@ -214,6 +208,11 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, p_sample =
       lambda[site_id] * SS
   )]
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
+  
+  # Remove empty rows/columns:
+  data[, sum_pla_ints := sum(Y), by = .(site_id, pla_id)]
+  data[, sum_pol_ints := sum(Y), by = .(site_id, pol_id)]
+  data <- data[sum_pla_int > 0 & sum_pol_ints > 0]
   
   # Return data specified as a list:
   list(
