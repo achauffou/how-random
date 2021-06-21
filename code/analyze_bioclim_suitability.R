@@ -339,7 +339,7 @@ calc_bioclim_suitability_min_occurrences <- function(
     ) %$%
     approx(x = .fitted, y = log_prop_occ, max_suitability_error) %$%
     exp(y) * max(sensitivity_errors[['sample_size']])
-  round(threshold)
+  threshold
 }
 
 

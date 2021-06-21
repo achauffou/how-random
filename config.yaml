@@ -1,10 +1,11 @@
 accepted_ranks: [genus, subgenus, species, subspecies, variety, form]
 aggregation_level: species
 bioclim_extent: [-180, 180, -60, 90]
-bioclim_sensitivity_nb_samples: 50
 bioclim_sensitivity_nb_cells_to_sample: 10
+bioclim_sensitivity_nb_samples: 50
+bioclim_sensitivity_nb_species: 5
 bioclim_suitability_grid_resolution: 200
-bioclim_suitability_max_error: 0.1
+bioclim_suitability_max_error: 0.15
 download_date: 2021-04-14
 ecoregions_download_url: http://maps.tnc.org/files/shp/terr-ecoregions-TNC.zip
 envirem_bioclim_download_url: https://deepblue.lib.umich.edu/data/downloads/ms35t870p?locale=en

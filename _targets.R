@@ -40,6 +40,7 @@ read_YAML_config_targets <- list(
   tar_target(bioclim_extent, config$bioclim_extent),
   tar_target(bioclim_sensitivity_nb_cells_to_sample, config$bioclim_sensitivity_nb_cells_to_sample),
   tar_target(bioclim_sensitivity_nb_samples, config$bioclim_sensitivity_nb_samples),
+  tar_target(bioclim_sensitivity_nb_species, config$bioclim_sensitivity_nb_species),
   tar_target(bioclim_suitability_grid_resolution, config$bioclim_suitability_grid_resolution),
   tar_target(bioclim_suitability_max_error, config$bioclim_suitability_max_error),
   tar_target(download_date, config$download_date),
@@ -391,11 +392,13 @@ thin_retrieve_gbif_bioclim_targets <- list(
 bioclim_suitability_sensitivity_targets <- list(
   tar_target(
     bioclim_sensitivity_sp_name,
-    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_name']][1]
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_name']][
+      1:bioclim_sensitivity_nb_species]
   ),
   tar_target(
     bioclim_sensitivity_sp_kingdom,
-    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_kingdom']][1]
+    nb_occurrences_per_species[order(-nb_bioclim_occurrences)][['sp_kingdom']][
+      1:bioclim_sensitivity_nb_species]
   ),
   tar_target(
     bioclim_sensitivity_samples,
@@ -422,7 +425,9 @@ bioclim_suitability_sensitivity_targets <- list(
       }, object = ., sp_name = bioclim_sensitivity_sp_name)
       names(res) <- c("indiv", "collec")
       res
-    }
+    },
+    pattern = map(bioclim_sensitivity_sp_name, bioclim_sensitivity_sp_kingdom),
+    iteration = "list"
   ),
   tar_target(
     bioclim_sensitivity_errors,
@@ -431,7 +436,9 @@ bioclim_suitability_sensitivity_targets <- list(
         lapply(calc_bioclim_suitability_sensitivity_errors)
       names(res) <- names(bioclim_sensitivity_samples)
       res
-    }
+    },
+    pattern = map(bioclim_sensitivity_samples),
+    iteration = "list"
   ),
   tar_target(
     bioclim_sensitivity_thres,
@@ -440,9 +447,21 @@ bioclim_suitability_sensitivity_targets <- list(
         bioclim_sensitivity_errors, calc_bioclim_suitability_min_occurrences, 
         bioclim_suitability_max_error
       )
-      names(res) <- names(bioclim_sensitivity_errors)
-      res
-    }
+    },
+    pattern = map(bioclim_sensitivity_errors),
+    iteration = "list"
+  ),
+  tar_target(
+    bioclim_indiv_thres,
+    purrr::map_dbl(bioclim_sensitivity_thres, ~ .[['indiv']]) %>%
+      mean() %>%
+      ceiling()
+  ),
+  tar_target(
+    bioclim_collec_thres,
+    purrr::map_dbl(bioclim_sensitivity_thres, ~ .[['collec']]) %>%
+      mean() %>%
+      ceiling()
   )
 )
 
@@ -451,7 +470,7 @@ calc_bioclim_suitability_targets <- list(
   tar_target(
     bioclim_suitability_indiv,
     nb_occurrences_per_species %>% 
-      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['indiv']]] %>%
+      .[nb_bioclim_occurrences > bioclim_indiv_thres] %>%
       calc_spp_bioclim_suitability(
         gbif_keys, 
         wol_species, 
@@ -466,7 +485,7 @@ calc_bioclim_suitability_targets <- list(
   tar_target(
     bioclim_suitability_collec,
     nb_occurrences_per_species %>% 
-      .[nb_bioclim_occurrences > bioclim_sensitivity_thres[['collec']]] %>%
+      .[nb_bioclim_occurrences > bioclim_collec_thres] %>%
       calc_spp_bioclim_suitability(
         gbif_keys, 
         wol_species, 
