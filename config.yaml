@@ -32,7 +32,7 @@ fun_groups_plausible_kingdoms:
   Pollinator: [Animalia]
   Resource: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
-min_locations_per_species: 2
+min_locations_per_species: 1
 stan_simulations_specs:
   - name: pol_binom_01a
     data_generation_model: pol_binom_01
