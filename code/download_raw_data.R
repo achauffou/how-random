@@ -177,7 +177,7 @@ suggest_gbif_names <- function(
   
   # Check names that have not been checked:
   if (nrow(names_to_suggest) > 0) {
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     message(paste("Checking", nrow(names_to_suggest), "names in GBIF..."))
     pb <- progress::progress_bar$new(
       total = nrow(names_to_suggest),

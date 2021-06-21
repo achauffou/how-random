@@ -327,7 +327,7 @@ thin_retrieve_gbif_entities <- function(
     }
     
     # Thin and retrieve bioclimatic variables:
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     message(paste("Thinning and retrieving bioclimatic variables for", 
                   nrow(entities_to_thin), "GBIF entities..."))
     pb <- progress::progress_bar$new(

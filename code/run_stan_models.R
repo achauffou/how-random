@@ -42,7 +42,7 @@ run_stan_model <- function(
   
   # Prepare sampling arguments:
   chains <- spec$chains
-  nb_cores <- parallel::detectCores()
+  nb_cores <- get_nb_cpus()
   parallel_chains <- min(chains, nb_cores)
   threads_per_chain <- floor(nb_cores / chains)
   if (threads_per_chain < 1) threads_per_chain <- 1

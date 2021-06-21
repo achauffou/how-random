@@ -32,7 +32,7 @@ check_proposed_names <- function(
 
   # Verify proposed names that are not already in cache:
   if (length(names_to_verify) > 0) {
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     message(paste("Checking", length(names_to_verify), "species names..."))
     pb <- progress::progress_bar$new(
       total = length(names_to_verify),

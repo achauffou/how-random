@@ -69,7 +69,7 @@ process_gbif_raw_archives <- function(
   
   # Extract archives that need to be extracted:
   if (length(archives_to_extract) > 0) {
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     total_size <- sum(file.info(archives_to_extract)$size) / 1073741824
     message(paste("Extracting", format(total_size, digits = 4), 
                   "GB of raw GBIF archives..."))
@@ -289,7 +289,7 @@ clean_gbif_occurrences <- function(
     tools::file_path_sans_ext()
   
   # Clean chunks in parallel:
-  nb_cores <- parallel::detectCores()
+  nb_cores <- get_nb_cpus()
   file_size <- file.info(occurrences_file) %>% .[['size']] / 1073741824
   message(paste0(
     "Cleaning ", length(chunks_partition), " chunks (", 

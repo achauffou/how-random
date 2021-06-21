@@ -127,7 +127,7 @@ count_nb_occs_per_species <- function(
   
   # Count occurrences of species:
   if (nrow(spp_to_count) > 0) {
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     message(paste("Counting all distinct occurrences of", nrow(spp_to_count), "species..."))
     pb <- progress::progress_bar$new(
       total = nrow(spp_to_count),
@@ -259,7 +259,7 @@ sample_bioclim_suitability_sensitivity <- function(
   ] %>% rbind(target_bioclim) %>% unique(by = "cell")
   
   # Perform sensitivity analysis using the species individual niche:
-  nb_cores <- parallel::detectCores()
+  nb_cores <- get_nb_cpus()
   message("Performing sensitivity analysis based on individual species niche space...")
   indiv_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
     res <- gbif_bioclim[
@@ -389,7 +389,7 @@ calc_spp_bioclim_suitability <- function(
   
   # Count occurrences of species:
   if (nrow(spp_to_calc) > 0) {
-    nb_cores <- parallel::detectCores()
+    nb_cores <- get_nb_cpus()
     message(paste("Calculating bioclimatic suitability of", nrow(spp_to_calc), "species..."))
     pb <- progress::progress_bar$new(
       total = nrow(spp_to_calc),

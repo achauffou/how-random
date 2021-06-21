@@ -111,7 +111,7 @@ stan_analyses_auc <- function(y, link, res_folder) {
     auc <- 1:dim(link)[1] %>%
       parallel::mclapply(function(x) {
         pROC::auc(y, link[x,], quiet = TRUE)
-      }, mc.cores = parallel::detectCores()) %>%
+      }, mc.cores = get_nb_cpus()) %>%
       unlist()
     saveRDS(auc, file = file.path(res_folder, "auc.rds"))
   } else {
@@ -139,7 +139,7 @@ stan_analyses_roc <- function(y, link, res_folder) {
           pROC::coords(x = seq(0, 1, by = 0.001), input = "specificity")
         coords$sample <- x
         coords
-      }, mc.cores = parallel::detectCores()) %>% data.table::rbindlist()
+      }, mc.cores = get_nb_cpus()) %>% data.table::rbindlist()
     data.table::fwrite(roc, file.path(res_folder, "roc.csv"))
   } else {
     roc <- data.table::fread(file.path(res_folder, "roc.csv"))

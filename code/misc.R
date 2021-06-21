@@ -1,3 +1,15 @@
+# Get the number of CPUS to use ================================================
+#' Return the number of CPUS that can be used for the analyses
+#' 
+get_nb_cpus <- function() {
+  if (nchar(Sys.getenv("NCPUS")) > 0) {
+    return(as.integer(Sys.getenv("NCPUS")))
+  } else {
+    return(1)
+  }
+}
+
+
 # Utilities to save objects to a file and return the object ====================
 #' Save object to a file matching its class and return the object
 #' 
