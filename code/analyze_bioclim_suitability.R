@@ -198,6 +198,7 @@ calc_suitability <- function(
   # Return a data.table with cell, suitability and 90% niche size:
   data.table::data.table(
     cell = target_bioclim[['cell']], 
+    nb_occurrences = length(unique(c(sp_bioclim$cell, target_bioclim$cell))),
     suitability = suitability,
     niche_size = niche_size
   )
@@ -355,13 +356,15 @@ calc_spp_bioclim_suitability <- function(
   if(file.exists(cache_path)) {
     cache <- data.table::fread(
       cache_path, na.strings = c("", "NA"), 
-      colClasses = c("character", "character", "integer", "numeric", "numeric")
+      colClasses = c("character", "character", "integer", "integer", "numeric", 
+                     "numeric")
     )
   } else {
     dir.create(dirname(cache_path), showWarnings = FALSE, recursive = TRUE)
     cache <- data.table::data.table(
       sp_name = character(), 
       sp_kingdom = character(), 
+      nb_occurrences = integer(),
       cell = integer(),
       suitability = numeric(),
       niche_size = numeric()
@@ -410,7 +413,7 @@ calc_spp_bioclim_suitability <- function(
       )
       sp_suitability[, ':='(sp_name = sp_name, sp_kingdom = sp_kingdom)]
       data.table::setcolorder(sp_suitability, c(
-        "sp_name", "sp_kingdom", "cell", "suitability", "niche_size"
+        "sp_name", "sp_kingdom", "nb_occurrences", "cell", "suitability", "niche_size"
       ))
       data.table::fwrite(sp_suitability, cache_path, append = TRUE)
       if(x %% nb_cores == 0) pb$update(x/nrow(spp_to_calc))
@@ -422,7 +425,7 @@ calc_spp_bioclim_suitability <- function(
   # Return table with occurrences counts for all species:
   output <- data.table::fread(
     cache_path, na.strings = c("", "NA"), 
-    colClasses = c("character", "character", "integer", "numeric", "numeric")
+    colClasses = c("character", "character", "integer", "integer", "numeric", "numeric")
   )
   species_dt[, .(sp_name, sp_kingdom)] %>%
     merge(output, by = c("sp_name", "sp_kingdom"), all.x = TRUE)
@@ -450,8 +453,8 @@ add_suitability_to_interactions <- function(
   
   # Add suitability of both species for each interaction:
   interactions %<>% merge(indiv_suitability[, .(
-    sp1_id = sp_id, cell = cell, sp1_indiv_suitability = suitability, 
-    sp1_indiv_niche_area = niche_size
+    sp1_id = sp_id, cell = cell, sp1_nb_bioclim = nb_occurrences, 
+    sp1_indiv_suitability = suitability, sp1_indiv_niche_area = niche_size
   )], by = c("sp1_id", "cell"), all.x = TRUE)
   interactions %<>% merge(collec_suitability[, .(
     sp1_id = sp_id, cell = cell, sp1_collec_suitability = suitability, 
@@ -462,19 +465,19 @@ add_suitability_to_interactions <- function(
     sp2_indiv_niche_area = niche_size
   )], by = c("sp2_id", "cell"), all.x = TRUE)
   interactions %<>% merge(collec_suitability[, .(
-    sp2_id = sp_id, cell = cell, sp2_collec_suitability = suitability, 
-    sp2_collec_niche_area = niche_size
+    sp2_id = sp_id, cell = cell, sp2_nb_bioclim = nb_occurrences, 
+    sp2_collec_suitability = suitability, sp2_collec_niche_area = niche_size
   )], by = c("sp2_id", "cell"), all.x = TRUE)
   
   # Reorder columns:
   interactions[, cell := NULL]
   data.table::setcolorder(interactions, c(
     "loc_id", "net_id", "int_type", "sp1_fun_group", "sp1_id", "sp1_name", 
-    "sp1_avg_rel_degree", "sp1_indiv_suitability", "sp1_indiv_niche_area", 
-    "sp1_collec_suitability", "sp1_collec_niche_area", "sp2_fun_group", 
-    "sp2_id", "sp2_name", "sp2_avg_rel_degree", "sp2_indiv_suitability", 
-    "sp2_indiv_niche_area", "sp2_collec_suitability", "sp2_collec_niche_area",
-    "int_strength"
+    "sp1_avg_rel_degree", "sp1_nb_bioclim", "sp1_indiv_suitability", 
+    "sp1_indiv_niche_area", "sp1_collec_suitability", "sp1_collec_niche_area", 
+    "sp2_fun_group", "sp2_id", "sp2_name", "sp2_avg_rel_degree", 
+    "sp2_nb_bioclim", "sp2_indiv_suitability", "sp2_indiv_niche_area", 
+    "sp2_collec_suitability", "sp2_collec_niche_area", "int_strength"
   ))
   interactions
 }
