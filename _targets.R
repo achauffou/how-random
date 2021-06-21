@@ -503,7 +503,7 @@ calc_bioclim_suitability_targets <- list(
       wol_interactions, wol_bioclim, wol_species, bioclim_suitability_indiv, 
       bioclim_suitability_collec
     ) %>%
-      save_obj("interactions_final.csv", processed_data_folder)
+      save_obj("interactions_final", processed_data_folder)
   )
 )
 
