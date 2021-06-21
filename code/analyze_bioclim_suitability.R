@@ -401,18 +401,18 @@ calc_spp_bioclim_suitability <- function(
     unique() %>%
     data.table::fsetdiff(cache[, .(sp_name, sp_kingdom)])
   
-  # Calculate the collective niche space if asked:
-  if (collective) {
-    message("Calculating the collective niche space of all species...")
-    collective_niche <- calc_niche_space(get_all_spp_bioclim(
-      wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
-    ))
-  } else {
-    collective_niche <- NULL
-  }
-  
   # Count occurrences of species:
   if (nrow(spp_to_calc) > 0) {
+    # Calculate the collective niche space if asked:
+    if (collective) {
+      message("Calculating the collective niche space of all species...")
+      collective_niche <- calc_niche_space(get_all_spp_bioclim(
+        wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
+      ))
+    } else {
+      collective_niche <- NULL
+    }
+    
     nb_cores <- get_nb_cpus()
     message(paste("Calculating bioclimatic suitability of", nrow(spp_to_calc), "species..."))
     pb <- progress::progress_bar$new(
