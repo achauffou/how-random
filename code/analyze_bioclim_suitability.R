@@ -235,8 +235,8 @@ realised_niche_density <- function(realised_niche, grid_resolution){
 #' 
 sample_bioclim_suitability_sensitivity <- function(
   sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, 
-  table_name = "thinned", aggregation_level = "species", nb_samples = 10,
-  grid_resolution = 200
+  table_name = "thinned", aggregation_level = "species", nb_samples = 50,
+  grid_resolution = 200, nb_cells_to_sample = 10
 ) {
   # Get species GBIF and Web of Life occurrences:
   gbif_bioclim <- get_sp_gbif_bioclim(
@@ -248,16 +248,27 @@ sample_bioclim_suitability_sensitivity <- function(
   )
   
   # Get sample sizes:
-  sampling_levels <- logspace(5, nrow(gbif_bioclim), nb_samples) %>% round()
+  sampling_levels <- logspace(nb_cells_to_sample + 1, nrow(gbif_bioclim), nb_samples) %>% round()
+  
+  # Prepare cells to sample:
+  cells_to_sample <- gbif_bioclim[
+    !cell %in% target_bioclim[['cell']]
+  ][
+    sample(.N, nb_cells_to_sample - nrow(target_bioclim))
+  ] %>% rbind(target_bioclim) %>% unique(by = "cell")
   
   # Perform sensitivity analysis using the species individual niche:
   nb_cores <- parallel::detectCores()
   message("Performing sensitivity analysis based on individual species niche space...")
   indiv_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
-    res <- gbif_bioclim[sample(.N, sample_size)] %>%
-      rbind(target_bioclim) %>%
+    res <- gbif_bioclim[
+      !cell %in% cells_to_sample[['cell']]
+    ][
+      sample(.N, sample_size - nb_cells_to_sample)
+    ] %>%
+      rbind(cells_to_sample) %>%
       unique(by = "cell") %>%
-      calc_suitability(target_bioclim, niche_space = NULL,
+      calc_suitability(cells_to_sample, niche_space = NULL,
                        grid_resolution = grid_resolution)
     res[, sample_size := sample_size]
     res
@@ -269,10 +280,14 @@ sample_bioclim_suitability_sensitivity <- function(
     wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
   ) %>% calc_niche_space()
   collec_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
-    res <- gbif_bioclim[sample(.N, sample_size)] %>%
-      rbind(target_bioclim) %>%
+    res <- gbif_bioclim[
+      !cell %in% cells_to_sample[['cell']]
+    ][
+      sample(.N, sample_size - nb_cells_to_sample)
+    ] %>%
+      rbind(cells_to_sample) %>%
       unique(by = "cell") %>%
-      calc_suitability(target_bioclim, niche_space = collective_niche, 
+      calc_suitability(cells_to_sample, niche_space = collective_niche, 
                        grid_resolution = grid_resolution)
     res[, sample_size := sample_size]
     res

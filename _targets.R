@@ -38,6 +38,7 @@ read_YAML_config_targets <- list(
   tar_target(accepted_ranks, config$accepted_ranks),
   tar_target(aggregation_level, config$aggregation_level),
   tar_target(bioclim_extent, config$bioclim_extent),
+  tar_target(bioclim_sensitivity_nb_cells_to_sample, config$bioclim_sensitivity_nb_cells_to_sample),
   tar_target(bioclim_sensitivity_nb_samples, config$bioclim_sensitivity_nb_samples),
   tar_target(bioclim_suitability_grid_resolution, config$bioclim_suitability_grid_resolution),
   tar_target(bioclim_suitability_max_error, config$bioclim_suitability_max_error),
@@ -409,7 +410,8 @@ bioclim_suitability_sensitivity_targets <- list(
         "thinned", 
         aggregation_level, 
         bioclim_sensitivity_nb_samples, 
-        bioclim_suitability_grid_resolution
+        bioclim_suitability_grid_resolution,
+        bioclim_sensitivity_nb_cells_to_sample
       ) %>% lapply(1:2, function(x, object, sp_name) {
         save_obj(
           object[[x]],
