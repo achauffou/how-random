@@ -235,7 +235,7 @@ realised_niche_density <- function(realised_niche, grid_resolution){
 #' Compute the climatic suitability of a species for various sample size
 #' 
 sample_bioclim_suitability_sensitivity <- function(
-  sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, 
+  sp_name, sp_kingdom, wol_species, wol_bioclim, gbif_keys, db_path, save_folder,
   table_name = "thinned", aggregation_level = "species", nb_samples = 50,
   grid_resolution = 200, nb_cells_to_sample = 10
 ) {
@@ -260,39 +260,63 @@ sample_bioclim_suitability_sensitivity <- function(
   
   # Perform sensitivity analysis using the species individual niche:
   nb_cores <- get_nb_cpus()
-  message("Performing sensitivity analysis based on individual species niche space...")
-  indiv_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
-    res <- gbif_bioclim[
-      !cell %in% cells_to_sample[['cell']]
-    ][
-      sample(.N, sample_size - nb_cells_to_sample)
-    ] %>%
-      rbind(cells_to_sample) %>%
-      unique(by = "cell") %>%
-      calc_suitability(cells_to_sample, niche_space = NULL,
-                       grid_resolution = grid_resolution)
-    res[, sample_size := sample_size]
-    res
-  }, mc.cores = nb_cores) %>% data.table::rbindlist()
+  indiv_path <- file.path(save_folder, paste0(
+    "sensitivity_", stringr::str_replace(sp_name, " ", "_"), "_indiv.csv"))
+  if (file.exists(indiv_path)) {
+    message(paste("Skipping individual sensitivity samples for species", 
+                  sp_name, "because they already exist."))
+    indiv_analysis <- data.table::fread(
+      indiv_path, 
+      colClasses = c("integer", "integer", "numeric", "numeric", "integer")
+    )
+  } else {
+    message("Performing sensitivity analysis based on individual species niche space...")
+    indiv_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
+      res <- gbif_bioclim[
+        !cell %in% cells_to_sample[['cell']]
+      ][
+        sample(.N, sample_size - nb_cells_to_sample)
+      ] %>%
+        rbind(cells_to_sample) %>%
+        unique(by = "cell") %>%
+        calc_suitability(cells_to_sample, niche_space = NULL,
+                         grid_resolution = grid_resolution)
+      res[, sample_size := sample_size]
+      res
+    }, mc.cores = nb_cores) %>% data.table::rbindlist()
+    data.table::fwrite(indiv_analysis, indiv_path)
+  }
   
   # Perform sensitivity analysis using the collective niche of all species:
-  message("Performing sensitivity analysis based on collective niche space...")
-  collective_niche <- get_all_spp_bioclim(
-    wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
-  ) %>% calc_niche_space()
-  collec_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
-    res <- gbif_bioclim[
-      !cell %in% cells_to_sample[['cell']]
-    ][
-      sample(.N, sample_size - nb_cells_to_sample)
-    ] %>%
-      rbind(cells_to_sample) %>%
-      unique(by = "cell") %>%
-      calc_suitability(cells_to_sample, niche_space = collective_niche, 
-                       grid_resolution = grid_resolution)
-    res[, sample_size := sample_size]
-    res
-  }, mc.cores = nb_cores) %>% data.table::rbindlist()
+  collec_path <- file.path(save_folder, paste0(
+    "sensitivity_", stringr::str_replace(sp_name, " ", "_"), "_collec.csv"))
+  if (file.exists(collec_path)) {
+    message(paste("Skipping collective sensitivity samples for species", 
+                  sp_name, "because they already exist."))
+    collec_analysis <- data.table::fread(
+      collec_path, 
+      colClasses = c("integer", "integer", "numeric", "numeric", "integer")
+    )
+  } else {
+    message("Performing sensitivity analysis based on collective niche space...")
+    collective_niche <- get_all_spp_bioclim(
+      wol_bioclim, gbif_keys, db_path, table_name, aggregation_level
+    ) %>% calc_niche_space()
+    collec_analysis <- parallel::mclapply(sampling_levels, function(sample_size) {
+      res <- gbif_bioclim[
+        !cell %in% cells_to_sample[['cell']]
+      ][
+        sample(.N, sample_size - nb_cells_to_sample)
+      ] %>%
+        rbind(cells_to_sample) %>%
+        unique(by = "cell") %>%
+        calc_suitability(cells_to_sample, niche_space = collective_niche, 
+                         grid_resolution = grid_resolution)
+      res[, sample_size := sample_size]
+      res
+    }, mc.cores = nb_cores) %>% data.table::rbindlist()
+    data.table::fwrite(collec_analysis, collec_path)
+  }
   
   # Return outcome of sensitivity analyses:
   list(indiv = indiv_analysis, collec = collec_analysis)

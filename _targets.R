@@ -404,30 +404,20 @@ bioclim_suitability_sensitivity_targets <- list(
   ),
   tar_target(
     bioclim_sensitivity_samples,
-    {
-      res <- sample_bioclim_suitability_sensitivity(
-        bioclim_sensitivity_sp_name, 
-        bioclim_sensitivity_sp_kingdom, 
-        wol_species, 
-        wol_bioclim, 
-        gbif_keys, 
-        bioclim_db_path, 
-        "thinned", 
-        aggregation_level, 
-        bioclim_sensitivity_nb_samples, 
-        bioclim_suitability_grid_resolution,
-        bioclim_sensitivity_nb_cells_to_sample
-      ) %>% lapply(1:2, function(x, object, sp_name) {
-        save_obj(
-          object[[x]],
-          paste0("sensitivity_", stringr::str_replace(sp_name, " ", "_"), 
-                 "_", names(object)[[x]]),
-          results_bioclim_folder
-        )
-      }, object = ., sp_name = bioclim_sensitivity_sp_name)
-      names(res) <- c("indiv", "collec")
-      res
-    },
+    sample_bioclim_suitability_sensitivity(
+      bioclim_sensitivity_sp_name, 
+      bioclim_sensitivity_sp_kingdom, 
+      wol_species, 
+      wol_bioclim, 
+      gbif_keys, 
+      bioclim_db_path, 
+      results_bioclim_folder,
+      "thinned", 
+      aggregation_level, 
+      bioclim_sensitivity_nb_samples, 
+      bioclim_suitability_grid_resolution,
+      bioclim_sensitivity_nb_cells_to_sample
+    ),
     pattern = map(bioclim_sensitivity_sp_name, bioclim_sensitivity_sp_kingdom),
     iteration = "list"
   ),
