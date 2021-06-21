@@ -43,7 +43,7 @@ stan_sim_analyses_plot_save_params_post_true <- function(
 ) {
   lapply(params, function(x) {suppressWarnings({suppressMessages({
     stan_sim_analyses_plot_param_post_true(fit, data, x) %>%
-      ggsave(file.path(res_folder, paste0("param_post_true_ ", x, ".pdf")), .,
+      ggsave(file.path(res_folder, paste0("param_post_true_", x, ".pdf")), .,
              device = "pdf")
   })})})
 }
@@ -98,7 +98,7 @@ stan_sim_analyses_plot_save_params_errors <- function(
     stan_sim_analyses_plot_param_error(
       fit, params[x], data[[params[x]]],
       data$Y_array[, .N, by = c(id_names[x])][order(get(id_names[x]))][['N']]) %>%
-      ggsave(file.path(res_folder, paste0("param_error_ ", params[x], ".pdf")), .,
+      ggsave(file.path(res_folder, paste0("param_error_", params[x], ".pdf")), .,
              device = "pdf")
   })})})
 }
