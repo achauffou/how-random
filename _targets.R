@@ -635,6 +635,6 @@ list(
   prepare_interactions_data_targets,
   perform_bioclim_analyses_targets,
   simulate_stan_models_targets,
-  perform_stan_analyses,
+  perform_stan_analyses_targets,
   compile_TeX_manuscripts_targets
 )
