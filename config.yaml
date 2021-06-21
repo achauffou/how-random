@@ -17,6 +17,7 @@ folder_structure:
   cache: data/cache
   stan_sources: stan/src
   stan_binaries: stan/bin
+  results_analyses: results/analyses
   results_bioclim: results/bioclim
   results_simulations: results/simulations
 fun_groups_plausible_kingdoms:
@@ -96,6 +97,7 @@ stan_simulations_specs:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
+stan_analyses_specs:
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]

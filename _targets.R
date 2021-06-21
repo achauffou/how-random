@@ -55,10 +55,12 @@ read_YAML_config_targets <- list(
   tar_target(stan_bin_folder, config$folder_structure$stan_binaries),
   tar_target(results_bioclim_folder, config$folder_structure$results_bioclim),
   tar_target(results_sim_folder, config$folder_structure$results_simulations),
+  tar_target(results_stan_folder, config$folder_structure$results_analyses),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(min_locations_per_species, config$min_locations_per_species),
   tar_target(stan_sim_specs, config$stan_simulations_specs),
+  tar_target(stan_analyses_specs, config$stan_analyses_specs),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_interaction_type, config$wol_interaction_type),
@@ -559,6 +561,49 @@ simulate_stan_models_targets <- list(
 )
 
 
+# Perform Stan analyses ========================================================
+perform_stan_analyses_targets <- list(
+  tar_target(
+    stan_data,
+    prepare_stan_data(stan_analyses_specs[[1]], results_stan_folder),
+    pattern = map(stan_analyses_specs),
+    format = "file"
+  ),
+  tar_target(
+    stan_starts,
+    prepare_stan_start_values(stan_analyses_specs[[1]], results_stan_folder),
+    pattern = map(stan_analyses_specs),
+    format = "file"
+  ),
+  tar_target(
+    stan_sources,
+    stan_analyses_specs[[1]]$stan_model %>%
+      paste0(".stan") %>%
+      file.path(stan_src_folder, .),
+    pattern = map(stan_analyses_specs),
+    format = "file"
+  ),
+  tar_target(
+    stan_fits,
+    run_stan_model(
+      stan_analyses_specs[[1]],
+      readRDS(stan_data),
+      readRDS(stan_starts),
+      stan_sources,
+      stan_bin_folder,
+      results_stan_folder
+    ),
+    pattern = map(stan_analyses_specs, stan_data, stan_starts, stan_sources),
+    format = "file"
+  ),
+  tar_target(
+    stan_analyses,
+    analyse_stan(stan_analyses_specs[[1]], stan_data, stan_starts, stan_fits),
+    pattern = map(stan_analyses_specs, stan_data, stan_starts, stan_fits)
+  )
+)
+
+
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts_targets <-list(
   tar_target(
@@ -590,5 +635,6 @@ list(
   prepare_interactions_data_targets,
   perform_bioclim_analyses_targets,
   simulate_stan_models_targets,
+  perform_stan_analyses,
   compile_TeX_manuscripts_targets
 )
