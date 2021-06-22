@@ -212,7 +212,7 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, rm_empty =
   # Remove empty rows/columns:
   data[, sum_pla_ints := sum(Y), by = .(site_id, pla_id)]
   data[, sum_pol_ints := sum(Y), by = .(site_id, pol_id)]
-  data <- data[sum_pla_int > 0 & sum_pol_ints > 0]
+  data <- data[sum_pla_ints > 0 & sum_pol_ints > 0]
   
   # Return data specified as a list:
   list(
@@ -238,7 +238,7 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, rm_empty =
 }
 
 generate_stan_start_values.pol_binom_03 <- function(
-  nb_sites, nb_pla, nb_pol, p_sample = "1.0"
+  nb_sites, nb_pla, nb_pol, rm_empty = TRUE
 ) {
   list(
     alpha = 0,
