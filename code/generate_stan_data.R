@@ -210,9 +210,11 @@ generate_stan_data.pol_binom_03 <- function(nb_sites, nb_pla, nb_pol, rm_empty =
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
   
   # Remove empty rows/columns:
-  data[, sum_pla_ints := sum(Y), by = .(site_id, pla_id)]
-  data[, sum_pol_ints := sum(Y), by = .(site_id, pol_id)]
-  data <- data[sum_pla_ints > 0 & sum_pol_ints > 0]
+  if (rm_empty == TRUE) {
+    data[, sum_pla_ints := sum(Y), by = .(site_id, pla_id)]
+    data[, sum_pol_ints := sum(Y), by = .(site_id, pol_id)]
+    data <- data[sum_pla_ints > 0 & sum_pol_ints > 0]
+  }
   
   # Return data specified as a list:
   list(
