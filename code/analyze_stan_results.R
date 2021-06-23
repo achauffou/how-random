@@ -29,3 +29,36 @@ analyse_stan_res <- function(spec, data, start, fits) {
   # Return the current system time:
   as.character(Sys.time())
 }
+
+
+# Miscellaneous functions for the Stan simulations analyses ====================
+#' Plot and save the posterior distribution and true value of several parameters
+#'
+stan_analyses_plot_save_params_post <- function(fit, params, res_folder) {
+  lapply(params, function(x) {suppressWarnings({suppressMessages({
+    suppressMessages({rstan::plot(fit, pars = x)}) %>%
+      ggsave(file.path(res_folder, paste0("param_post_", x, ".pdf")), .,
+             device = "pdf")
+  })})})
+}
+
+
+# Functions to analyse specific Stan simulations ===============================
+#' Analyse pollination binomial with intercepts and slopes
+#'
+analyse_stan_res.pol_binom_03 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_bar", "beta", "gamma_pla", "gamma_pol",
+    "lambda", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
+    "sigma_lambda") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  
+  # Compute link:
+  link <- link.pol_binom_03(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}
