@@ -63,12 +63,13 @@ prepare_stan_start_values <- function(spec, interactions, results_folder = "resu
 
 
 # Functions to prepare data for specific Stan analyses =========================
-prepare_stan_data.pol_logit_03 <- function(
+prepare_stan_data.pol_binom_03 <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
   # Select relevant columns with complete cases:
+  ints <- interactions[int_type == "Pollination"]
   if (!is.null(min_bioclim_occs)) {
-    ints <- interactions[sp1_nb_bioclim >= min_bioclim_occs & 
+    ints <- ints[sp1_nb_bioclim >= min_bioclim_occs & 
                    sp2_nb_bioclim >= min_bioclim_occs]
   }
   if (collec == TRUE) {
@@ -87,17 +88,19 @@ prepare_stan_data.pol_logit_03 <- function(
   ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
   
   # Prepare sites, plant and pollinators IDs:
-  ints %<>% .[, pla_ID := .GRP, by = .(sp1_id)] %>%
-    .[, pol_ID := .GRP, by = .(sp2_id)] %>%
-    .[, site_ID := .GRP, by = .(net_id)]
-  pla_names <- ints[, .(sp1_name), by = pla_ID][order(pla_ID)][['sp1_name']]
-  pla_kingdoms <- ints[, .(sp1_kingdom), by = pla_ID][order(pla_ID)][['sp1_kingdom']]
-  pol_names <- ints[, .(sp2_name), by = pol_ID][order(pol_ID)][['sp1_name']]
-  pol_kingdoms <- ints[, .(sp2_kingdom), by = pol_ID][order(pol_ID)][['sp1_kingdom']]
-  site_names <- ints[, .(net_id), by = site_ID][order(site_ID)][['net_id']]
+  ints[, pla_id := .GRP, by = .(sp1_id)]
+  ints[, pol_id := .GRP, by = .(sp2_id)]
+  ints[, site_id := .GRP, by = .(net_id)]
+  pla_ids <- ints[, .(out = unique(sp1_id)), by = pla_id][order(pla_id)][['out']]
+  pla_names <- ints[, .(out = unique(sp1_name)), by = pla_id][order(pla_id)][['out']]
+  pla_kingdoms <- ints[, .(out = unique(sp1_kingdom)), by = pla_id][order(pla_id)][['out']]
+  pol_ids <- ints[, .(out = unique(sp2_id)), by = pol_id][order(pol_id)][['out']]
+  pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
+  pol_kingdoms <- ints[, .(out = unique(sp2_kingdom)), by = pol_id][order(pol_id)][['out']]
+  site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
   
   # Use binary interactions:
-  ints[, ':='(Y := ifelse(int_strength > 0, 1, 0))]
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
   
   # Compute standardized product of suitabilities:
   SS_mean <- mean(ints[['sp1_suitability']] * ints[['sp2_suitability']])
@@ -110,28 +113,31 @@ prepare_stan_data.pol_logit_03 <- function(
     nb_pla = length(unique(ints$pla_id)),
     nb_pol = length(unique(ints$pol_id)),
     nb_int = nrow(ints),
-    Y_array = data[, .(Y, site_id, pla_id, pol_id)],
+    Y_array = ints[, .(Y, site_id, pla_id, pol_id)],
     SS = ints$SS,
     SS_mean = SS_mean,
     SS_sd = SS_sd,
     site_names = site_names,
+    pla_ids = pla_ids,
     pla_names = pla_names,
     pla_kingdoms = pla_kingdoms,
+    pol_ids = pol_ids,
     pol_names = pol_names,
     pol_kingdoms = pol_kingdoms
   )
 }
 
-prepare_stan_data.pol_logit_03 <- function(
+prepare_stan_start_values.pol_binom_03 <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
+  data <- prepare_stan_data.pol_binom_03(interactions, min_bioclim_occs, collec)
   list(
     alpha = 0,
     lambda_bar = 0,
-    zbeta = rep(0, nb_sites),
-    zgamma_pla = rep(0, nb_pla),
-    zgamma_pol = rep(0, nb_pol),
-    zlambda = rep(0, nb_sites),
+    zbeta = rep(0, data$nb_sites),
+    zgamma_pla = rep(0, data$nb_pla),
+    zgamma_pol = rep(0, data$nb_pol),
+    zlambda = rep(0, data$nb_sites),
     sigma_beta = 0.1,
     sigma_gamma_pla = 0.1,
     sigma_gamma_pol = 0.1,
