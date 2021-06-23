@@ -555,13 +555,13 @@ simulate_stan_models_targets <- list(
 perform_stan_analyses_targets <- list(
   tar_target(
     stan_data,
-    prepare_stan_data(stan_analyses_specs[[1]], results_stan_folder),
+    prepare_stan_data(stan_analyses_specs[[1]], interactions, results_stan_folder),
     pattern = map(stan_analyses_specs),
     format = "file"
   ),
   tar_target(
     stan_starts,
-    prepare_stan_start_values(stan_analyses_specs[[1]], results_stan_folder),
+    prepare_stan_start_values(stan_analyses_specs[[1]], interactions, results_stan_folder),
     pattern = map(stan_analyses_specs),
     format = "file"
   ),
