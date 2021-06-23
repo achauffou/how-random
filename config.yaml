@@ -65,6 +65,7 @@ stan_simulations_specs:
       nb_sites: 20
       nb_pla: 18
       nb_pol: 34
+      p_sample: '1.0'
       rm_empty: FALSE
     stan_model: pol_binom_03
     chains: 4
@@ -75,9 +76,10 @@ stan_simulations_specs:
   - name: pol_binom_03b
     data_generation_model: pol_binom_03
     data_generation_args:
-      nb_sites: 55
-      nb_pla: 89
-      nb_pol: 107
+      nb_sites: 72
+      nb_pla: 475
+      nb_pol: 344
+      p_sample: rbeta(1, 2, 6) / 5
       rm_empty: TRUE
     stan_model: pol_binom_03
     chains: 4
