@@ -11,7 +11,7 @@ analyse_stan_res <- function(spec, data, start, fits) {
   
   # Analyse simulation outcome:
   if (!file.exists(file.path(res_folder, "last_analysis.txt"))) {
-    fun_name <- paste0("analyse_stan_sim.", spec$stan_model)
+    fun_name <- paste0("analyse_stan_res.", spec$stan_model)
     if (exists(fun_name)) {
       fun_name %>%
         get() %>%

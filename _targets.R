@@ -588,7 +588,7 @@ perform_stan_analyses_targets <- list(
   ),
   tar_target(
     stan_analyses,
-    analyse_stan(stan_analyses_specs[[1]], stan_data, stan_starts, stan_fits),
+    analyse_stan_res(stan_analyses_specs[[1]], stan_data, stan_starts, stan_fits),
     pattern = map(stan_analyses_specs, stan_data, stan_starts, stan_fits)
   )
 )
