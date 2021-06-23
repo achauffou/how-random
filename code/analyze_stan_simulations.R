@@ -134,7 +134,7 @@ stan_analyses_auc <- function(
   plt <- ggplot(data.frame(auc = auc), aes(x = auc)) +
     geom_density() +
     xlab("Area Under Curve") +
-    ylab("Density")
+    ylab("Density") +
     theme_classic()
   suppressMessages({ggsave(
     file.path(res_folder, paste0(auc_name, ".pdf")), plt, device = "pdf"
