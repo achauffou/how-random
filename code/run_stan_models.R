@@ -48,7 +48,7 @@ run_stan_model <- function(
   if (threads_per_chain < 1) threads_per_chain <- 1
   initial_values <- lapply(1:chains, function(x) start_vals)
   fun_args <- c(list(
-    data = data,
+    data = data[which(sapply(data, class) != "character")],
     init = initial_values,
     chains = chains,
     threads_per_chain = threads_per_chain,
