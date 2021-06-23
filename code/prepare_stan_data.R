@@ -19,13 +19,13 @@ prepare_stan_data <- function(spec, interactions, results_folder = "results/anal
   
   # Generate and save data to the results folder:
   if (is.null(spec$data_generation_args)) {
-    fun_args <- list()
+    fun_args <- list(interactions)
   } else {
-    fun_args <- spec$data_generation_args
+    fun_args <- c(list(interactions), spec$data_generation_args)
   }
   paste0("prepare_stan_data.", spec$data_generation_model) %>%
     get() %>%
-    do.call(args = c(interactions, fun_args)) %>%
+    do.call(args = fun_args) %>%
     saveRDS(file = out_path)
   out_path
 }
@@ -50,13 +50,13 @@ prepare_stan_start_values <- function(spec, interactions, results_folder = "resu
   
   # Generate and save starting values to the results folder:
   if (is.null(spec$data_generation_args)) {
-    fun_args <- list()
+    fun_args <- list(interactions)
   } else {
-    fun_args <- spec$data_generation_args
+    fun_args <- c(list(interactions), spec$data_generation_args)
   }
   paste0("prepare_stan_start_values.", spec$data_generation_model) %>%
     get() %>%
-    do.call(args = c(interactions, fun_args)) %>%
+    do.call(args = fun_args) %>%
     saveRDS(file = out_path)
   out_path
 }
