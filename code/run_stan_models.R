@@ -58,6 +58,9 @@ run_stan_model <- function(
   # Sample the compiled Stan model:
   fit <- do.call(model$sample, args = fun_args)
   
+  # Remove last_analysis.txt if it exists to ensure that analysis is performed:
+  file.remove(file.path(out_folder, "last_analysis.txt"), showWarnings = FALSE)
+  
   # Print and save diagnostic to a file:
   print(fit$cmdstan_diagnose())
   sink(file = file.path(out_folder, "cmdstan-diagnostic.txt"))

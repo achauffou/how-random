@@ -10,11 +10,19 @@ analyse_stan_sim <- function(spec, data, start, fits) {
   start <-  readRDS(start)
 
   # Analyse simulation outcome:
-  fun_name <- paste0("analyse_stan_sim.", spec$stan_model)
-  if (exists(fun_name)) {
-    fun_name %>%
-      get() %>%
-      do.call(args = list(spec, data, start, cmdstan_fit, rstan_fit, res_folder))
+  if (!file.exists(file.path(res_folder, "last_analysis.txt"))) {
+    fun_name <- paste0("analyse_stan_sim.", spec$stan_model)
+    if (exists(fun_name)) {
+      fun_name %>%
+        get() %>%
+        do.call(args = list(spec, data, start, cmdstan_fit, rstan_fit, res_folder))
+      con <- file(file.path(res_folder, "last_analysis.txt"))
+      writeLines(as.character(Sys.time()), con)
+      close(con)
+    }
+  } else {
+    message(paste(spec$stan_model, "results seem to already have been analysed.",
+                  "Skipping Stan results analysis..."))
   }
 
   # Return RStan fit summary:
