@@ -497,11 +497,12 @@ add_suitability_to_interactions <- function(
   interactions[, cell := NULL]
   data.table::setcolorder(interactions, c(
     "loc_id", "net_id", "int_type", "sp1_fun_group", "sp1_id", "sp1_name", 
-    "sp1_avg_rel_degree", "sp1_nb_bioclim", "sp1_indiv_suitability", 
-    "sp1_indiv_niche_area", "sp1_collec_suitability", "sp1_collec_niche_area", 
-    "sp2_fun_group", "sp2_id", "sp2_name", "sp2_avg_rel_degree", 
-    "sp2_nb_bioclim", "sp2_indiv_suitability", "sp2_indiv_niche_area", 
-    "sp2_collec_suitability", "sp2_collec_niche_area", "int_strength"
+    "sp1_kingdom", "sp1_avg_rel_degree", "sp1_nb_bioclim", 
+    "sp1_indiv_suitability", "sp1_indiv_niche_area", "sp1_collec_suitability", 
+    "sp1_collec_niche_area", "sp2_fun_group", "sp2_id", "sp2_name", "sp2_kingdom",
+    "sp2_avg_rel_degree", "sp2_nb_bioclim", "sp2_indiv_suitability", 
+    "sp2_indiv_niche_area", "sp2_collec_suitability", "sp2_collec_niche_area", 
+    "int_strength"
   ))
   interactions
 }

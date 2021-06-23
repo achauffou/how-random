@@ -343,12 +343,12 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     # Add cleaned species names and average relative degree:
     merge(species[, .(
       net_name, sp1_raw_name = raw_name, sp1_name = final_name, 
-      sp1_fun_group = fun_group, sp1_id = final_id, 
+      sp1_kingdom = kingdom, sp1_fun_group = fun_group, sp1_id = final_id, 
       sp1_avg_rel_degree = avg_rel_degree
     )], by = c("net_name", "sp1_raw_name", "sp1_fun_group"), all.x = TRUE) %>%
     merge(species[, .(
       net_name, sp2_raw_name = raw_name, sp2_name = final_name, 
-      sp2_fun_group = fun_group, sp2_id = final_id, 
+      sp2_kingdom = kingdom, sp2_fun_group = fun_group, sp2_id = final_id, 
       sp2_avg_rel_degree = avg_rel_degree
     )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
     .[!is.na(sp1_name) & !is.na(sp2_name),]
@@ -356,7 +356,7 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
   # Return data.table with columns reordered:
   interactions[, .(
     loc_id, net_id = net_name, int_type, sp1_fun_group, sp1_id, sp1_name, 
-    sp1_avg_rel_degree, sp2_fun_group, sp2_id, sp2_name, sp2_avg_rel_degree, 
-    int_strength
+    sp1_kingdom, sp1_avg_rel_degree, sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, 
+    sp2_avg_rel_degree, int_strength
   )]
 }
