@@ -63,6 +63,57 @@ prepare_stan_start_values <- function(spec, interactions, results_folder = "resu
 
 
 # Functions to prepare data for specific Stan analyses =========================
+prepare_stan_data.pol_binom_02 <- function(interactions) {
+  # Select relevant columns with complete cases:
+  ints <- interactions[int_type == "Pollination"]
+  ints <- ints[, .(
+    int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, sp2_id, sp2_name, 
+    sp2_kingdom
+  )]
+  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  
+  # Prepare sites, plant and pollinators IDs:
+  ints[, pla_id := .GRP, by = .(sp1_id)]
+  ints[, pol_id := .GRP, by = .(sp2_id)]
+  ints[, site_id := .GRP, by = .(net_id)]
+  pla_ids <- ints[, .(out = unique(sp1_id)), by = pla_id][order(pla_id)][['out']]
+  pla_names <- ints[, .(out = unique(sp1_name)), by = pla_id][order(pla_id)][['out']]
+  pol_ids <- ints[, .(out = unique(sp2_id)), by = pol_id][order(pol_id)][['out']]
+  pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
+  site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
+  
+  # Use binary interactions:
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
+  
+  # Return list of data:
+  list(
+    nb_sites = length(unique(ints$site_id)),
+    nb_pla = length(unique(ints$pla_id)),
+    nb_pol = length(unique(ints$pol_id)),
+    nb_int = nrow(ints),
+    Y_array = ints[, .(Y, site_id, pla_id, pol_id)],
+    site_names = site_names,
+    pla_ids = pla_ids,
+    pla_names = pla_names,
+    pol_ids = pol_ids,
+    pol_names = pol_names
+  )
+}
+
+prepare_stan_start_values.pol_binom_02 <- function(interactions) {
+  data <- prepare_stan_data.pol_binom_02(interactions)
+  list(
+    alpha = 0,
+    lambda_bar = 0,
+    zbeta = rep(0, data$nb_sites),
+    zgamma_pla = rep(0, data$nb_pla),
+    zgamma_pol = rep(0, data$nb_pol),
+    sigma_beta = 0.1,
+    sigma_gamma_pla = 0.1,
+    sigma_gamma_pol = 0.1
+  )
+}
+
 prepare_stan_data.pol_binom_03 <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
