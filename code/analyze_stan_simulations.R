@@ -272,7 +272,7 @@ analyse_stan_sim.pol_binom_03 <- function(
   link <- link.pol_binom_03(data, rstan_fit)
 
   # Compute and plot AUC/ROC:
-  aucroc_link_sample <- sample(link, 1000)
+  aucroc_link_sample <- link[sample(1:nrow(link), 1000), ]
   stan_analyses_auc(data$Y_array$Y, aucroc_link_sample, res_folder)
   stan_analyses_roc(data$Y_array$Y, aucroc_link_sample, res_folder)
 }
