@@ -25,8 +25,8 @@ analyse_stan_sim <- function(spec, data, start, fits) {
                   "Skipping Stan results analysis..."))
   }
 
-  # Return RStan fit summary:
-  list(rstan::summary(rstan_fit)$summary)
+  # Return the current system time:
+  as.character(Sys.time())
 }
 
 
