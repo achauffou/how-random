@@ -114,18 +114,21 @@ stan_sim_analyses_plot_save_params_errors <- function(
 
 #' Compute and plot the AUC of a Bayesian binomial model
 #'
-stan_analyses_auc <- function(y, link, res_folder) {
-  # Compute and save the Area Under Curve values for all posterior draws:
-  if (!file.exists(file.path(res_folder, "auc.rds"))) {
-    auc <- 1:dim(link)[1] %>%
-      parallel::mclapply(function(x) {
-        pROC::auc(y, link[x,], quiet = TRUE)
-      }, mc.cores = get_nb_cpus()) %>%
-      unlist()
-    saveRDS(auc, file = file.path(res_folder, "auc.rds"))
-  } else {
-    auc <- readRDS(file.path(res_folder, "auc.rds"))
+stan_analyses_auc <- function(
+  y, link, res_folder, auc_name = "auc", nb_samples = NULL
+) {
+  # Sample link:
+  if(!is.null(nb_samples)) {
+    link <- link[sample(1:dim(link)[1], nb_samples), ]
   }
+  
+  # Compute and save the Area Under Curve values for all posterior draws:
+  auc <- 1:dim(link)[1] %>%
+    parallel::mclapply(function(x) {
+      pROC::auc(y, link[x,], quiet = TRUE)
+    }, mc.cores = get_nb_cpus()) %>%
+    unlist()
+  saveRDS(auc, file = file.path(res_folder, paste0(auc_name, ".rds")))
 
   # Plot and save the distribution of the AUC:
   plt <- ggplot(data.frame(auc = auc), aes(x = auc)) +
@@ -133,26 +136,31 @@ stan_analyses_auc <- function(y, link, res_folder) {
     xlab("Area Under Curve") +
     ylab("Density")
     theme_classic()
-  suppressMessages({ggsave(file.path(res_folder, "auc.pdf"), plt, device = "pdf")})
+  suppressMessages({ggsave(
+    file.path(res_folder, paste0(auc_name, ".pdf")), plt, device = "pdf"
+  )})
 }
 
 #' Plot the ROC curve of a Bayesian binomial model
 #'
-stan_analyses_roc <- function(y, link, res_folder) {
-  # Compute and save the ROC curve coordinates for all posterior draws:
-  if (!file.exists(file.path(res_folder, "roc.rds"))) {
-    roc <- 1:dim(link)[1] %>%
-      parallel::mclapply(function(x) {
-        coords <- y %>%
-          pROC::roc(link[x,], auc = FALSE, ci = FALSE, quiet = TRUE) %>%
-          pROC::coords(x = seq(0, 1, by = 0.001), input = "specificity")
-        coords$sample <- x
-        coords
-      }, mc.cores = get_nb_cpus()) %>% data.table::rbindlist()
-    data.table::fwrite(roc, file.path(res_folder, "roc.csv"))
-  } else {
-    roc <- data.table::fread(file.path(res_folder, "roc.csv"))
+stan_analyses_roc <- function(
+  y, link, res_folder, roc_name = "roc", nb_samples = NULL
+) {
+  # Sample link:
+  if(!is.null(nb_samples)) {
+    link <- link[sample(1:dim(link)[1], nb_samples), ]
   }
+  
+  # Compute and save the ROC curve coordinates for all posterior draws:
+  roc <- 1:dim(link)[1] %>%
+    parallel::mclapply(function(x) {
+      coords <- y %>%
+        pROC::roc(link[x,], auc = FALSE, ci = FALSE, quiet = TRUE) %>%
+        pROC::coords(x = seq(0, 1, by = 0.001), input = "specificity")
+      coords$sample <- x
+      coords
+    }, mc.cores = get_nb_cpus()) %>% data.table::rbindlist()
+  data.table::fwrite(roc, file.path(res_folder, paste0(roc_name, ".csv")))
 
   # Plot and save the distribution of the AUC:
   plt_data <- roc[, .(
@@ -166,7 +174,9 @@ stan_analyses_roc <- function(y, link, res_folder) {
     scale_x_reverse(name = "Specificity", limits = c(1, 0), expand = c(0, NA)) +
     scale_y_continuous(name = "Sensitivity", limits = c(0, 1), expand = c(0, NA)) +
     theme_classic()
-  suppressMessages({ggsave(file.path(res_folder, "roc.pdf"), plt, device = "pdf")})
+  suppressMessages({ggsave(
+    file.path(res_folder, paste0(roc_name, ".pdf")), plt, device = "pdf"
+  )})
 }
 
 
@@ -273,9 +283,8 @@ analyse_stan_sim.pol_binom_03 <- function(
   link <- link.pol_binom_03(data, rstan_fit)
 
   # Compute and plot AUC/ROC:
-  aucroc_link_sample <- link[sample(1:nrow(link), 1000), ]
-  stan_analyses_auc(data$Y_array$Y, aucroc_link_sample, res_folder)
-  stan_analyses_roc(data$Y_array$Y, aucroc_link_sample, res_folder)
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
 }
 
 #' Link function of pollination binomial with intercepts and slope
