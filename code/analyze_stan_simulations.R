@@ -21,7 +21,8 @@ analyse_stan_sim <- function(spec, data, start, fits) {
       close(con)
     }
   } else {
-    message(paste(spec$stan_model, "results seem to already have been analysed.",
+    message(paste("Results of simulation", spec$name, 
+                  "seem to already have been analysed.",
                   "Skipping Stan results analysis..."))
   }
 
