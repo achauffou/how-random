@@ -93,10 +93,8 @@ prepare_stan_data.pol_binom_03 <- function(
   ints[, site_id := .GRP, by = .(net_id)]
   pla_ids <- ints[, .(out = unique(sp1_id)), by = pla_id][order(pla_id)][['out']]
   pla_names <- ints[, .(out = unique(sp1_name)), by = pla_id][order(pla_id)][['out']]
-  pla_kingdoms <- ints[, .(out = unique(sp1_kingdom)), by = pla_id][order(pla_id)][['out']]
   pol_ids <- ints[, .(out = unique(sp2_id)), by = pol_id][order(pol_id)][['out']]
   pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
-  pol_kingdoms <- ints[, .(out = unique(sp2_kingdom)), by = pol_id][order(pol_id)][['out']]
   site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
   
   # Use binary interactions:
@@ -120,10 +118,8 @@ prepare_stan_data.pol_binom_03 <- function(
     site_names = site_names,
     pla_ids = pla_ids,
     pla_names = pla_names,
-    pla_kingdoms = pla_kingdoms,
     pol_ids = pol_ids,
-    pol_names = pol_names,
-    pol_kingdoms = pol_kingdoms
+    pol_names = pol_names
   )
 }
 
