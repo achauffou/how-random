@@ -63,6 +63,8 @@ prepare_stan_start_values <- function(spec, interactions, results_folder = "resu
 
 
 # Functions to prepare data for specific Stan analyses =========================
+#' Pollination binomial model with only intercepts (no lambdas)
+#' 
 prepare_stan_data.pol_binom_02 <- function(interactions) {
   # Select relevant columns with complete cases:
   ints <- interactions[int_type == "Pollination"]
@@ -114,6 +116,8 @@ prepare_stan_start_values.pol_binom_02 <- function(interactions) {
   )
 }
 
+#' Pollination binomial model with alpha, betas, gammas, lambda(s)
+#' 
 prepare_stan_data.pol_binom_03 <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
