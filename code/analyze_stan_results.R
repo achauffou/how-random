@@ -55,7 +55,19 @@ analyse_stan_res.pol_binom_02 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  link <- link.pol_binom_02(data, rstan_fit)
+  compute_link <- TRUE
+  rstan_file <- file.path(res_folder, "rstan-fit.rds")
+  link_file <- file.path(res_folder, "link.rds")
+  if (file.exists(link_file)) {
+    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
+      compute_link <- FALSE
+      link <- readRDS(link_file)
+    }
+  }
+  if (compute_link == TRUE) {
+    link <- link.pol_binom_02(data, rstan_fit)
+    saveRDS(link, link_file)
+  }
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
@@ -74,7 +86,19 @@ analyse_stan_res.pol_binom_03 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  link <- link.pol_binom_03(data, rstan_fit)
+  compute_link <- TRUE
+  rstan_file <- file.path(res_folder, "rstan-fit.rds")
+  link_file <- file.path(res_folder, "link.rds")
+  if (file.exists(link_file)) {
+    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
+      compute_link <- FALSE
+      link <- readRDS(link_file)
+    }
+  }
+  if (compute_link == TRUE) {
+    link <- link.pol_binom_03(data, rstan_fit)
+    saveRDS(link, link_file)
+  }
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
@@ -92,7 +116,19 @@ analyse_stan_res.pol_binom_04 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  link <- link.pol_binom_04(data, rstan_fit)
+  compute_link <- TRUE
+  rstan_file <- file.path(res_folder, "rstan-fit.rds")
+  link_file <- file.path(res_folder, "link.rds")
+  if (file.exists(link_file)) {
+    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
+      compute_link <- FALSE
+      link <- readRDS(link_file)
+    }
+  }
+  if (compute_link == TRUE) {
+    link <- link.pol_binom_04(data, rstan_fit)
+    saveRDS(link, link_file)
+  }
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
