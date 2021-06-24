@@ -32,25 +32,6 @@ analyse_stan_res <- function(spec, data, start, fits) {
 
 
 # Miscellaneous functions for the Stan simulations analyses ====================
-#' Compute link if necessary and save it to a file
-#' 
-compute_save_link <- function(data, rstan_fit, link_fun, res_folder, ...) {
-  compute_link <- TRUE
-  rstan_file <- file.path(res_folder, "rstan-fit.rds")
-  link_file <- file.path(res_folder, "link.rds")
-  if (file.exists(link_file)) {
-    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
-      compute_link <- FALSE
-      link <- readRDS(link_file)
-    }
-  }
-  if (compute_link == TRUE) {
-    link <- link_fun(data, rstan_fit, ...)
-    saveRDS(link, link_file)
-  }
-  link
-}
-
 #' Plot and save the posterior distribution and true value of several parameters
 #'
 stan_analyses_plot_save_params_post <- function(fit, params, res_folder) {
@@ -116,23 +97,4 @@ analyse_stan_res.pol_binom_04 <- function(
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
   stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
-}
-
-#' Link function of pollination binomial with single lambda for all sites
-#'
-link.pol_binom_04 <- function(data, fit) {
-  alpha <- as.matrix(fit, pars = "alpha")
-  beta <- as.matrix(fit, pars = "beta")
-  gamma_pla <- as.matrix(fit, pars = "gamma_pla")
-  gamma_pol <- as.matrix(fit, pars = "gamma_pol")
-  lambda <- as.matrix(fit, pars = "lambda")
-  parallel::mclapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
-    p <- boot::inv.logit(
-      alpha[x] + beta[x, data$Y_array$site_id] +
-        gamma_pla[x, data$Y_array$pla_id] + gamma_pol[x, data$Y_array$pol_id] +
-        lambda * data$SS
-    )
-    names(p) <- NULL
-    p
-  }, mc.cores = get_nb_cpus()) %>% do.call(rbind, args = .)
 }
