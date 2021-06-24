@@ -196,13 +196,6 @@ analyse_stan_sim.pol_binom_01 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"),
     c("site_id", "pla_id", "pol_id"), res_folder
   )
-
-  # Compute link:
-  link <- link.pol_binom_01(data, rstan_fit)
-
-  # Compute and plot AUC/ROC:
-  stan_analyses_auc(data$Y_array$Y, link, res_folder)
-  stan_analyses_roc(data$Y_array$Y, link, res_folder)
 }
 
 #' Analyse pollination binomial with intercepts only
@@ -220,13 +213,6 @@ analyse_stan_sim.pol_binom_02 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"),
     c("site_id", "pla_id", "pol_id"), res_folder
   )
-
-  # Compute link:
-  link <- link.pol_binom_02(data, rstan_fit)
-
-  # Compute and plot AUC/ROC:
-  stan_analyses_auc(data$Y_array$Y, link, res_folder)
-  stan_analyses_roc(data$Y_array$Y, link, res_folder)
 }
 
 #' Analyse pollination binomial with intercepts and slopes
@@ -245,11 +231,4 @@ analyse_stan_sim.pol_binom_03 <- function(
     rstan_fit, data, c("beta", "gamma_pla", "gamma_pol", "lambda"),
     c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
   )
-
-  # Compute link:
-  link <- link.pol_binom_03(data, rstan_fit)
-
-  # Compute and plot AUC/ROC:
-  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
-  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
 }
