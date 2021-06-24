@@ -32,6 +32,25 @@ analyse_stan_res <- function(spec, data, start, fits) {
 
 
 # Miscellaneous functions for the Stan simulations analyses ====================
+#' Compute link if necessary and save it to a file
+#' 
+compute_save_link <- function(data, rstan_fit, link_fun, res_folder, ...) {
+  compute_link <- TRUE
+  rstan_file <- file.path(res_folder, "rstan-fit.rds")
+  link_file <- file.path(res_folder, "link.rds")
+  if (file.exists(link_file)) {
+    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
+      compute_link <- FALSE
+      link <- readRDS(link_file)
+    }
+  }
+  if (compute_link == TRUE) {
+    link <- link_fun(data, rstan_fit, ...)
+    saveRDS(link, link_file)
+  }
+  link
+}
+
 #' Plot and save the posterior distribution and true value of several parameters
 #'
 stan_analyses_plot_save_params_post <- function(fit, params, res_folder) {
@@ -55,19 +74,7 @@ analyse_stan_res.pol_binom_02 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  compute_link <- TRUE
-  rstan_file <- file.path(res_folder, "rstan-fit.rds")
-  link_file <- file.path(res_folder, "link.rds")
-  if (file.exists(link_file)) {
-    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
-      compute_link <- FALSE
-      link <- readRDS(link_file)
-    }
-  }
-  if (compute_link == TRUE) {
-    link <- link.pol_binom_02(data, rstan_fit)
-    saveRDS(link, link_file)
-  }
+  link <- compute_save_link(data, rstan_fit, link.pol_binom_02, res_folder)
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
@@ -86,19 +93,7 @@ analyse_stan_res.pol_binom_03 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  compute_link <- TRUE
-  rstan_file <- file.path(res_folder, "rstan-fit.rds")
-  link_file <- file.path(res_folder, "link.rds")
-  if (file.exists(link_file)) {
-    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
-      compute_link <- FALSE
-      link <- readRDS(link_file)
-    }
-  }
-  if (compute_link == TRUE) {
-    link <- link.pol_binom_03(data, rstan_fit)
-    saveRDS(link, link_file)
-  }
+  link <- compute_save_link(data, rstan_fit, link.pol_binom_03, res_folder)
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
@@ -116,19 +111,7 @@ analyse_stan_res.pol_binom_04 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute link:
-  compute_link <- TRUE
-  rstan_file <- file.path(res_folder, "rstan-fit.rds")
-  link_file <- file.path(res_folder, "link.rds")
-  if (file.exists(link_file)) {
-    if (file.info(link_file)$ctime > file.info(rstan_file)$ctime) {
-      compute_link <- FALSE
-      link <- readRDS(link_file)
-    }
-  }
-  if (compute_link == TRUE) {
-    link <- link.pol_binom_04(data, rstan_fit)
-    saveRDS(link, link_file)
-  }
+  link <- compute_save_link(data, rstan_fit, link.pol_binom_04, res_folder)
   
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
