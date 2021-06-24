@@ -98,3 +98,37 @@ analyse_stan_res.pol_binom_04 <- function(
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
   stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
 }
+
+#' Analyse pollination binomial with alpha, betas and lambdas
+#'
+analyse_stan_res.pol_binom_05 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_bar", "beta", "lambda", "sigma_beta", "sigma_lambda") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  
+  # Compute link:
+  link <- compute_save_link(data, rstan_fit, link.pol_binom_05, res_folder)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}
+
+#' Analyse pollination binomial with alpha, betas and single lambda
+#'
+analyse_stan_res.pol_binom_06 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda", "beta", "sigma_beta") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  
+  # Compute link:
+  link <- compute_save_link(data, rstan_fit, link.pol_binom_06, res_folder)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}

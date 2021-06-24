@@ -90,3 +90,34 @@ link.pol_binom_04 <- function(data, fit) {
     p
   }, mc.cores = get_nb_cpus()) %>% do.call(rbind, args = .)
 }
+
+#' Link function of pollination binomial with alpha, betas and lambdas
+#'
+link.pol_binom_05 <- function(data, fit) {
+  alpha <- as.matrix(fit, pars = "alpha")
+  beta <- as.matrix(fit, pars = "beta")
+  lambda <- as.matrix(fit, pars = "lambda")
+  parallel::mclapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      alpha[x] + beta[x, data$Y_array$site_id] +
+        lambda[x, data$Y_array$site_id] * data$SS
+    )
+    names(p) <- NULL
+    p
+  }, mc.cores = get_nb_cpus()) %>% do.call(rbind, args = .)
+}
+
+#' Link function of pollination binomial with alpha, beta and single lambda
+#'
+link.pol_binom_06 <- function(data, fit) {
+  alpha <- as.matrix(fit, pars = "alpha")
+  beta <- as.matrix(fit, pars = "beta")
+  lambda <- as.matrix(fit, pars = "lambda")
+  parallel::mclapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      alpha[x] + beta[x, data$Y_array$site_id] + lambda * data$SS
+    )
+    names(p) <- NULL
+    p
+  }, mc.cores = get_nb_cpus()) %>% do.call(rbind, args = .)
+}

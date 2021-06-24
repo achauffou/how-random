@@ -117,6 +117,26 @@ stan_analyses_specs:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
+  - name: pol_binom_05a
+    data_generation_model: pol_binom_03
+    data_generation_args:
+      collec: FALSE
+    stan_model: pol_binom_05
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: pol_binom_06a
+    data_generation_model: pol_binom_03
+    data_generation_args:
+      collec: FALSE
+    stan_model: pol_binom_06
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]
