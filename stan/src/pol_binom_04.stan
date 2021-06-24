@@ -66,3 +66,16 @@ model{
     SS
   );
 }
+generated quantities{
+  // Compute pointwise link (probability of interaction)
+  vector[nb_int] link = inv_logit(
+    alpha + beta[Y_array[, 2]] + gamma_pla[Y_array[, 3]] + 
+    gamma_pol[Y_array[, 4]] + lambda * SS
+  );
+  
+  // Compute pointwise log-likelihood
+  vector[nb_int] log_lik;
+  for (i in 1:nb_int) {
+    log_lik[i] = bernoulli_lpmf(Y_array[i, 1] | link[i]);
+  }
+}

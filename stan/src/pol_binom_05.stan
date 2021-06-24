@@ -56,3 +56,15 @@ model{
     partial_sum, Y_array, grainsize, alpha, beta, lambda, SS
   );
 }
+generated quantities{
+  // Compute pointwise link (probability of interaction)
+  vector[nb_int] link = inv_logit(
+    alpha + beta[Y_array[, 2]] + lambda[Y_array[, 2]] .* SS
+  );
+  
+  // Compute pointwise log-likelihood
+  vector[nb_int] log_lik;
+  for (i in 1:nb_int) {
+    log_lik[i] = bernoulli_lpmf(Y_array[i, 1] | link[i]);
+  }
+}
