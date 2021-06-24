@@ -44,6 +44,24 @@ stan_analyses_plot_save_params_post <- function(fit, params, res_folder) {
 
 
 # Functions to analyse specific Stan simulations ===============================
+#' Analyse pollination binomial with intercepts only
+#'
+analyse_stan_res.pol_binom_02 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "beta", "gamma_pla", "gamma_pol", "sigma_beta", "sigma_gamma_pla", 
+    "sigma_gamma_pol") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  
+  # Compute link:
+  link <- link.pol_binom_02(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}
+
 #' Analyse pollination binomial with intercepts and slopes
 #'
 analyse_stan_res.pol_binom_03 <- function(
@@ -61,4 +79,41 @@ analyse_stan_res.pol_binom_03 <- function(
   # Compute and plot AUC/ROC:
   stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
   stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}
+
+#' Analyse pollination binomial with single lambda for all sites
+#'
+analyse_stan_res.pol_binom_04 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda", "beta", "gamma_pla", "gamma_pol",
+    "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  
+  # Compute link:
+  link <- link.pol_binom_04(data, rstan_fit)
+  
+  # Compute and plot AUC/ROC:
+  stan_analyses_auc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+  stan_analyses_roc(data$Y_array$Y, link, res_folder, nb_samples = 100)
+}
+
+#' Link function of pollination binomial with single lambda for all sites
+#'
+link.pol_binom_04 <- function(data, fit) {
+  alpha <- as.matrix(fit, pars = "alpha")
+  beta <- as.matrix(fit, pars = "beta")
+  gamma_pla <- as.matrix(fit, pars = "gamma_pla")
+  gamma_pol <- as.matrix(fit, pars = "gamma_pol")
+  lambda <- as.matrix(fit, pars = "lambda")
+  parallel::mclapply(1:(dim(fit)[1] * dim(fit)[2]), function(x) {
+    p <- boot::inv.logit(
+      alpha[x] + beta[x, data$Y_array$site_id] +
+        gamma_pla[x, data$Y_array$pla_id] + gamma_pol[x, data$Y_array$pol_id] +
+        lambda * data$SS
+    )
+    names(p) <- NULL
+    p
+  }, mc.cores = get_nb_cpus()) %>% do.call(rbind, args = .)
 }
