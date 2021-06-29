@@ -1,6 +1,28 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 29 June 2021
+##### Meeting with Bernat:
+After a few weeks of data simulations, it is possible to start data analyses.
+I had a meeting with Bernat yesterday to discuss about the next steps.
+Here is a list of the next steps to take for the project:
+* Data preparation for models:
+  * Remove species and sites that do not have both zeros and ones
+  * Prepare data for models with several interaction types
+* Models:
+  * Simple pollination models without gammas (05-06)
+  * Non-neutral additive pollination models (03-04)
+  * Non-neutral product pollination models (07-08)
+  * Extend models to include different interaction types (no pooling)
+* Data analysis methods:
+  * See how to compute and compare WAIC
+  * Investigate which method could be used for within model predicability comparisons
+* Data collection:
+  * Invasiveness status
+
+The plan is to undertake these steps in parallel during the next two weeks.
+Once the first results are available, it will be possible to start working on the manuscript.
+
 #### 7 June 2021
 ##### Data preparation finished:
 I have finished preparing all data for the analyses.
