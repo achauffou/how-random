@@ -116,9 +116,9 @@ prepare_stan_start_values.pol_binom_02 <- function(interactions) {
   )
 }
 
-#' Pollination binomial model with alpha, betas, gammas, lambda(s)
+#' Pollination binomial model with bioclimatic variables
 #' 
-prepare_stan_data.pol_binom_03 <- function(
+prepare_stan_data.pol_binom_bioclim <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
   # Select relevant columns with complete cases:
@@ -188,10 +188,10 @@ prepare_stan_data.pol_binom_03 <- function(
   )
 }
 
-prepare_stan_start_values.pol_binom_03 <- function(
+prepare_stan_start_values.pol_binom_bioclim <- function(
   interactions, min_bioclim_occs = NULL, collec = FALSE
 ) {
-  data <- prepare_stan_data.pol_binom_03(interactions, min_bioclim_occs, collec)
+  data <- prepare_stan_data.pol_binom_bioclim(interactions, min_bioclim_occs, collec)
   list(
     alpha = 0,
     lambda_bar = 0,

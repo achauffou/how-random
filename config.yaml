@@ -89,7 +89,7 @@ stan_simulations_specs:
       refresh: 250
 stan_analyses_specs:
   - name: pol_binom_03a
-    data_generation_model: pol_binom_03
+    data_generation_model: pol_binom_bioclim
     data_generation_args:
       collec: FALSE
     stan_model: pol_binom_03
@@ -99,7 +99,7 @@ stan_analyses_specs:
       iter_sampling: 2000
       refresh: 250
   - name: pol_binom_04a
-    data_generation_model: pol_binom_03
+    data_generation_model: pol_binom_bioclim
     data_generation_args:
       collec: FALSE
     stan_model: pol_binom_04
@@ -109,7 +109,7 @@ stan_analyses_specs:
       iter_sampling: 2000
       refresh: 250
   - name: pol_binom_05a
-    data_generation_model: pol_binom_03
+    data_generation_model: pol_binom_bioclim
     data_generation_args:
       collec: FALSE
     stan_model: pol_binom_05
@@ -119,7 +119,7 @@ stan_analyses_specs:
       iter_sampling: 2000
       refresh: 250
   - name: pol_binom_06a
-    data_generation_model: pol_binom_03
+    data_generation_model: pol_binom_bioclim
     data_generation_args:
       collec: FALSE
     stan_model: pol_binom_06
