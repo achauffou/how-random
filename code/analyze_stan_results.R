@@ -97,3 +97,26 @@ analyse_stan_res.pol_binom_06 <- function(
   c("alpha", "lambda", "beta", "sigma_beta") %>%
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
 }
+
+
+#' Analyse pollination binomial with alpha, betas, gammas product and lambdas
+#'
+analyse_stan_res.pol_binom_07 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_bar", "beta", "zgamma_pla", "zgamma_pol",
+    "lambda", "sigma_beta", "sigma_gamma", "sigma_lambda") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+}
+
+#' Analyse pollination binomial with alpha, betas, gammas prod and single lambda
+#'
+analyse_stan_res.pol_binom_08 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda", "beta", "zgamma_pla", "zgamma_pol",
+    "sigma_beta", "sigma_gamma") %>%
+    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+}
