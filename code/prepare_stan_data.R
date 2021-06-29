@@ -142,6 +142,19 @@ prepare_stan_data.pol_binom_03 <- function(
   }
   ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
   
+  # Use binary interactions:
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
+  
+  # Remove sites and species that do not have both zeros and ones:
+  ints[, ones_sites := sum(Y), by = .(net_id)]
+  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+  ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
+  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
+  ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
+  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
+  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  
   # Prepare sites, plant and pollinators IDs:
   ints[, pla_id := .GRP, by = .(sp1_id)]
   ints[, pol_id := .GRP, by = .(sp2_id)]
@@ -151,9 +164,6 @@ prepare_stan_data.pol_binom_03 <- function(
   pol_ids <- ints[, .(out = unique(sp2_id)), by = pol_id][order(pol_id)][['out']]
   pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
   site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
-  
-  # Use binary interactions:
-  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
   
   # Compute standardized product of suitabilities:
   SS_mean <- mean(ints[['sp1_suitability']] * ints[['sp2_suitability']])
