@@ -65,7 +65,7 @@ generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
     alpha + beta[Y_array[, 2]] + sigma_gamma * zgamma_pla[Y_array[, 3]] .* 
-    zgamma_pol[Y_array[, 4]] + lambda .* SS
+    zgamma_pol[Y_array[, 4]] + lambda * SS
   );
   
   // Compute pointwise log-likelihood
