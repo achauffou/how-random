@@ -45,6 +45,80 @@ stan_analyses_plot_save_params_post <- function(fit, params, res_folder) {
   })})})
 }
 
+#' Compute the variance of the predicted values of a Bayesian Bernoulli model
+#' 
+bayes_var_fit <- function(ypred) {
+  apply(ypred, 1, var)
+}
+
+#' Compute the residual variance of a Bayesian Bernoulli model
+#' 
+bayes_var_res <- function(ypred) {
+  (1 / ncol(ypred)) * apply(ypred, 1, function(x) sum(x * (1 - x)))
+}
+
+#' Compute the Bayesian R-squared from the modelled and residual variance
+#' 
+bayes_R2 <- function(var_fit, var_res) {
+  var_fit / (var_fit + var_res)
+}
+
+#' Compute the Bayesian R2 statistics of a model (by groups)
+#' 
+calc_bayes_R2_stats <- function(fit, Y_array, groups, names) {
+  # Get all link values:
+  ypred <- rstan::extract(fit, pars = "link")[[1]]
+  
+  # Compute and save stats for the overall dataset:
+  var_fit <- bayes_var_fit(ypred)
+  var_res <- bayes_var_res(ypred)
+  bayes_R2 <- bayes_R2(var_fit, var_res)
+  R2 <- rbind(
+    data.table::data.table(
+      stat = "var_fit", group = "all", id = NA_integer_, name = NA_character_, 
+      value = var_fit
+    ),
+    data.table::data.table(
+      stat = "var_res", group = "all", id = NA_integer_, name = NA_character_, 
+      value = var_res
+    ),
+    data.table::data.table(
+      stat = "bayes_R2", group = "all", id = NA_integer_, name = NA_character_, 
+      value = bayes_R2
+    )
+  )
+  
+  # Compute statistics group by group:
+  for (the_group in groups) {
+    the_names <- names[[the_group]]
+    ids <- 1:length(the_names)
+    nb_cores <- get_nb_cpus()
+    new_R2 <- parallel::mclapply(ids, function(the_id) {
+      the_name <- the_names[the_id]
+      the_ypred <- ypred[, which(Y_array[[the_group]] == the_id)]
+      the_var_fit <- bayes_var_fit(the_ypred)
+      the_var_res <- bayes_var_res(the_ypred)
+      the_bayes_R2 <- bayes_R2(the_var_fit, the_var_res)
+      rbind(
+        data.table::data.table(
+          stat = "var_fit", group = the_group, id = the_id, name = the_name, 
+          value = the_var_fit
+        ),
+        data.table::data.table(
+          stat = "var_res", group = the_group, id = the_id, name = the_name, 
+          value = the_var_res
+        ),
+        data.table::data.table(
+          stat = "bayes_R2", group = the_group, id = the_id, name = the_name, 
+          value = the_bayes_R2
+        )
+      )
+    }, mc.cores = nb_cores) %>% data.table::rbindlist()
+    R2 %<>% rbind(new_R2)
+  }
+  R2
+}
+
 
 # Functions to analyse specific Stan simulations ===============================
 #' Analyse pollination binomial with intercepts only
