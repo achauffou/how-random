@@ -119,6 +119,22 @@ calc_bayes_R2_stats <- function(fit, Y_array, groups, names) {
   R2
 }
 
+#' Compute the WAIC of a model
+#' 
+calc_waic <- function(fit) {
+  loo::extract_log_lik(fit, merge_chains = FALSE) %>%
+    loo::waic()
+}
+
+#' Compute the LOO-IC of a model
+#' 
+calc_looic <- function(fit) {
+  nb_cores <- get_nb_cpus()
+  loglik <- loo::extract_log_lik(fit, merge_chains = FALSE)
+  r_eff <- loo::relative_eff(exp(loglik), cores = nb_cores)
+  loo::loo(loglik, r_eff = r_eff, cores = nb_cores)
+}
+
 
 # Functions to analyse specific Stan simulations ===============================
 #' Analyse pollination binomial with intercepts only
@@ -147,6 +163,14 @@ analyse_stan_res.pol_binom_03 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
 
 #' Analyse pollination binomial with single lambda for all sites
@@ -163,6 +187,14 @@ analyse_stan_res.pol_binom_04 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
 
 #' Analyse pollination binomial with alpha, betas and lambdas
@@ -178,6 +210,14 @@ analyse_stan_res.pol_binom_05 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
 
 #' Analyse pollination binomial with alpha, betas and single lambda
@@ -193,6 +233,14 @@ analyse_stan_res.pol_binom_06 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
 
 
@@ -210,6 +258,14 @@ analyse_stan_res.pol_binom_07 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
 
 #' Analyse pollination binomial with alpha, betas, gammas prod and single lambda
@@ -226,4 +282,12 @@ analyse_stan_res.pol_binom_08 <- function(
   calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+  
+  # Compute and save WAIC:
+  calc_waic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "waic.rds"))
+  
+  # Compute and save WAIC:
+  calc_looic(rstan_fit) %>% 
+    saveRDS(file = file.path(res_folder, "looic.rds"))
 }
