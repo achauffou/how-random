@@ -5,8 +5,26 @@ analyse_stan_res <- function(spec, data, start, fits) {
   # Determine results folder:
   res_folder <- dirname(fits[[1]])
   
+  # Check whether simulations can be skipped:
+  skip_analyses <- FALSE
+  if (file.exists(file.path(res_folder, "prev_analyses.txt"))) {
+    prev_modules <- readr::read_lines(file.path(res_folder, "prev_analyses.txt"))
+  } else {
+    prev_modules <- NA_character_
+  }
+  obj_name <- paste0("stan_res_mods.", spec$stan_model)
+  if (exists(obj_name)) {
+    if (all(get(obj_name) %in% prev_modules)) {
+      skip_analyses <- TRUE
+      message(paste(
+        "Results of model", spec$name, "seem to already have been analysed.",
+        "Skipping Stan results analysis..."
+      ))
+    }
+  }
+  
   # Analyse simulation outcome:
-  if (!file.exists(file.path(res_folder, "last_analysis.txt"))) {
+  if (skip_analyses == FALSE) {
     fun_name <- paste0("analyse_stan_res.", spec$stan_model)
     if (exists(fun_name)) {
       # Read RDS files:
@@ -18,15 +36,9 @@ analyse_stan_res <- function(spec, data, start, fits) {
       # Analyse results with the appropriate method:
       fun_name %>%
         get() %>%
-        do.call(args = list(spec, data, start, cmdstan_fit, rstan_fit, res_folder))
-      con <- file(file.path(res_folder, "last_analysis.txt"))
-      writeLines(as.character(Sys.time()), con)
-      close(con)
+        do.call(args = list(spec, data, start, cmdstan_fit, rstan_fit, 
+                            res_folder, prev_modules))
     }
-  } else {
-    message(paste("Results of model", spec$name, 
-                  "seem to already have been analysed.",
-                  "Skipping Stan results analysis..."))
   }
   
   # Return the current system time:
@@ -136,158 +148,186 @@ calc_looic <- function(fit) {
 }
 
 
-# Functions to analyse specific Stan simulations ===============================
+# Functions to analyse pollination binomial Stan results =======================
+#' Miscellaneous analyses for pollination binomial Stan results
+#' 
+analyse_stan_res.misc_pol_binom <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+
+  # Compute and save the R-squared statistics by group:
+  if (!"bayes_R2" %in% prev_modules) {
+    calc_bayes_R2_stats(
+      rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"),
+      list(pla_id = data$pla_names, pol_id = data$pol_names,
+           site_id = data$site_names)
+    ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    readr::write_lines("bayes_R2", prev_path, append = TRUE)
+  }
+
+  # Compute and save WAIC:
+  if (!"waic" %in% prev_modules) {
+    calc_waic(rstan_fit) %>%
+      saveRDS(file = file.path(res_folder, "waic.rds"))
+    readr::write_lines("waic", prev_path, append = TRUE)
+  }
+
+  # Compute and save WAIC:
+  if (!"looic" %in% prev_modules) {
+    calc_looic(rstan_fit) %>%
+      saveRDS(file = file.path(res_folder, "looic.rds"))
+    readr::write_lines("looic", prev_path, append = TRUE)
+  }
+}
+stan_res_mods.misc_pol_binom <- c("bayes_R2", "waic", "looic")
+
 #' Analyse pollination binomial with intercepts only
 #'
 analyse_stan_res.pol_binom_02 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "beta", "gamma_pla", "gamma_pol", "sigma_beta", "sigma_gamma_pla", 
-    "sigma_gamma_pol") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "beta", "gamma_pla", "gamma_pol", "sigma_beta", 
+      "sigma_gamma_pla", "sigma_gamma_pol") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
 }
+stan_res_mods.pol_binom_02 <- c("post_param_plots")
 
 #' Analyse pollination binomial with intercepts and slopes
 #'
 analyse_stan_res.pol_binom_03 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda_bar", "beta", "gamma_pla", "gamma_pol",
-    "lambda", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
-    "sigma_lambda") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "gamma_pla", "gamma_pol",
+      "lambda", "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol",
+      "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
+stan_res_mods.pol_binom_03 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with single lambda for all sites
 #'
 analyse_stan_res.pol_binom_04 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda", "beta", "gamma_pla", "gamma_pol",
-    "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "gamma_pla", "gamma_pol",
+      "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
+stan_res_mods.pol_binom_04 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with alpha, betas and lambdas
 #'
 analyse_stan_res.pol_binom_05 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda_bar", "beta", "lambda", "sigma_beta", "sigma_lambda") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "lambda", "sigma_beta", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
+stan_res_mods.pol_binom_05 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with alpha, betas and single lambda
 #'
 analyse_stan_res.pol_binom_06 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda", "beta", "sigma_beta") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "sigma_beta") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
-
+stan_res_mods.pol_binom_06 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with alpha, betas, gammas product and lambdas
 #'
 analyse_stan_res.pol_binom_07 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda_bar", "beta", "zgamma_pla", "zgamma_pol",
-    "lambda", "sigma_beta", "sigma_gamma", "sigma_lambda") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "zgamma_pla", "zgamma_pol",
+      "lambda", "sigma_beta", "sigma_gamma", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
+stan_res_mods.pol_binom_07 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with alpha, betas, gammas prod and single lambda
 #'
 analyse_stan_res.pol_binom_08 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "lambda", "beta", "zgamma_pla", "zgamma_pol",
-    "sigma_beta", "sigma_gamma") %>%
-    stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "zgamma_pla", "zgamma_pol",
+      "sigma_beta", "sigma_gamma") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
   
-  # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
-    pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
-  )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
-  
-  # Compute and save WAIC:
-  calc_waic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "waic.rds"))
-  
-  # Compute and save WAIC:
-  calc_looic(rstan_fit) %>% 
-    saveRDS(file = file.path(res_folder, "looic.rds"))
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
 }
+stan_res_mods.pol_binom_08 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
