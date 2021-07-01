@@ -144,7 +144,7 @@ analyse_stan_res.pol_binom_03 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
@@ -160,7 +160,7 @@ analyse_stan_res.pol_binom_04 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
@@ -175,7 +175,7 @@ analyse_stan_res.pol_binom_05 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
@@ -190,7 +190,7 @@ analyse_stan_res.pol_binom_06 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
@@ -207,7 +207,7 @@ analyse_stan_res.pol_binom_07 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
@@ -223,7 +223,7 @@ analyse_stan_res.pol_binom_08 <- function(
     stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
   
   # Compute and save the R-squared statistics by group:
-  calc_bayes_R2_stats(fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
+  calc_bayes_R2_stats(rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"), list(
     pla_id = data$pla_names, pol_id = data$pol_names, site_id = data$site_names
   )) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
 }
