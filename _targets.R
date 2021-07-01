@@ -593,6 +593,14 @@ perform_stan_analyses_targets <- list(
   )
 )
 
+# Results interpretation =======================================================
+results_interpretation_targets <- list(
+  tar_target(
+    stan_comparisons,
+    compare_stan_res(stan_analyses_specs, results_stan_folder, stan_analyses)
+  )
+)
+
 
 # Compile TeX manuscripts ======================================================
 compile_TeX_manuscripts_targets <-list(
@@ -626,5 +634,6 @@ list(
   perform_bioclim_analyses_targets,
   simulate_stan_models_targets,
   perform_stan_analyses_targets,
+  results_interpretation_targets,
   compile_TeX_manuscripts_targets
 )
