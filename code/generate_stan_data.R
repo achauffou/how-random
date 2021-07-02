@@ -274,11 +274,11 @@ generate_stan_data.all_binom_03 <- function(
   sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE)
   
   # Sample parameters:
-  alpha <- rbeta(1, 2, 4) * -2
-  lambda_bar <- rbeta(nb_types, 2, 4)
-  sigma_beta <- rbeta(1, 2, 2) * 1.5
-  sigma_gamma <- rbeta(2 * nb_types, 2, 2) * 1.5
-  sigma_lambda <- rbeta(nb_types, 2, 2) * 1.5
+  alpha <- rbeta(1, 4, 2) * -2
+  lambda_bar <- rbeta(nb_types, 4, 2)
+  sigma_beta <- rbeta(1, 4, 2) * 1.2
+  sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
+  sigma_lambda <- rbeta(nb_types, 4, 2) * 1.2
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale()
   zlambda <- rnorm(nb_sites, 0, 1) %>% scale()

@@ -118,10 +118,10 @@ stan_simulations_specs:
   - name: all_binom_03d
     data_generation_model: all_binom_03
     data_generation_args:
-      nb_sites: 100
-      nb_spp: 1000
+      nb_sites: 90
+      nb_spp: 900
       nb_types: 3
-      p_sample: rbeta(1, 2, 6) / 5
+      p_sample: rbeta(1, 2, 5) / sqrt(10)
       rm_empty: TRUE
     stan_model: all_binom_03
     chains: 4
