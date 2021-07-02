@@ -232,3 +232,27 @@ analyse_stan_sim.pol_binom_03 <- function(
     c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
   )
 }
+
+#' Analyse all interactions binomial with intercepts and slopes
+#'
+analyse_stan_sim.all_binom_03 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_bar", "beta", "gamma", "lambda", "sigma_beta",
+    "sigma_gamma", "sigma_lambda") %>%
+    stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
+
+  # Plot posterior error of multilevel parameters:
+  stan_sim_analyses_plot_save_params_errors(
+    rstan_fit, data, c("beta", "lambda"), c("site_id", "site_id"), res_folder
+  )
+  suppressWarnings({suppressMessages({
+    nb_data <- rbind(
+      data$Y_array[, .N, by = .(sp1_id)][, .(sp_id = sp1_id, N)], 
+      data$Y_array[, .N, by = .(sp2_id)][, .(sp_id = sp2_id, N)]
+    )[order(sp_id)][['N']] %>%
+      stan_sim_analyses_plot_param_error(rstan_fit, "gamma", data$gamma, .) %>%
+      ggsave(file.path(res_folder, "param_error_gamma.pdf"), ., device = "pdf")
+  })})
+}
