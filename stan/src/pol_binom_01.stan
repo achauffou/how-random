@@ -9,9 +9,10 @@ functions{
     int site_id[end - start + 1] = y_slice[, 2];
     int pla_id[end - start + 1] = y_slice[, 3];
     int pol_id[end - start + 1] = y_slice[, 4];
+    int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
-      lp += bernoulli_logit_lpmf(
-        y[i] | beta[site_id[i]] + gamma_pla[pla_id[i]] + gamma_pol[pol_id[i]]
+      lp += binomial_logit_lpmf(
+        y[i] | n[i], beta[site_id[i]] + gamma_pla[pla_id[i]] + gamma_pol[pol_id[i]]
       );
     }
     return lp;
@@ -22,7 +23,7 @@ data{
   int nb_pla; // Number of plants
   int nb_pol; // Number of pollinators
   int nb_int; // Total number of interactions
-  int Y_array[nb_int, 4]; // Response variable, site IDs, plant IDs, pollinator IDs
+  int Y_array[nb_int, 5]; // Response variable, site IDs, plant IDs, pollinator IDs, replicates
 }
 parameters{
   // Model parameters

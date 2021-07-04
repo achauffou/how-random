@@ -74,6 +74,13 @@ prepare_stan_data.pol_binom_02 <- function(interactions) {
   )]
   ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
   
+  # Use binary interactions:
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
+  
+  # Merge replicates together:
+  ints[, ':='(Y = sum(Y), N = .N), by = .(net_id, sp1_id, sp2_id)]
+  ints <- unique(ints, by = c("net_id", "sp1_id", "sp2_id"))
+  
   # Prepare sites, plant and pollinators IDs:
   ints[, pla_id := .GRP, by = .(sp1_id)]
   ints[, pol_id := .GRP, by = .(sp2_id)]
@@ -84,16 +91,13 @@ prepare_stan_data.pol_binom_02 <- function(interactions) {
   pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
   site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
   
-  # Use binary interactions:
-  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
-  
   # Return list of data:
   list(
     nb_sites = length(unique(ints$site_id)),
     nb_pla = length(unique(ints$pla_id)),
     nb_pol = length(unique(ints$pol_id)),
     nb_int = nrow(ints),
-    Y_array = ints[, .(Y, site_id, pla_id, pol_id)],
+    Y_array = ints[, .(Y, site_id, pla_id, pol_id, N)],
     site_names = site_names,
     pla_ids = pla_ids,
     pla_names = pla_names,
@@ -145,6 +149,10 @@ prepare_stan_data.pol_binom_bioclim <- function(
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
   
+  # Merge replicates together:
+  ints[, ':='(Y = sum(Y), N = .N), by = .(net_id, sp1_id, sp2_id)]
+  ints <- unique(ints, by = c("net_id", "sp1_id", "sp2_id"))
+  
   # Remove sites and species that do not have both zeros and ones:
   ints[, ones_sites := sum(Y), by = .(net_id)]
   ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
@@ -176,7 +184,7 @@ prepare_stan_data.pol_binom_bioclim <- function(
     nb_pla = length(unique(ints$pla_id)),
     nb_pol = length(unique(ints$pol_id)),
     nb_int = nrow(ints),
-    Y_array = ints[, .(Y, site_id, pla_id, pol_id)],
+    Y_array = ints[, .(Y, site_id, pla_id, pol_id, N)],
     SS = ints$SS,
     SS_mean = SS_mean,
     SS_sd = SS_sd,
@@ -235,6 +243,10 @@ prepare_stan_data.all_binom_bioclim <- function(
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
   
+  # Merge replicates together:
+  ints[, ':='(Y = sum(Y), N = .N), by = .(net_id, sp1ID, sp2ID)]
+  ints <- unique(ints, by = c("net_id", "sp1ID", "sp2ID"))
+  
   # Remove sites and species that do not have both zeros and ones:
   ints[, ones_sites := sum(Y), by = .(net_id)]
   ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
@@ -292,7 +304,7 @@ prepare_stan_data.all_binom_bioclim <- function(
     nb_int = nrow(ints),
     nb_types = length(type_names),
     nb_groups = length(group_names),
-    Y_array = ints[, .(Y, site_id, sp1_id, sp2_id)],
+    Y_array = ints[, .(Y, site_id, sp1_id, sp2_id, N)],
     site_type = site_type,
     sp_group = sp_group,
     SS = ints$SS,

@@ -9,9 +9,10 @@ functions{
     int site_id[end - start + 1] = y_slice[, 2];
     int sp1_id[end - start + 1] = y_slice[, 3];
     int sp2_id[end - start + 1] = y_slice[, 4];
+    int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
-      lp += bernoulli_logit_lpmf(
-        y[i] | alpha + beta[site_id[i]] + sigma_gamma[site_type[site_id[i]]] * 
+      lp += binomial_logit_lpmf(
+        y[i] | n[i], alpha + beta[site_id[i]] + sigma_gamma[site_type[site_id[i]]] * 
         zgamma[sp1_id[i]] * zgamma[sp2_id[i]] + 
         lambda[site_type[site_id[i]]] * SS[start + i - 1]
       );
@@ -25,7 +26,7 @@ data{
   int nb_int; // Total number of interactions
   int nb_types; // Number of interaction types
   int nb_groups; // Number of functional groups
-  int Y_array[nb_int, 4]; // Response variable, site IDs, species IDs
+  int Y_array[nb_int, 5]; // Response variable, site IDs, species IDs, replicates
   int site_type[nb_sites]; // ID of the interaction type of each sites
   int sp_group[nb_spp]; // ID of the functional group of each species
   vector[nb_int] SS; // Standardized product of bioclimatic suitabilities
@@ -73,6 +74,6 @@ generated quantities{
   // Compute pointwise log-likelihood
   vector[nb_int] log_lik;
   for (i in 1:nb_int) {
-    log_lik[i] = bernoulli_lpmf(Y_array[i, 1] | link[i]);
+    log_lik[i] = binomial_lpmf(Y_array[i, 1] | Y_array[i, 5], link[i]);
   }
 }

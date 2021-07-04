@@ -10,9 +10,10 @@ functions{
     int site_id[end - start + 1] = y_slice[, 2];
     int pla_id[end - start + 1] = y_slice[, 3];
     int pol_id[end - start + 1] = y_slice[, 4];
+    int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
-      lp += bernoulli_logit_lpmf(
-        y[i] | alpha + beta[site_id[i]] + sigma_gamma * zgamma_pla[pla_id[i]] * 
+      lp += binomial_logit_lpmf(
+        y[i] | n[i], alpha + beta[site_id[i]] + sigma_gamma * zgamma_pla[pla_id[i]] * 
         zgamma_pol[pol_id[i]] + lambda[site_id[i]] * SS[start + i - 1]
       );
     }
@@ -24,7 +25,7 @@ data{
   int nb_pla; // Number of plants
   int nb_pol; // Number of pollinators
   int nb_int; // Total number of interactions
-  int Y_array[nb_int, 4]; // Response variable, site IDs, plant IDs, pollinator IDs
+  int Y_array[nb_int, 5]; // Response variable, site IDs, plant IDs, pollinator IDs, replicates
   vector[nb_int] SS; // Standardized product of bioclimatic suitabilities
 }
 parameters{
@@ -77,6 +78,6 @@ generated quantities{
   // Compute pointwise log-likelihood
   vector[nb_int] log_lik;
   for (i in 1:nb_int) {
-    log_lik[i] = bernoulli_lpmf(Y_array[i, 1] | link[i]);
+    log_lik[i] = binomial_lpmf(Y_array[i, 1] | Y_array[i, 1], link[i]);
   }
 }
