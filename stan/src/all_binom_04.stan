@@ -1,7 +1,7 @@
 functions{
   // Partial sum enables within-chain parallel computation of log-likelihood
   real partial_sum(
-    int[,] y_slice, int start, int end, real alpha, vector beta, vector gamma, 
+    int[,] y_slice, int start, int end, real[] alpha, vector beta, vector gamma, 
     vector lambda, vector SS, int[] site_type
   ) {
     real lp = 0.0;
@@ -12,7 +12,8 @@ functions{
     int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
       lp += binomial_logit_lpmf(
-        y[i] | n[i], alpha + beta[site_id[i]] + gamma[sp1_id[i]] + gamma[sp2_id[i]] + 
+        y[i] | n[i], alpha[site_type[i]] + beta[site_id[i]] + 
+        gamma[sp1_id[i]] + gamma[sp2_id[i]] + 
         lambda[site_type[site_id[i]]] * SS[start + i - 1]
       );
     }
@@ -32,7 +33,7 @@ data{
 }
 parameters{
   // Model parameters
-  real alpha;
+  real alpha[nb_types];
   vector[nb_types] lambda;
   vector[nb_sites] zbeta;
   vector[nb_spp] zgamma;
@@ -67,7 +68,7 @@ model{
 generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
-    alpha + beta[Y_array[, 2]] + gamma[Y_array[, 3]] + 
+    alpha[site_type[Y_array[, 2]]] + beta[Y_array[, 2]] + gamma[Y_array[, 3]] + 
     gamma[Y_array[, 4]] + lambda[site_type[Y_array[, 2]]] .* SS
   );
   
