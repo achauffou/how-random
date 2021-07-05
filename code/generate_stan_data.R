@@ -274,7 +274,7 @@ generate_stan_data.all_binom_03 <- function(
   sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE)
   
   # Sample parameters:
-  alpha <- rbeta(1, 4, 2) * -2
+  alpha <- rbeta(nb_types, 4, 2) * -2
   lambda_bar <- rbeta(nb_types, 4, 2)
   sigma_beta <- rbeta(1, 4, 2) * 1.2
   sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
@@ -318,7 +318,8 @@ generate_stan_data.all_binom_03 <- function(
   
   # Compute response variable:
   data[, p := boot::inv.logit(
-    alpha + beta[site_id] + gamma[sp1_id] + gamma[sp2_id] + lambda[site_id] * SS
+    alpha[site_type[site_id]] + beta[site_id] + gamma[sp1_id] + gamma[sp2_id] + 
+      lambda[site_id] * SS
   )]
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
   
