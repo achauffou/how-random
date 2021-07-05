@@ -107,24 +107,31 @@ calc_bayes_R2_stats <- function(fit, Y_array, groups, names) {
     nb_cores <- get_nb_cpus()
     new_R2 <- parallel::mclapply(ids, function(the_id) {
       the_name <- the_names[the_id]
-      the_ypred <- ypred[, which(Y_array[[the_group]] == the_id)]
-      the_var_fit <- bayes_var_fit(the_ypred)
-      the_var_res <- bayes_var_res(the_ypred)
-      the_bayes_R2 <- bayes_R2(the_var_fit, the_var_res)
-      rbind(
-        data.table::data.table(
-          stat = "var_fit", group = the_group, id = the_id, name = the_name, 
-          value = the_var_fit
-        ),
-        data.table::data.table(
-          stat = "var_res", group = the_group, id = the_id, name = the_name, 
-          value = the_var_res
-        ),
-        data.table::data.table(
-          stat = "bayes_R2", group = the_group, id = the_id, name = the_name, 
-          value = the_bayes_R2
+      if (length(which(Y_array[[the_group]] == the_id)) > 1) {
+        the_ypred <- ypred[, which(Y_array[[the_group]] == the_id)]
+        the_var_fit <- bayes_var_fit(the_ypred)
+        the_var_res <- bayes_var_res(the_ypred)
+        the_bayes_R2 <- bayes_R2(the_var_fit, the_var_res)
+        rbind(
+          data.table::data.table(
+            stat = "var_fit", group = the_group, id = the_id, name = the_name, 
+            value = the_var_fit
+          ),
+          data.table::data.table(
+            stat = "var_res", group = the_group, id = the_id, name = the_name, 
+            value = the_var_res
+          ),
+          data.table::data.table(
+            stat = "bayes_R2", group = the_group, id = the_id, name = the_name, 
+            value = the_bayes_R2
+          )
         )
-      )
+      } else {
+        data.table::data.table(
+          stat = character(), group = character(), id = integer(), 
+          name = character(), value = numeric()
+        )
+      }
     }, mc.cores = nb_cores) %>% data.table::rbindlist()
     R2 %<>% rbind(new_R2)
   }
