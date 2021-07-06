@@ -326,7 +326,7 @@ prepare_stan_start_values.all_binom_bioclim <- function(
     interactions, min_nb_ints, min_bioclim_occs, collec
   )
   list(
-    alpha = 0,
+    alpha = rep(0, data$nb_types),
     lambda_bar = rep(0, data$nb_types),
     zbeta = rep(0, data$nb_sites),
     zgamma = rep(0, data$nb_spp),

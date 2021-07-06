@@ -356,7 +356,7 @@ generate_stan_start_values.all_binom_03 <- function(
   nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
 ) {
   list(
-    alpha = 0,
+    alpha = rep(0, nb_types),
     lambda_bar = rep(0, nb_types),
     zbeta = rep(0, nb_sites),
     zgamma = rep(0, nb_spp),
