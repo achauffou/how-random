@@ -304,10 +304,20 @@ generate_stan_data.all_binom_03 <- function(
     # Create data.table with all interactions:
     data <- lapply(sites, function(x) {
       site_prop <- eval(parse(text = as.character(p_sample)))
+      if (length(spp_1) > 1) {
+        the_spp_1 <- sample(spp_1, max(round(length(spp_1) * site_prop), 1))
+      } else {
+        the_spp_1 <- spp_1
+      }
+      if (length(spp_2) > 1) {
+        the_spp_2 <- sample(spp_2, max(round(length(spp_2) * site_prop), 1))
+      } else {
+        the_spp_2 <- spp_2
+      }
       data <- expand.grid(
         site_id = x,
-        sp1_id = sample(spp_1, max(round(length(spp_1) * site_prop), 1)), 
-        sp2_id = sample(spp_2, max(round(length(spp_2) * site_prop), 1))
+        sp1_id = the_spp_1, 
+        sp2_id = the_spp_2
       ) %>% data.table::as.data.table()
     }) %>% data.table::rbindlist()
   }) %>% data.table::rbindlist()
@@ -405,10 +415,20 @@ generate_stan_data.all_binom_04 <- function(
     # Create data.table with all interactions:
     data <- lapply(sites, function(x) {
       site_prop <- eval(parse(text = as.character(p_sample)))
+      if (length(spp_1) > 1) {
+        the_spp_1 <- sample(spp_1, max(round(length(spp_1) * site_prop), 1))
+      } else {
+        the_spp_1 <- spp_1
+      }
+      if (length(spp_2) > 1) {
+        the_spp_2 <- sample(spp_2, max(round(length(spp_2) * site_prop), 1))
+      } else {
+        the_spp_2 <- spp_2
+      }
       data <- expand.grid(
         site_id = x,
-        sp1_id = sample(spp_1, max(round(length(spp_1) * site_prop), 1)), 
-        sp2_id = sample(spp_2, max(round(length(spp_2) * site_prop), 1))
+        sp1_id = the_spp_1, 
+        sp2_id = the_spp_2
       ) %>% data.table::as.data.table()
     }) %>% data.table::rbindlist()
   }) %>% data.table::rbindlist()
