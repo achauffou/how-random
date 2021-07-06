@@ -204,11 +204,12 @@ generate_stan_data.pol_binom_03 <- function(
   
   # Sample parameters (center intercept parameters):
   alpha <- rbeta(1, 2, 4) * -1
-  beta <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE)
-  gamma_pla <- rnorm(nb_pla, 0, 1) %>% scale(scale = FALSE)
-  gamma_pol <- rnorm(nb_pol, 0, 1) %>% scale(scale = FALSE)
+  beta <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
+  gamma_pla <- rnorm(nb_pla, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
+  gamma_pol <- rnorm(nb_pol, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
   lambda_bar <- rbeta(1, 2, 4)
-  lambda <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% add(lambda_bar)
+  lambda <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% 
+    add(lambda_bar) %>% as.vector()
   
   # Compute response variable:
   data[, p := boot::inv.logit(
@@ -279,9 +280,9 @@ generate_stan_data.all_binom_03 <- function(
   sigma_beta <- rbeta(1, 4, 2) * 1.2
   sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
   sigma_lambda <- rbeta(nb_types, 4, 2) * 1.2
-  zbeta <- rnorm(nb_sites, 0, 1) %>% scale()
-  zgamma <- rnorm(nb_spp, 0, 1) %>% scale()
-  zlambda <- rnorm(nb_sites, 0, 1) %>% scale()
+  zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
+  zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
+  zlambda <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   
   # Compute non-centered parametrization:
   beta <- zbeta * sigma_beta
