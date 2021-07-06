@@ -129,6 +129,34 @@ stan_simulations_specs:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
+  - name: all_binom_04c
+    data_generation_model: all_binom_04
+    data_generation_args:
+      nb_sites: 40
+      nb_spp: 60
+      nb_types: 3
+      p_sample: '1.0'
+      rm_empty: FALSE
+    stan_model: all_binom_04
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: all_binom_04d
+    data_generation_model: all_binom_04
+    data_generation_args:
+      nb_sites: 90
+      nb_spp: 900
+      nb_types: 3
+      p_sample: rbeta(1, 2, 5) / sqrt(10)
+      rm_empty: TRUE
+    stan_model: all_binom_04
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
 stan_analyses_specs:
   - name: pol_binom_03a
     data_generation_model: pol_binom_bioclim
