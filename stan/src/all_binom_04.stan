@@ -68,7 +68,7 @@ model{
 generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
-    alpha[site_type[Y_array[, 2]]] + beta[Y_array[, 2]] + gamma[Y_array[, 3]] + 
+    to_vector(alpha[site_type[Y_array[, 2]]]) + beta[Y_array[, 2]] + gamma[Y_array[, 3]] + 
     gamma[Y_array[, 4]] + lambda[site_type[Y_array[, 2]]] .* SS
   );
   
