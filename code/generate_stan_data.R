@@ -225,24 +225,36 @@ generate_stan_data.pol_binom_03 <- function(
     data <- data[sum_pla_ints > 0 & sum_pol_ints > 0]
   }
   
+  # Update parameters and data if some species or sites were removed by filters:
+  inc_sites <- sort(unique(data$site_id))
+  inc_pla <- sort(unique(data$pla_id))
+  inc_pol <- sort(unique(data$pol_id))
+  beta <- beta[inc_sites]
+  gamma_pla <- gamma_pla[inc_pla]
+  gamma_pol <- gamma_pol[inc_pol]
+  lambda <- lambda[inc_sites]
+  data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
+  data[, pla_id := which(inc_pla == unique(pla_id)), by = .(pla_id)]
+  data[, pol_id := which(inc_pol == unique(pol_id)), by = .(pol_id)]
+  
   # Return data specified as a list:
   list(
-    nb_sites = nb_sites,
-    nb_pla = nb_pla,
-    nb_pol = nb_pol,
+    nb_sites = length(inc_sites),
+    nb_pla = length(inc_pla),
+    nb_pol = length(inc_pol),
     nb_int = nrow(data),
     Y_array = data[, .(Y, site_id, pla_id, pol_id, rep = 1)],
     SS = data$SS,
-    alpha = alpha,
-    lambda_bar = lambda_bar,
+    alpha = alpha + mean(beta) + mean(gamma_pla) + mean(gamma_pol),
+    lambda_bar = lambda_bar + mean(lambda),
     sigma_beta = sd(beta),
     sigma_gamma_pla = sd(gamma_pla),
     sigma_gamma_pol = sd(gamma_pol),
     sigma_lambda = sd(lambda),
-    beta = beta,
-    gamma_pla = gamma_pla,
-    gamma_pol = gamma_pol,
-    lambda = lambda,
+    beta = beta %>% scale(scale = FALSE) %>% as.vector(),
+    gamma_pla = gamma_pla %>% scale(scale = FALSE) %>% as.vector(),
+    gamma_pol = gamma_pol %>% scale(scale = FALSE) %>% as.vector(),
+    lambda = lambda %>% scale(scale = FALSE) %>% as.vector(),
     SS_mean = mean(data$S_pla * data$S_pol),
     SS_sd = sd(data$S_pla * data$S_pol)
   )
@@ -341,10 +353,41 @@ generate_stan_data.all_binom_03 <- function(
     data <- data[sum_sp1_ints > 0 & sum_sp2_ints > 0]
   }
   
+  # Update parameters and data if some species or sites were removed by filters:
+  inc_sites <- sort(unique(data$site_id))
+  inc_spp <- c(sort(unique(data$sp1_id)), sort(unique(data$sp2_id)))
+  data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
+  data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
+  data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
+  beta <- beta[inc_sites]
+  gamma <- gamma[inc_spp]
+  lambda <- lambda[inc_sites]
+  site_type <- site_type[inc_sites]
+  sp_group <- sp_group[inc_spp]
+  sigma_beta <- sd(beta)
+  for (int in 1:nb_types) {
+    alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
+      mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
+    if (length(gamma[sp_group == 2 * int - 1]) > 1) {
+      sigma_gamma[2 * int - 1] <- sd(gamma[sp_group == 2 * int - 1])
+    } else {
+      sigma_gamma[2 * int - 1] <- -1
+    }
+    if (length(gamma[sp_group == 2 * int]) > 1) {
+      sigma_gamma[2 * int] <- sd(gamma[sp_group == 2 * int])
+    } else {
+      sigma_gamma[2 * int] <- -1
+    }
+    sigma_lambda[int] <- sd(lambda[site_type == int])
+    beta[site_type == int] %<>% scale(scale = FALSE) %>% as.vector()
+    gamma[sp_group == 2 * int - 1] %<>% scale(scale = FALSE) %>% as.vector()
+    gamma[sp_group == 2 * int] %<>% scale(scale = FALSE) %>% as.vector()
+  }
+  
   # Return data specified as a list:
   list(
-    nb_sites = nb_sites,
-    nb_spp = nb_spp,
+    nb_sites = length(inc_sites),
+    nb_spp = length(inc_spp),
     nb_int = nrow(data),
     nb_types = nb_types,
     nb_groups = 2 * nb_types,
@@ -452,10 +495,40 @@ generate_stan_data.all_binom_04 <- function(
     data <- data[sum_sp1_ints > 0 & sum_sp2_ints > 0]
   }
   
+  # Update parameters and data if some species or sites were removed by filters:
+  inc_sites <- sort(unique(data$site_id))
+  inc_spp <- c(sort(unique(data$sp1_id)), sort(unique(data$sp2_id)))
+  data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
+  data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
+  data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
+  beta <- beta[inc_sites]
+  gamma <- gamma[inc_spp]
+  lambda <- lambda[inc_sites]
+  site_type <- site_type[inc_sites]
+  sp_group <- sp_group[inc_spp]
+  sigma_beta <- sd(beta)
+  for (int in 1:nb_types) {
+    alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
+      mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
+    if (length(gamma[sp_group == 2 * int - 1]) > 1) {
+      sigma_gamma[2 * int - 1] <- sd(gamma[sp_group == 2 * int - 1])
+    } else {
+      sigma_gamma[2 * int - 1] <- -1
+    }
+    if (length(gamma[sp_group == 2 * int]) > 1) {
+      sigma_gamma[2 * int] <- sd(gamma[sp_group == 2 * int])
+    } else {
+      sigma_gamma[2 * int] <- -1
+    }
+    beta[site_type == int] %<>% scale(scale = FALSE) %>% as.vector()
+    gamma[sp_group == 2 * int - 1] %<>% scale(scale = FALSE) %>% as.vector()
+    gamma[sp_group == 2 * int] %<>% scale(scale = FALSE) %>% as.vector()
+  }
+  
   # Return data specified as a list:
   list(
-    nb_sites = nb_sites,
-    nb_spp = nb_spp,
+    nb_sites = length(inc_sites),
+    nb_spp = length(inc_spp),
     nb_int = nrow(data),
     nb_types = nb_types,
     nb_groups = 2 * nb_types,
