@@ -246,7 +246,7 @@ generate_stan_data.pol_binom_03 <- function(
     Y_array = data[, .(Y, site_id, pla_id, pol_id, rep = 1)],
     SS = data$SS,
     alpha = alpha + mean(beta) + mean(gamma_pla) + mean(gamma_pol),
-    lambda_bar = lambda_bar + mean(lambda),
+    lambda_bar = mean(lambda_bar),
     sigma_beta = sd(beta),
     sigma_gamma_pla = sd(gamma_pla),
     sigma_gamma_pol = sd(gamma_pol),
@@ -254,7 +254,7 @@ generate_stan_data.pol_binom_03 <- function(
     beta = beta %>% scale(scale = FALSE) %>% as.vector(),
     gamma_pla = gamma_pla %>% scale(scale = FALSE) %>% as.vector(),
     gamma_pol = gamma_pol %>% scale(scale = FALSE) %>% as.vector(),
-    lambda = lambda %>% scale(scale = FALSE) %>% as.vector(),
+    lambda = lambda,
     SS_mean = mean(data$S_pla * data$S_pol),
     SS_sd = sd(data$S_pla * data$S_pol)
   )
