@@ -287,11 +287,11 @@ generate_stan_data.all_binom_03 <- function(
   sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE) %>% sort()
   
   # Sample parameters:
-  alpha <- rbeta(nb_types, 4, 2) * -2
-  lambda_bar <- rbeta(nb_types, 4, 2)
-  sigma_beta <- rbeta(1, 4, 2) * 1.2
-  sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
-  sigma_lambda <- rbeta(nb_types, 4, 2) * 1.2
+  alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
+  lambda_bar <- rbeta(nb_types, 4, 2) + 0.1
+  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
+  sigma_lambda <- rbeta(nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
   zlambda <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
@@ -431,10 +431,10 @@ generate_stan_data.all_binom_04 <- function(
   sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE) %>% sort()
   
   # Sample parameters:
-  alpha <- rbeta(nb_types, 4, 2) * -2
-  lambda <- rbeta(nb_types, 4, 2)
-  sigma_beta <- rbeta(1, 4, 2) * 1.2
-  sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
+  alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
+  lambda <- rbeta(nb_types, 4, 2) - 0.1
+  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
   
