@@ -432,7 +432,7 @@ generate_stan_data.all_binom_04 <- function(
   
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -2
-  lambda_bar <- rbeta(nb_types, 4, 2)
+  lambda <- rbeta(nb_types, 4, 2)
   sigma_beta <- rbeta(1, 4, 2) * 1.2
   sigma_gamma <- rbeta(2 * nb_types, 4, 2) * 1.2
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
@@ -441,7 +441,6 @@ generate_stan_data.all_binom_04 <- function(
   # Compute non-centered parametrization:
   beta <- zbeta * sigma_beta
   gamma <- zgamma * sigma_gamma[sp_group]
-  lambda <- lambda_bar[site_type]
   
   # Generate optimal suitability:
   S_opt <- runif(nb_spp, 0, 1)
@@ -484,7 +483,7 @@ generate_stan_data.all_binom_04 <- function(
   # Compute response variable:
   data[, p := boot::inv.logit(
     alpha[site_type[site_id]] + beta[site_id] + gamma[sp1_id] + gamma[sp2_id] + 
-      lambda[site_id] * SS
+      lambda[site_type[site_id]] * SS
   )]
   data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
   
@@ -503,7 +502,6 @@ generate_stan_data.all_binom_04 <- function(
   data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
   beta <- beta[inc_sites]
   gamma <- gamma[inc_spp]
-  lambda <- lambda[inc_sites]
   site_type <- site_type[inc_sites]
   sp_group <- sp_group[inc_spp]
   sigma_beta <- sd(beta)
@@ -537,12 +535,11 @@ generate_stan_data.all_binom_04 <- function(
     sp_group = sp_group,
     SS = data$SS,
     alpha = alpha,
-    lambda_bar = lambda_bar,
+    lambda = lambda,
     sigma_beta = sigma_beta,
     sigma_gamma = sigma_gamma,
     beta = beta,
-    gamma = gamma,
-    lambda = lambda
+    gamma = gamma
   )
 }
 

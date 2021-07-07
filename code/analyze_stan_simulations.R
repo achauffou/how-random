@@ -263,18 +263,8 @@ analyse_stan_sim.all_binom_04 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder
 ) {
   # Plot posterior distribution and true value of parameters:
-  c("alpha", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
+  c("alpha", "lambda", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
     stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
-  suppressMessages({
-    plt <- rstan::plot(rstan_fit, pars = "lambda") +
-      geom_point(
-        aes(x=x, y=y), 
-        data.frame(y = length(data[["lambda_bar"]]):1, x = data[["lambda_bar"]]),
-        color = "blue") +
-      xlim(-3.0, 3.0)
-    ggsave(file.path(res_folder, paste0("param_post_true_lambda.pdf")), plt,
-            device = "pdf")
-  })
 
   # Plot posterior error of multilevel parameters:
   stan_sim_analyses_plot_save_params_errors(
