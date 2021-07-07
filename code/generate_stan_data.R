@@ -283,8 +283,8 @@ generate_stan_data.all_binom_03 <- function(
   nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
 ) {
   # Assign all species and sites to an interaction type and group:
-  site_type <- sample(1:nb_types, nb_sites, replace = TRUE)
-  sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE)
+  site_type <- sample(1:nb_types, nb_sites, replace = TRUE) %>% sort()
+  sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE) %>% sort()
   
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -2
@@ -355,7 +355,7 @@ generate_stan_data.all_binom_03 <- function(
   
   # Update parameters and data if some species or sites were removed by filters:
   inc_sites <- sort(unique(data$site_id))
-  inc_spp <- c(sort(unique(data$sp1_id)), sort(unique(data$sp2_id)))
+  inc_spp <- sort(unique(c(data$sp1_id, data$sp2_id)))
   data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
   data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
   data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
@@ -427,8 +427,8 @@ generate_stan_data.all_binom_04 <- function(
   nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
 ) {
   # Assign all species and sites to an interaction type and group:
-  site_type <- sample(1:nb_types, nb_sites, replace = TRUE)
-  sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE)
+  site_type <- sample(1:nb_types, nb_sites, replace = TRUE) %>% sort()
+  sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE) %>% sort()
   
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -2
@@ -497,7 +497,7 @@ generate_stan_data.all_binom_04 <- function(
   
   # Update parameters and data if some species or sites were removed by filters:
   inc_sites <- sort(unique(data$site_id))
-  inc_spp <- c(sort(unique(data$sp1_id)), sort(unique(data$sp2_id)))
+  inc_spp <- sort(unique(c(data$sp1_id, data$sp2_id)))
   data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
   data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
   data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
