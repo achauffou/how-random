@@ -12,8 +12,9 @@ functions{
     int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
       lp += binomial_logit_lpmf(
-        y[i] | n[i], alpha[site_type[i]] + beta[site_id[i]] + gamma[sp1_id[i]] + 
-        gamma[sp2_id[i]] + lambda[site_id[i]] * SS[start + i - 1]
+        y[i] | n[i], alpha[site_type[site_id[i]]] + beta[site_id[i]] + 
+        gamma[sp1_id[i]] + gamma[sp2_id[i]] + 
+        lambda[site_id[i]] * SS[start + i - 1]
       );
     }
     return lp;
