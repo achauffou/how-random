@@ -338,3 +338,168 @@ analyse_stan_res.pol_binom_08 <- function(
                                   res_folder, prev_modules)
 }
 stan_res_mods.pol_binom_08 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+
+
+# Functions to analyse all interactions binomial Stan results ==================
+#' Miscellaneous analyses for all interactions binomial Stan results
+#' 
+analyse_stan_res.misc_all_binom <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Compute and save the R-squared statistics by group:
+  if (!"bayes_R2" %in% prev_modules) {
+    calc_bayes_R2_stats(
+      rstan_fit, data$Y_array, c("sp1_id", "sp2_id", "site_id"),
+      list(sp1_id = data$sp_names[sp_group %% 2 == 1], 
+           sp2_id = data$sp_names[sp_group %% 2 == 0],
+           site_id = data$site_names)
+    ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    readr::write_lines("bayes_R2", prev_path, append = TRUE)
+  }
+  
+  # Compute and save WAIC:
+  if (!"waic" %in% prev_modules) {
+    calc_waic(rstan_fit) %>%
+      saveRDS(file = file.path(res_folder, "waic.rds"))
+    readr::write_lines("waic", prev_path, append = TRUE)
+  }
+  
+  # Compute and save WAIC:
+  if (!"looic" %in% prev_modules) {
+    calc_looic(rstan_fit) %>%
+      saveRDS(file = file.path(res_folder, "looic.rds"))
+    readr::write_lines("looic", prev_path, append = TRUE)
+  }
+}
+stan_res_mods.misc_all_binom <- c("bayes_R2", "waic", "looic")
+
+#' Analyse all interactions binomial with intercepts and slopes
+#'
+analyse_stan_res.all_binom_03 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "gamma", "lambda", "sigma_beta", 
+      "sigma_gamma", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_03 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with single lambda for all sites
+#'
+analyse_stan_res.all_binom_04 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_04 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with alpha, betas and lambdas
+#'
+analyse_stan_res.all_binom_05 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "lambda", "sigma_beta", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_05 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with alpha, betas and single lambda
+#'
+analyse_stan_res.all_binom_06 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "sigma_beta") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_06 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with alpha, betas, gammas product and lambdas
+#'
+analyse_stan_res.all_binom_07 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "zgamma", "lambda", "sigma_beta", 
+      "sigma_gamma", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_07 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with alpha, betas, gammas prod and single lambda
+#'
+analyse_stan_res.all_binom_08 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "zgamma", "sigma_beta", "sigma_gamma") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_08 <- c("post_param_plots", stan_res_mods.misc_all_binom)
