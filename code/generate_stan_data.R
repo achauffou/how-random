@@ -359,6 +359,8 @@ generate_stan_data.all_binom_03 <- function(
   data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
   data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
   data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
+  zbeta <- zbeta[inc_sites]
+  zgamma <- zgamma[inc_spp]
   beta <- beta[inc_sites]
   gamma <- gamma[inc_spp]
   lambda <- lambda[inc_sites]
@@ -379,10 +381,14 @@ generate_stan_data.all_binom_03 <- function(
       sigma_gamma[2 * int] <- -1
     }
     sigma_lambda[int] <- sd(lambda[site_type == int])
-    beta[site_type == int] %<>% scale(scale = FALSE) %>% as.vector()
-    gamma[sp_group == 2 * int - 1] %<>% scale(scale = FALSE) %>% as.vector()
-    gamma[sp_group == 2 * int] %<>% scale(scale = FALSE) %>% as.vector()
+    lambda_bar[int] <- mean(lambda[site_type == int])
   }
+  zbeta <- zbeta %>% scale() %>% as.vector()
+  zgamma <-zgamma %>% scale() %>% as.vector()
+  zlambda <- zbeta %>% scale() %>% as.vector()
+  beta <- zbeta * sigma_beta
+  gamma <- zgamma * sigma_gamma[sp_group]
+  lambda <- zlambda * sigma_lambda[site_type] + lambda_bar[site_type]
   
   # Return data specified as a list:
   list(
@@ -500,6 +506,8 @@ generate_stan_data.all_binom_04 <- function(
   data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
   data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
   data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
+  zbeta <- zbeta[inc_sites]
+  zgamma <- zgamma[inc_spp]
   beta <- beta[inc_sites]
   gamma <- gamma[inc_spp]
   site_type <- site_type[inc_sites]
@@ -518,10 +526,11 @@ generate_stan_data.all_binom_04 <- function(
     } else {
       sigma_gamma[2 * int] <- -1
     }
-    beta[site_type == int] %<>% scale(scale = FALSE) %>% as.vector()
-    gamma[sp_group == 2 * int - 1] %<>% scale(scale = FALSE) %>% as.vector()
-    gamma[sp_group == 2 * int] %<>% scale(scale = FALSE) %>% as.vector()
   }
+  zbeta <- zbeta %>% scale() %>% as.vector()
+  zgamma <-zgamma %>% scale() %>% as.vector()
+  beta <- zbeta * sigma_beta
+  gamma <- zgamma * sigma_gamma[sp_group]
   
   # Return data specified as a list:
   list(
