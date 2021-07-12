@@ -413,6 +413,68 @@ check_itis <- function(name, itis_database) {
   return_table
 }
 
+#' Verify a single proposed name in Kew's Plants of the World
+#' 
+check_pow <- function(proposed_name, nb_cores = 1) {
+  # Retrieve POW matches:
+  success <- FALSE
+  trial <- 0
+  pow_matches <- NULL
+  while(success == FALSE && trial < 10) {
+    tryCatch({
+      pow_matches <- taxize::pow_search(proposed_name) %$% 
+        data %>% 
+        data.table::as.data.table()
+      success <- TRUE
+    }, error = function(e) {}, warning = function(w) {}, finally = {})
+    Sys.sleep(0.21 * nb_cores)
+    trial <- trial + 1
+  }
+  
+  # Return empty data table if no result is found:
+  if (nrow(pow_matches) == 0) {
+    return(data.table::data.table(
+      proposed_name = proposed_name,
+      verified_kingdom = NA_character_,
+      found_in_pow = FALSE,
+      pow_fqId = NA_character_,
+      pow_status = NA_character_,
+      pow_accepted_name = NA_character_,
+      pow_accepted_fqId = NA_character_,
+      pow_rank = NA_character_
+    ))
+  }
+  
+  # Format rows to be returned:
+  if ("SynonymOf.accepted" %in% names(pow_matches)) {
+    synonyms <- pow_matches[
+      name %in% proposed_name & synonymOf.accepted == TRUE][['synonymOf.name']]
+    pow_matches[, ':='(
+      pow_status = ifelse(accepted == TRUE, "Accepted", ifelse(
+        synonymOf.accepted == TRUE, "Synonym found", "Unaccepted")),
+      pow_accepted_name = synonymOf.name,
+      pow_accepted_fqId = stringr::str_remove(synonymOf.url, "/taxon/")
+    )]
+  } else {
+    synonyms <- NULL
+    pow_matches[, ':='(
+      pow_status = ifelse(accepted == TRUE, "Accepted", "Unaccepted"),
+      pow_accepted_name = NA_character_,
+      pow_accepted_fqId = NA_character_
+    )]
+  }
+  pow_matches[name %in% c(proposed_name, synonyms), .(
+    proposed_name = proposed_name,
+    verified_kingdom = kingdom,
+    found_in_pow = TRUE,
+    pow_fqId = fqId,
+    pow_status,
+    pow_accepted_name,
+    pow_accepted_fqId,
+    pow_rank = tolower(rank)
+  )]
+}
+
 #' Verify proposed name with GNR resolve
 #'
 check_gnr <- function(name, nb_cores = 1) {
