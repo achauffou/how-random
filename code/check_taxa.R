@@ -89,7 +89,9 @@ check_proposed_names <- function(
       "verified_kingdom", "verified_rank", "is_verified", "verification_status",
       "gnr_status", "gnr_match", "gnr_score", "gnr_source", "ncbi_rank", 
       "found_in_itis", "itis_tsn", "itis_accepted_tsn", "itis_status", 
-      "itis_reason", "itis_rank", "verification_time", "last_proposed_time"
+      "itis_reason", "itis_rank", "found_in_pow", "pow_fqId", "pow_status", 
+      "pow_accepted_name", "pow_accepted_fqId", "pow_rank", "verification_time", 
+      "last_proposed_time"
     ))
 }
 
@@ -115,6 +117,12 @@ empty_taxonomic_dict <- function() {
     itis_status = character(),
     itis_reason = character(),
     itis_rank = character(),
+    found_in_pow = logical(),
+    pow_fqId = character(),
+    pow_status = character(),
+    pow_accepted_name = character(),
+    pow_accepted_fqId = character(),
+    pow_rank = character(),
     verification_time = character(),
     last_proposed_time = character()
   )
@@ -124,8 +132,8 @@ empty_taxonomic_dict <- function() {
 #'
 tax_dict_cols_classes <- function() {
   list(
-    character = c(1:5, 7:9, 11:12, 16:20),
-    logical = c(6, 13),
+    character = c(1:5, 7:9, 11:12, 16:18, 20:26),
+    logical = c(6, 13, 19),
     integer = c(14, 15),
     numeric = c(10)
   )
@@ -225,54 +233,89 @@ check_single_name <- function(name, itis_database, cache_path, kingdom = NA, nb_
 #' as the verification of associated names in the verification process.
 #'
 verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
-  # Check the name for valid matches and synonyms in ITIS:
-  itis_results_1 <- check_itis(name, itis_database)
-  
-  # Check the returned names for matches in GNR:
-  gnr_results <- itis_results_1 %>%
-    .[['proposed_name']] %>%
-    unique() %>%
-    purrr::map_df(check_gnr, nb_cores)
-  
-  # If any fuzzy match was found, repeat the ITIS check for them:
-  names_to_check <- gnr_results %>%
-    .[!proposed_name %in% itis_results_1[['proposed_name']], ] %>%
-    .[['proposed_name']] %>%
-    unique()
-  if (length(names_to_check) > 0) {
-    # Check names for valid matches and synonyms in ITIS:
-    itis_results_2 <- names_to_check %>%
-      purrr::map_df(~check_itis(., itis_database))
-    
-    # If any synonym was found, repeat the GNR check for them:
-    names_to_check <- itis_results_2 %>%
-      .[!proposed_name %in% gnr_results[['proposed_name']], ] %>%
-      .[['proposed_name']] %>%
-      unique()
-    if (length(names_to_check) > 0) {
-      gnr_results <- names_to_check %>%
-        purrr::map_df(check_gnr, nb_cores) %>%
-        rbind(gnr_results)
+  # Recursively check names in several databases:
+  all_names <- name
+  itis_results <- NULL
+  itis_names <- character()
+  pow_results <- NULL
+  pow_names <- character()
+  gnr_results <- NULL
+  gnr_names <- character()
+  while (
+    !all(sapply(list(itis_names, pow_names, gnr_names), identical, all_names))
+  ) {
+    # Check names in ITIS:
+    if (length(setdiff(all_names, itis_names)) > 0) {
+      itis_results <- setdiff(all_names, itis_names) %>%
+        purrr::map_df(check_itis, itis_database) %>%
+        rbind(itis_results)
+      itis_names <- itis_results$proposed_names %>% unique() %>% sort()
     }
-  } else {
-    itis_results_2 <- data.table::data.table(
-      proposed_name = character(),
-      verified_kingdom = character(),
-      found_in_itis = character(),
-      itis_tsn = integer(),
-      itis_accepted_tsn = integer(),
-      itis_status = character(),
-      itis_reason = character(),
-      itis_rank = character()
-    )
+    
+    # Check names in POW:
+    if (length(setdiff(all_names, pow_names)) > 0) {
+      pow_results <- setdiff(all_names, pow_names) %>%
+        purrr::map_df(check_pow, nb_cores) %>%
+        rbind(pow_results)
+      pow_names <- pow_results$proposed_names %>% unique() %>% sort()
+    }
+    
+    # Check names in GNR:
+    if (length(setdiff(all_names, gnr_names)) > 0) {
+      gnr_results <- setdiff(all_names, gnr_names) %>%
+        purrr::map_df(check_gnr) %>%
+        rbind(gnr_results)
+      gnr_names <- gnr_results$proposed_names %>% unique() %>% sort()
+    }
+    
+    # Update vector with all names:
+    all_names <- c(itis_names, pow_names, gnr_names) %>% unique() %>% sort()
   }
   
   # Combine retrieved information:
-  combined_results <- rbind(itis_results_1, itis_results_2) %>%
-    merge(gnr_results[!is.na(verified_kingdom)], 
+  combined_results <- itis_results[!is.na(verified_kingdom)] %>%
+    merge(pow_results[!is.na(verified_kingdom)], 
           by = c("proposed_name", "verified_kingdom"), all = TRUE) %>%
-    merge(gnr_results[is.na(verified_kingdom)], by = c("proposed_name"), 
-          all = TRUE)
+    merge(gnr_results[!is.na(verified_kingdom)], 
+          by = c("proposed_name", "verified_kingdom"), all = TRUE)
+  combined_results %<>% 
+    merge(itis_results[is.na(verified_kingdom)], by = c("proposed_name"), all = TRUE)
+  combined_results[, ':='(
+    verified_kingdom = ifelse(is.na(verified_kingdom.x), verified_kingdom.y, verified_kingdom.x),
+    verified_kingdom.x = NULL, verified_kingdom.y = NULL,
+    found_in_itis = ifelse(is.na(found_in_itis.x), found_in_itis.y, found_in_itis.x),
+    found_in_itis.x = NULL, found_in_itis.y = NULL,
+    itis_tsn = ifelse(is.na(itis_tsn.x), itis_tsn.y, itis_tsn.x),
+    itis_tsn.x = NULL, itis_tsn.y = NULL,
+    itis_accepted_tsn = ifelse(is.na(itis_accepted_tsn.x), itis_accepted_tsn.y, itis_accepted_tsn.x),
+    itis_accepted_tsn.x = NULL, itis_accepted_tsn.y = NULL,
+    itis_status = ifelse(is.na(itis_status.x), itis_status.y, itis_status.x),
+    itis_status.x = NULL, itis_status.y = NULL,
+    itis_reason = ifelse(is.na(itis_reason.x), itis_reason.y, itis_reason.x),
+    itis_reason.x = NULL, itis_reason.y = NULL,
+    itis_rank = ifelse(is.na(itis_rank.x), itis_rank.y, itis_rank.x),
+    itis_rank.x = NULL, itis_rank.y = NULL
+  )]
+  combined_results %<>% 
+    merge(pow_results[is.na(verified_kingdom)], by = c("proposed_name"), all = TRUE)
+  combined_results[, ':='(
+    verified_kingdom = ifelse(is.na(verified_kingdom.x), verified_kingdom.y, verified_kingdom.x),
+    verified_kingdom.x = NULL, verified_kingdom.y = NULL,
+    found_in_pow = ifelse(is.na(found_in_pow.x), found_in_pow.y, found_in_pow.x),
+    found_in_pow.x = NULL, found_in_pow.y = NULL,
+    pow_fqId = ifelse(is.na(pow_fqId.x), pow_fqId.y, pow_fqId.x),
+    pow_fqId.x = NULL, pow_fqId.y = NULL,
+    pow_status = ifelse(is.na(pow_status.x), pow_status.y, pow_status.x),
+    pow_status.x = NULL, pow_status.y = NULL,
+    pow_accepted_name = ifelse(is.na(pow_accepted_name.x), pow_accepted_name.y, pow_accepted_name.x),
+    pow_accepted_name.x = NULL, pow_accepted_name.y = NULL,
+    pow_accepted_fqId = ifelse(is.na(pow_accepted_fqId.x), pow_accepted_fqId.y, pow_accepted_fqId.x),
+    pow_accepted_fqId.x = NULL, pow_accepted_fqId.y = NULL,
+    pow_rank = ifelse(is.na(pow_rank.x), pow_rank.y, pow_rank.x),
+    pow_rank.x = NULL, pow_rank.y = NULL
+  )]
+  combined_results %<>% 
+    merge(gnr_results[is.na(verified_kingdom)], by = c("proposed_name"), all = TRUE)
   combined_results[, ':='(
     verified_kingdom = ifelse(is.na(verified_kingdom.x), verified_kingdom.y, verified_kingdom.x),
     verified_kingdom.x = NULL, verified_kingdom.y = NULL,
@@ -297,7 +340,8 @@ verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
     "verified_rank", "is_verified", "verification_status", "gnr_status", 
     "gnr_match", "gnr_score", "gnr_source", "ncbi_rank", "found_in_itis", 
     "itis_tsn", "itis_accepted_tsn", "itis_status", "itis_reason", "itis_rank",
-    "verification_time", "last_proposed_time"
+    "found_in_pow", "pow_fqId", "pow_status", "pow_accepted_name", 
+    "pow_accepted_fqId", "pow_rank", "verification_time", "last_proposed_time"
   ))
   
   # If there is no entry for the manually specified kingdom, add one:
@@ -323,6 +367,12 @@ verify_taxon <- function(name, itis_database, kingdom = NA, nb_cores = 1) {
         itis_status = NA_character_,
         itis_reason = NA_character_,
         itis_rank = NA_character_,
+        found_in_pow = FALSE,
+        pow_fqId = NA_character_,
+        pow_status = NA_character_,
+        pow_accepted_name = NA_character_,
+        pow_accepted_fqId = NA_character_,
+        pow_rank = NA_character_,
         verification_time = as.character(Sys.time()),
         last_proposed_time = NA_character_
       ) %>% rbind(combined_results)
@@ -401,7 +451,7 @@ check_itis <- function(name, itis_database) {
   } else {
     return_table <- data.table::data.table(
       proposed_name = name,
-      verified_kingdom  = NA_character_,
+      verified_kingdom = NA_character_,
       found_in_itis = FALSE,
       itis_tsn = NA_integer_,
       itis_accepted_tsn = NA_integer_,
@@ -540,15 +590,17 @@ check_gnr <- function(name, nb_cores = 1) {
 #'
 set_verification_info <- function(name_dict) {
   # If applicable, set GNR and ITIS status to 'Not found' instead of NA:
-  name_dict[
-    is.na(found_in_itis), found_in_itis := FALSE
-  ][
-    is.na(gnr_status), gnr_status := "Not found"
-  ]
+  name_dict[is.na(found_in_itis), found_in_itis := FALSE]
+  name_dict[is.na(found_in_pow), found_in_pow := FALSE]
+  name_dict[is.na(gnr_status), gnr_status := "Not found"]
   
   # If there was at least one verified row, remove unverified row:
-  if (nrow(name_dict[found_in_itis == TRUE | !gnr_status %in% "Not found"]) > 0) {
-    name_dict %<>% .[found_in_itis == TRUE | !gnr_status %in% "Not found"]
+  if (nrow(name_dict[
+    found_in_itis == TRUE | !gnr_status %in% "Not found" | found_in_pow == TRUE
+  ]) > 0) {
+    name_dict %<>% .[
+      found_in_itis == TRUE | !gnr_status %in% "Not found" | found_in_pow == TRUE
+    ]
   }
   
   # Set kingdom of GNR fuzzy matches without kingdom if their match has one:
@@ -584,7 +636,7 @@ set_verification_info <- function(name_dict) {
     verified_level = c('higher', 'species', 'subspecies') %>%
       .[stringr::str_count(verified_name, " ") + 1],
     is_verified = !is.na(verified_name),
-    verification_status = get_verified_status(itis_status, gnr_status),
+    verification_status = get_verified_status(itis_status, pow_status, gnr_status),
     verification_time = as.character(Sys.time()),
     last_proposed_time = NA_character_
   )]
@@ -602,6 +654,10 @@ get_verified_name <- function(dict) {
   # If there is an accepted ITIS name, set it as the verified name:
   valid_itis_name <- dict[itis_status == "Accepted", ][['proposed_name']][1]
   if (!is.na(valid_itis_name)) return(valid_itis_name)
+  
+  # Then, if there is an accepted POW name, set it as the verified name:
+  valid_pow_name <- dict[pow_status == "Accepted", ][['proposed_name']][1]
+  if (!is.na(valid_pow_name)) return(valid_pow_name)
 
   # Then, if there is a GNR match, set it as the verified name:
   valid_gnr_name <- dict[!is.na(gnr_match), ][['gnr_match']][1]
@@ -613,14 +669,20 @@ get_verified_name <- function(dict) {
 
 #' Get the verification status of a taxonomic name entry
 #'
-get_verified_status <- function(vec_itis_status, vec_gnr_status) {
+get_verified_status <- function(vec_itis_status, vec_pow_status, vec_gnr_status) {
   # Function to get status of a single entry:
-  single_entry_status <- function(itis_status, gnr_status) {
+  single_entry_status <- function(itis_status, pow_status, gnr_status) {
     if (!is.na(itis_status)) {
       if (itis_status == "Accepted") {
         verif_status <- "ITIS accepted"
       } else {
         verif_status <- "ITIS synonym"
+      }
+    } else if (pow_status %in% c("Accepted", "Synonym found")) {
+      if (pow_status == "Accepted") {
+        verif_status <- "POW accepted"
+      } else {
+        verif_status <- "POW synonym"
       }
     } else {
       verif_status <- switch(gnr_status,
@@ -635,18 +697,22 @@ get_verified_status <- function(vec_itis_status, vec_gnr_status) {
   # Apply function to all entries:
   sapply(
     1:length(vec_itis_status),
-    function(x) single_entry_status(vec_itis_status[x], vec_gnr_status[x])
+    function(x) single_entry_status(vec_itis_status[x], vec_pow_status[x], vec_gnr_status[x])
   )
 }
 
 #' Get the verified kingdom of an entry
 #' 
 get_verified_rank <- function(dict) {
-  # If there is an accepted ITIS rank, set it as the verified name:
+  # If there is an accepted ITIS rank, set it as the verified rank:
   valid_itis_rank <- dict[itis_status == "Accepted", ][['itis_rank']][1]
   if (!is.na(valid_itis_rank)) return(valid_itis_rank)
   
-  # Then, if there is a NCBI match, set it as the verified name:
+  # If there is an accepted POW rank, set it as the verified rank:
+  valid_pow_rank <- dict[pow_status == "Accepted", ][['pow_rank']][1]
+  if (!is.na(valid_pow_rank)) return(valid_pow_rank)
+  
+  # Then, if there is a NCBI match, set it as the verified rank:
   valid_ncbi_rank <- dict[!is.na(ncbi_rank),][
     order(-verified_level)][['ncbi_rank']][1]
   if (!is.na(valid_ncbi_rank)) return(valid_ncbi_rank)
