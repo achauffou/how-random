@@ -1,6 +1,17 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 12 July 2021
+##### Upgrading taxonomic verification:
+I have upgraded the taxonomic verification this morning to query Kew's Plants of the World (POW) database.
+To add this third database, I cleaned the code a little bit.
+Now that this new information source has been added, I can move on to retrieving country codes of native areas of species.
+
+##### Finishing data analyses for multiple interaction types:
+Today I am running the last supplementary analyses for the regressions with multiple interactions.
+If there is nothing abnormal with the results, I will be able to move on to drafting the manuscript.
+In parallel to drafting the manuscript, I will be trying to get data on species origin status (native/invasive).
+
 #### 29 June 2021
 ##### Meeting with Bernat:
 After a few weeks of data simulations, it is possible to start data analyses.
