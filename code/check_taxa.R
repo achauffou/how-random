@@ -514,7 +514,7 @@ check_pow <- function(proposed_name, nb_cores = 1) {
     )]
   }
   pow_matches[name %in% c(proposed_name, synonyms), .(
-    proposed_name = proposed_name,
+    proposed_name = name,
     verified_kingdom = kingdom,
     found_in_pow = TRUE,
     pow_fqId = fqId,
