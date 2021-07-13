@@ -496,7 +496,7 @@ check_pow <- function(proposed_name, nb_cores = 1) {
   }
   
   # Format rows to be returned:
-  if ("SynonymOf.accepted" %in% names(pow_matches)) {
+  if ("synonymOf.accepted" %in% names(pow_matches)) {
     synonyms <- pow_matches[
       name %in% proposed_name & synonymOf.accepted == TRUE][['synonymOf.name']]
     pow_matches[, ':='(
