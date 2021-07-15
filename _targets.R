@@ -47,6 +47,7 @@ read_YAML_config_targets <- list(
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
   tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
+  tar_target(gadm_regions_download_url, config$gadm_regions_download_url),
   tar_target(manual_data_folder, config$folder_structure$manual_data),
   tar_target(cache_folder, config$folder_structure$cache),
   tar_target(raw_data_folder, config$folder_structure$raw_data),
@@ -107,6 +108,14 @@ download_ecoregions_data_targets <- tar_target(
 
 # Countries and WGSRPD regions:
 download_regions_data_targets <- list(
+  tar_target(
+    gadm_regions_raw_archive,
+    download_from_url(
+      gadm_regions_download_url, file.path(raw_data_folder, "gadm_shp.zip"), 
+      download_date
+    ),
+    format = "file"
+  ),
   tar_target(
     wgsrpd_l3_raw_file,
     download_from_url(

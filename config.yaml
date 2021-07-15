@@ -32,6 +32,7 @@ fun_groups_plausible_kingdoms:
   Plant: [Plantae]
   Pollinator: [Animalia]
   Resource: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
+gadm_regions_download_url: https://biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 min_locations_per_species: 1
 stan_simulations_specs:
