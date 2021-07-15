@@ -62,6 +62,7 @@ read_YAML_config_targets <- list(
   tar_target(stan_sim_specs, config$stan_simulations_specs),
   tar_target(stan_analyses_specs, config$stan_analyses_specs),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
+  tar_target(wgsrpd_l3_download_url, config$wgsrpd_l3_download_url),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_interaction_type, config$wol_interaction_type),
   tar_target(worldclim_download_url, config$worldclim_download_url)
@@ -102,6 +103,18 @@ download_ecoregions_data_targets <- tar_target(
     ecoregions_download_url, 
     file.path(raw_data_folder, "terrestrial_ecoregions.zip"), download_date),
   format = "file"
+)
+
+# Countries and WGSRPD regions:
+download_regions_data_targets <- list(
+  tar_target(
+    wgsrpd_l3_raw_file,
+    download_from_url(
+      wgsrpd_l3_download_url, file.path(raw_data_folder, "wgsrpd_l3.geojson"), 
+      download_date
+    ),
+    format = "file"
+  )
 )
 
 # Climate data:
@@ -176,6 +189,7 @@ download_raw_data_targets <- list(
   download_web_of_life_data_targets,
   download_itis_data_targets,
   download_ecoregions_data_targets,
+  download_regions_data_targets,
   download_climate_data_targets,
   download_rnaturalearth_targets,
   download_occurrence_data_targets

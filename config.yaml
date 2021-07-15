@@ -226,6 +226,7 @@ stan_analyses_specs:
       refresh: 250
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
+wgsrpd_l3_download_url: https://github.com/tdwg/wgsrpd/raw/master/geojson/level3.geojson
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]
 wol_interaction_type: All
 worldclim_download_url: https://data.biogeo.ucdavis.edu/data/worldclim/v2.1/base/wc2.1_2.5m_bio.zip
