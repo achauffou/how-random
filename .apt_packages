@@ -9,4 +9,5 @@ libprotobuf-dev
 libudunits2-dev
 libv8-dev
 libxt6
+protobuf-compiler
 python3-pygments
