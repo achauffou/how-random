@@ -228,6 +228,14 @@ read_gbif_data_targets <- list(
   )
 )
 
+# Countries and WGSRPD regions:
+read_regions_data_targets <- list(
+  tar_target(
+    wgsrpd_l3,
+    geojsonio::geojson_read(wgsrpd_l3_raw_file, what = "sp")
+  )
+)
+
 # Read manually created data:
 read_manual_data_targets <- list(
   tar_target(
@@ -273,6 +281,7 @@ read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
   read_gbif_data_targets,
+  read_regions_data_targets,
   read_manual_data_targets
 )
 
