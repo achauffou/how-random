@@ -3,7 +3,9 @@ curl
 libgeos-dev
 libgdal-dev
 libglpk40
+libjq-dev
 libproj-dev
+libprotobuf-dev
 libudunits2-dev
 libv8-dev
 libxt6
