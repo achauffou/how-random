@@ -109,3 +109,11 @@ read_raw_itis_data <- function(file_path) {
     kingdoms = kingdoms
   )
 }
+
+
+# Read GADM countries shapefile ================================================
+read_gadm_countries <- function(zip_path, layer) {
+  zip_path %>%
+    unzip(exdir = file.path(tempdir(), "gadm_regions"))
+  rgdal::readOGR(dsn = file.path(tempdir(), "gadm_regions"), layer = layer)
+}

@@ -240,6 +240,10 @@ read_gbif_data_targets <- list(
 # Countries and WGSRPD regions:
 read_regions_data_targets <- list(
   tar_target(
+    gadm_countries,
+    read_gadm_countries(gadm_regions_raw_archive, "gadm36_0")
+  ),
+  tar_target(
     wgsrpd_l3,
     geojsonio::geojson_read(wgsrpd_l3_raw_file, what = "sp")
   )
