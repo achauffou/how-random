@@ -545,6 +545,15 @@ perform_bioclim_analyses_targets <- list(
 )
 
 
+# Get species origin status ====================================================
+spp_origin_status_targets <- list(
+  tar_target(
+    sites_regions_codes,
+    get_sites_regions_codes(wol_metadata, gadm_countries, wgsrpd_l3)
+  )
+)
+
+
 # Simulate Stan models =========================================================
 simulate_stan_models_targets <- list(
   tar_target(
@@ -669,6 +678,7 @@ list(
   read_raw_data_targets,
   prepare_interactions_data_targets,
   perform_bioclim_analyses_targets,
+  spp_origin_status_targets,
   simulate_stan_models_targets,
   perform_stan_analyses_targets,
   results_interpretation_targets,
