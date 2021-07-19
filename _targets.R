@@ -241,7 +241,8 @@ read_gbif_data_targets <- list(
 read_regions_data_targets <- list(
   tar_target(
     gadm_countries,
-    read_gadm_countries(gadm_regions_raw_archive, "gadm36_0")
+    read_gadm_countries(gadm_regions_raw_archive, "gadm36_0") %>%
+      sp::spTransform("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
   ),
   tar_target(
     wgsrpd_l3,
