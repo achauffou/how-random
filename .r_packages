@@ -9,4 +9,6 @@ rgbif
 rjson
 rstan
 rstanarms
+spatialreg
+spdep
 visNetwork
