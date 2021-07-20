@@ -112,9 +112,9 @@ read_raw_itis_data <- function(file_path) {
 
 
 # Read GADM countries shapefile ================================================
-read_gadm_countries <- function(zip_path, layer) {
+read_countries_shp <- function(zip_path, layer) {
   zip_path %>%
-    unzip(exdir = file.path(tempdir(), "gadm_regions"))
-  rgdal::readOGR(dsn = file.path(tempdir(), "gadm_regions"), layer = layer) %>%
+    unzip(exdir = file.path(tempdir(), "wab_countries"))
+  rgdal::readOGR(dsn = file.path(tempdir(), "wab_countries"), layer = layer) %>%
     sp::spTransform("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 }

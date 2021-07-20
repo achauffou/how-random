@@ -32,7 +32,6 @@ fun_groups_plausible_kingdoms:
   Plant: [Plantae]
   Pollinator: [Animalia]
   Resource: [Animalia, Plantae, Fungi, Other Eukaryota, Bacteria, Archaea]
-gadm_regions_download_url: https://biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip
 itis_download_url: https://www.itis.gov/downloads/itisSqlite.zip
 min_locations_per_species: 1
 stan_simulations_specs:
@@ -227,6 +226,7 @@ stan_analyses_specs:
       refresh: 250
 tex_folders_to_compile:
   - manuscript/outline/2021-04-07
+wab_countries_download_url: https://public.opendatasoft.com/explore/dataset/world-administrative-boundaries/download/?format=shp&timezone=Europe/Berlin&lang=en
 wgsrpd_l3_download_url: https://github.com/tdwg/wgsrpd/raw/master/geojson/level3.geojson
 wol_aquatic_networks: [FW_004, FW_005, FW_006, FW_008, FW_011, FW_012, FW_013, FW_014, FW_015, M_AF_001, M_AF_002]
 wol_interaction_type: All
