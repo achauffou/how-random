@@ -561,6 +561,14 @@ spp_origin_status_targets <- list(
     get_sites_regions_codes(
       wol_metadata, wab_countries, wgsrpd_l3, wol_manual_site_codes
     )
+  ),
+  tar_target(
+    wab_neighbours,
+    get_wab_neighbours(wab_countries)
+  ),
+  tar_target(
+    wgsrpd_neighbours,
+    get_wgsrpd_neighbours(wgsrpd_l3)
   )
 )
 

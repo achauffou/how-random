@@ -45,3 +45,27 @@ get_wgsrpd_code <- function(lon, lat, wgsrpd_l3) {
     sp::over(wgsrpd_l3) %$%
     LEVEL3_COD
 }
+
+
+# Determine neighbour regions for WAB and WGSRPD polygons =====================
+#' Get WAB countries neighbours
+#' 
+get_wab_neighbours <- function(wab_countries) {
+  neighbours <- spdep::poly2nb(wab_countries) %>%
+    purrr::map(~ if (all(. == 0)) {NA_character_} else {countrycode::countrycode(
+      wab_countries$iso3[.], origin = "iso3c", destination = "iso2c"
+    )})
+  names(neighbours) <- countrycode::countrycode(
+    wab_countries$iso3, origin = "iso3c", destination = "iso2c"
+  )
+  neighbours
+}
+
+#' Get WGSRPD regions neighbours
+#' 
+get_wgsrpd_neighbours <- function(wgsrpd_l3) {
+  neighbours <- spdep::poly2nb(wgsrpd_l3) %>%
+    purrr::map(~ if (all(. == 0)) {NA_character_} else {wgsrpd_l3$LEVEL3_COD[.]})
+  names(neighbours) <- wgsrpd_l3$LEVEL3_COD
+  neighbours
+}
