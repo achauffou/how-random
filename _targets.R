@@ -287,6 +287,15 @@ read_manual_data_targets <- list(
   tar_target(
     wol_manual_species_names,
     data.table::fread(wol_manual_species_names_file, na.strings = c("", "NA"))
+  ),
+  tar_target(
+    wol_manual_site_codes_file,
+    file.path(manual_data_folder, "wol_manual_site_codes.csv"),
+    format = "file"
+  ),
+  tar_target(
+    wol_manual_site_codes,
+    data.table::fread(wol_manual_site_codes_file, na.strings = c("", "NA"))
   )
 )
 
@@ -549,7 +558,9 @@ perform_bioclim_analyses_targets <- list(
 spp_origin_status_targets <- list(
   tar_target(
     sites_regions_codes,
-    get_sites_regions_codes(wol_metadata, wab_countries, wgsrpd_l3)
+    get_sites_regions_codes(
+      wol_metadata, wab_countries, wgsrpd_l3, wol_manual_site_codes
+    )
   )
 )
 

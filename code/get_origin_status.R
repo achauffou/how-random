@@ -1,12 +1,30 @@
 # Find out the country and region of each site =================================
 #' Get the country or region of each Web of Life site
 #' 
-get_sites_regions_codes <- function(metadata, wab_countries, wgsrpd_l3) {
-  metadata[!is.na(lat)][
-    , .(lon = unique(lon), lat = unique(lat)), by = .(loc_id)][, ':='(
-      WAB_code = get_wab_code(lon, lat, wab_countries),
-      WGSRPD_code = get_wgsrpd_code(lon, lat, wgsrpd_l3)
-    )]
+get_sites_regions_codes <- function(metadata, wab_countries, wgsrpd_l3, manual_codes) {
+  # Determine country/region code using spatial polygons:
+  site_codes <- metadata[
+    !is.na(lat)
+  ][
+    , .(lat = unique(lat), lon = unique(lon)), by = .(loc_id)
+  ]
+  site_codes[, ':='(
+    WAB_code = get_wab_code(lon, lat, wab_countries),
+    WGSRPD_code = get_wgsrpd_code(lon, lat, wgsrpd_l3)
+  )]
+  
+  # Implement manual corrections:
+  if (nrow(manual_codes) > 0) {
+    manual_codes %<>% 
+      merge(site_codes[, .(loc_id, lat, lon)], by = "loc_id", all.x = TRUE)
+    res <- rbind(
+      site_codes[!loc_id %in% manual_codes[['loc_id']]],
+      manual_codes[, .(loc_id, lat, lon, WAB_code, WGSRPD_code)]
+    )
+  } else {
+    res <- site_codes
+  }
+  res
 }
 
 #' Get WAB country code of given coordinates
