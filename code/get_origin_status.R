@@ -33,8 +33,7 @@ get_wab_code <- function(lon, lat, wab_countries) {
   data.frame(lon = lon, lat = lat) %>%
     sp::SpatialPoints(proj4string = sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")) %>%
     sp::over(wab_countries) %$%
-    iso3 %>%
-    countrycode::countrycode(origin = "iso3c", destination = "iso2c")
+    iso_3166_1_
 }
 
 #' Get WGSRPD region code of given coordinates
@@ -52,12 +51,8 @@ get_wgsrpd_code <- function(lon, lat, wgsrpd_l3) {
 #' 
 get_wab_neighbours <- function(wab_countries) {
   neighbours <- spdep::poly2nb(wab_countries) %>%
-    purrr::map(~ if (all(. == 0)) {NA_character_} else {countrycode::countrycode(
-      wab_countries$iso3[.], origin = "iso3c", destination = "iso2c"
-    )})
-  names(neighbours) <- countrycode::countrycode(
-    wab_countries$iso3, origin = "iso3c", destination = "iso2c"
-  )
+    purrr::map(~ if (all(. == 0)) {NA_character_} else {wab_countries$iso_3166_1_[.]})
+  names(neighbours) <- wab_countries$iso_3166_1_
   neighbours
 }
 
