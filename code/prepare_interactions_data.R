@@ -303,10 +303,12 @@ remove_supp_data_from_wol_networks <- function(networks, supp_names) {
 #' 
 #' Remove problematic networks, format as data.table, add location ID,
 #' assign cleaned species names, remove species that are not found in the clean 
-#' species.
+#' species, and add species origin status.
 #' 
-get_wol_interactions <- function(networks, metadata, species, fun_groups, 
-                                 problematic_networks = NA) {
+get_wol_interactions <- function(
+  networks, metadata, species, fun_groups, spp_origin_status, 
+  problematic_networks = NA
+) {
   # Remove problematic networks:
   problematic_networks <- sapply(
     problematic_networks, 
@@ -353,10 +355,22 @@ get_wol_interactions <- function(networks, metadata, species, fun_groups,
     )], by = c("net_name", "sp2_raw_name", "sp2_fun_group"), all.x = TRUE) %>%
     .[!is.na(sp1_name) & !is.na(sp2_name),]
   
+  # Merge with species origin status information:
+  interactions %<>%
+    merge(spp_origin_status[, .(
+      sp1_name = sp_name, sp1_kingdom = sp_kingdom, loc_id, 
+      sp1_is_native = is_native, sp1_origin_status = status
+    )], by = c("loc_id", "sp1_name", "sp1_kingdom"), all.x = TRUE) %>%
+    merge(spp_origin_status[, .(
+      sp2_name = sp_name, sp2_kingdom = sp_kingdom, loc_id, 
+      sp2_is_native = is_native, sp2_origin_status = status
+    )], by = c("loc_id", "sp2_name", "sp2_kingdom"), all.x = TRUE)
+  
   # Return data.table with columns reordered:
   interactions[, .(
     loc_id, net_id = net_name, int_type, sp1_fun_group, sp1_id, sp1_name, 
-    sp1_kingdom, sp1_avg_rel_degree, sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, 
-    sp2_avg_rel_degree, int_strength
+    sp1_kingdom, sp1_avg_rel_degree, sp1_is_native, sp1_origin_status, 
+    sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, sp2_avg_rel_degree, 
+    sp2_is_native, sp2_origin_status, int_strength
   )]
 }

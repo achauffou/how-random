@@ -372,7 +372,7 @@ prepare_interactions_targets <- list(
     wol_interactions,
     get_wol_interactions(wol_networks_wo_supp_data, wol_metadata,
                          wol_species, wol_fun_groups_info,
-                         wol_problematic_networks) %>%
+                         spp_origin_status, wol_problematic_networks) %>%
       save_obj("wol_interactions", processed_data_folder)
   )
 )
