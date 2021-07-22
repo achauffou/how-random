@@ -569,6 +569,14 @@ spp_origin_status_targets <- list(
   tar_target(
     wgsrpd_neighbours,
     get_wgsrpd_neighbours(wgsrpd_l3)
+  ),
+  tar_target(
+    spp_origin_status,
+    get_spp_origin_status(
+      wol_species, taxonomic_dict, sites_regions_codes, wab_neighbours, 
+      wgsrpd_neighbours, file.path(cache_folder, "spp_origin_status.csv"), 
+      aggregation_level
+    ) %>% save_obj("spp_origin_status.csv", processed_data_folder)
   )
 )
 
