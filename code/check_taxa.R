@@ -73,8 +73,10 @@ check_proposed_names <- function(
 
   # Set genus- and species-aggregated names:
   taxonomic_dict[, ':='(
-    verified_genus = stringr::str_extract(verified_name, "^(\\w*)"),
-    verified_species = stringr::str_extract(verified_name, "^(\\w* ?\\w*)")
+    verified_genus = stringr::str_extract(verified_name, "^(\\w*)") %>%
+      stringr::str_replace(" $", ""),
+    verified_species = stringr::str_extract(verified_name, "^(\\w* ?\\w*)") %>%
+      stringr::str_replace(" $", "")
   )]
   
   # Set taxon ID to distinguish unique taxa and return the dictionary:
