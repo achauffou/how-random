@@ -327,13 +327,16 @@ clean_gbif_occurrences <- function(
   # Add cleaned occurrences from the temp file to the database chunk by chunk:
   message("Saving cleaned GBIF occurrences to the database...")
   tmp_dt_partition <- get_chunks_partition(tmp_dt_path, chunk_size)
-  lapply(1:length(tmp_dt_partition), function(x) {
-  fread_chunk(
-    tmp_dt_path, tmp_dt_partition[[x]], c("archive_name", "genusKey",
-    "speciesKey", "taxonKey", "decimalLatitude", "decimalLongitude"),
-    colClasses = list(character = 1, integer = 2:4, numeric = 5:6)
-  ) %>% RSQLite::dbAppendTable(db, table_name, .)
-  })
+  if (!is.null(tmp_dt_partition)) {
+    lapply(1:length(tmp_dt_partition), function(x) {
+      fread_chunk(
+        tmp_dt_path, tmp_dt_partition[[x]], 
+        c("archive_name", "genusKey", "speciesKey", "taxonKey", 
+          "decimalLatitude", "decimalLongitude"),
+        colClasses = list(character = 1, integer = 2:4, numeric = 5:6)
+      ) %>% RSQLite::dbAppendTable(db, table_name, .)
+    })
+  }
 
   # Remove temporary CSV file:
   file.remove(tmp_dt_path)
@@ -344,6 +347,7 @@ clean_gbif_occurrences <- function(
 get_chunks_partition <- function(file, chunk_size, skip = 1) {
   # Get number of lines to read:
   nb_lines <- as.numeric(system(paste("wc -l <", file), intern = TRUE)) - skip
+  if (nb_lines <= skip) return(NULL)
   nb_chunks <- ceiling(nb_lines / chunk_size)
   
   # Function to find chunk start and end lines:

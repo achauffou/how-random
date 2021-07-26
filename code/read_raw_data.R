@@ -109,3 +109,12 @@ read_raw_itis_data <- function(file_path) {
     kingdoms = kingdoms
   )
 }
+
+
+# Read GADM countries shapefile ================================================
+read_countries_shp <- function(zip_path, layer) {
+  zip_path %>%
+    unzip(exdir = file.path(tempdir(), "wab_countries"))
+  rgdal::readOGR(dsn = file.path(tempdir(), "wab_countries"), layer = layer) %>%
+    sp::spTransform("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+}

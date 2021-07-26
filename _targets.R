@@ -47,6 +47,7 @@ read_YAML_config_targets <- list(
   tar_target(ecoregions_download_url, config$ecoregions_download_url),
   tar_target(envirem_bioclim_download_url, config$envirem_bioclim_download_url),
   tar_target(envirem_topo_download_url, config$envirem_topo_download_url),
+  tar_target(wab_countries_download_url, config$wab_countries_download_url),
   tar_target(manual_data_folder, config$folder_structure$manual_data),
   tar_target(cache_folder, config$folder_structure$cache),
   tar_target(raw_data_folder, config$folder_structure$raw_data),
@@ -62,6 +63,7 @@ read_YAML_config_targets <- list(
   tar_target(stan_sim_specs, config$stan_simulations_specs),
   tar_target(stan_analyses_specs, config$stan_analyses_specs),
   tar_target(tex_folders_to_compile, config$tex_folders_to_compile),
+  tar_target(wgsrpd_l3_download_url, config$wgsrpd_l3_download_url),
   tar_target(wol_aquatic_networks, config$wol_aquatic_networks),
   tar_target(wol_interaction_type, config$wol_interaction_type),
   tar_target(worldclim_download_url, config$worldclim_download_url)
@@ -102,6 +104,26 @@ download_ecoregions_data_targets <- tar_target(
     ecoregions_download_url, 
     file.path(raw_data_folder, "terrestrial_ecoregions.zip"), download_date),
   format = "file"
+)
+
+# Countries and WGSRPD regions:
+download_regions_data_targets <- list(
+  tar_target(
+    wab_countries_raw_archive,
+    download_from_url(
+      wab_countries_download_url, file.path(raw_data_folder, "wab_shp.zip"), 
+      download_date
+    ),
+    format = "file"
+  ),
+  tar_target(
+    wgsrpd_l3_raw_file,
+    download_from_url(
+      wgsrpd_l3_download_url, file.path(raw_data_folder, "wgsrpd_l3.geojson"), 
+      download_date
+    ),
+    format = "file"
+  )
 )
 
 # Climate data:
@@ -176,6 +198,7 @@ download_raw_data_targets <- list(
   download_web_of_life_data_targets,
   download_itis_data_targets,
   download_ecoregions_data_targets,
+  download_regions_data_targets,
   download_climate_data_targets,
   download_rnaturalearth_targets,
   download_occurrence_data_targets
@@ -211,6 +234,19 @@ read_gbif_data_targets <- list(
       readRDS(rnaturalearth_land_data),
       file.path(cache_folder, "gbif_processing_cache.csv")
     )
+  )
+)
+
+# Countries and WGSRPD regions:
+read_regions_data_targets <- list(
+  tar_target(
+    wab_countries,
+    read_countries_shp(wab_countries_raw_archive, "world-administrative-boundaries") %>%
+      sp::spTransform("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  ),
+  tar_target(
+    wgsrpd_l3,
+    geojsonio::geojson_read(wgsrpd_l3_raw_file, what = "sp")
   )
 )
 
@@ -251,6 +287,15 @@ read_manual_data_targets <- list(
   tar_target(
     wol_manual_species_names,
     data.table::fread(wol_manual_species_names_file, na.strings = c("", "NA"))
+  ),
+  tar_target(
+    wol_manual_site_codes_file,
+    file.path(manual_data_folder, "wol_manual_site_codes.csv"),
+    format = "file"
+  ),
+  tar_target(
+    wol_manual_site_codes,
+    data.table::fread(wol_manual_site_codes_file, na.strings = c("", "NA"))
   )
 )
 
@@ -259,6 +304,7 @@ read_raw_data_targets <- list(
   read_web_of_life_data_targets,
   read_itis_data_targets,
   read_gbif_data_targets,
+  read_regions_data_targets,
   read_manual_data_targets
 )
 
@@ -326,7 +372,7 @@ prepare_interactions_targets <- list(
     wol_interactions,
     get_wol_interactions(wol_networks_wo_supp_data, wol_metadata,
                          wol_species, wol_fun_groups_info,
-                         wol_problematic_networks) %>%
+                         spp_origin_status, wol_problematic_networks) %>%
       save_obj("wol_interactions", processed_data_folder)
   )
 )
@@ -508,6 +554,33 @@ perform_bioclim_analyses_targets <- list(
 )
 
 
+# Get species origin status ====================================================
+spp_origin_status_targets <- list(
+  tar_target(
+    sites_regions_codes,
+    get_sites_regions_codes(
+      wol_metadata, wab_countries, wgsrpd_l3, wol_manual_site_codes
+    )
+  ),
+  tar_target(
+    wab_neighbours,
+    get_wab_neighbours(wab_countries)
+  ),
+  tar_target(
+    wgsrpd_neighbours,
+    get_wgsrpd_neighbours(wgsrpd_l3)
+  ),
+  tar_target(
+    spp_origin_status,
+    get_spp_origin_status(
+      wol_species, taxonomic_dict, sites_regions_codes, wab_neighbours, 
+      wgsrpd_neighbours, file.path(cache_folder, "spp_origin_status.csv"), 
+      aggregation_level
+    ) %>% save_obj("spp_origin_status.csv", processed_data_folder)
+  )
+)
+
+
 # Simulate Stan models =========================================================
 simulate_stan_models_targets <- list(
   tar_target(
@@ -632,6 +705,7 @@ list(
   read_raw_data_targets,
   prepare_interactions_data_targets,
   perform_bioclim_analyses_targets,
+  spp_origin_status_targets,
   simulate_stan_models_targets,
   perform_stan_analyses_targets,
   results_interpretation_targets,

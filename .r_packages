@@ -1,6 +1,7 @@
 CoordinateCleaner
 countrycode
 ecospat
+geojsonio
 progress
 targets
 taxize
@@ -8,4 +9,6 @@ rgbif
 rjson
 rstan
 rstanarms
+spatialreg
+spdep
 visNetwork
