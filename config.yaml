@@ -188,6 +188,7 @@ stan_analyses_specs:
     data_generation_model: all_binom_bioclim
     data_generation_args:
       collec: FALSE
+      min_nb_ints: 1000
     stan_model: all_binom_03
     chains: 4
     stan_sample_args:
@@ -198,6 +199,7 @@ stan_analyses_specs:
     data_generation_model: all_binom_bioclim
     data_generation_args:
       collec: FALSE
+      min_nb_ints: 1000
     stan_model: all_binom_04
     chains: 4
     stan_sample_args:
@@ -208,6 +210,7 @@ stan_analyses_specs:
     data_generation_model: all_binom_bioclim
     data_generation_args:
       collec: FALSE
+      min_nb_ints: 1000
     stan_model: all_binom_05
     chains: 4
     stan_sample_args:
@@ -218,6 +221,7 @@ stan_analyses_specs:
     data_generation_model: all_binom_bioclim
     data_generation_args:
       collec: FALSE
+      min_nb_ints: 1000
     stan_model: all_binom_06
     chains: 4
     stan_sample_args:
