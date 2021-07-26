@@ -180,7 +180,7 @@ stan_analyses_roc <- function(
 }
 
 
-# Functions to analyse specific Stan simulations ===============================
+# Functions to analyse specific Stan simulations for pollination ===============
 #' Analyse pollination binomial with centered intercepts only
 #'
 analyse_stan_sim.pol_binom_01 <- function(
@@ -250,6 +250,25 @@ analyse_stan_sim.pol_binom_09 <- function(
   )
 }
 
+#' Analyse pollination binomial with intercepts and slopes
+#'
+analyse_stan_sim.pol_binom_24 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda", "mu_pla", "mu_pol", "beta", "gamma_pla", "gamma_pol",
+    "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+    stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
+  
+  # Plot posterior error of multilevel parameters:
+  stan_sim_analyses_plot_save_params_errors(
+    rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"),
+    c("site_id", "pla_id", "pol_id"), res_folder
+  )
+}
+
+
+# Functions to analyse specific Stan simulations for pollination ===============
 #' Analyse all interactions binomial with intercepts and slopes
 #'
 analyse_stan_sim.all_binom_03 <- function(
@@ -304,6 +323,29 @@ analyse_stan_sim.all_binom_09 <- function(
 ) {
   # Plot posterior distribution and true value of parameters:
   c("alpha", "lambda", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
+    stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
+  
+  # Plot posterior error of multilevel parameters:
+  stan_sim_analyses_plot_save_params_errors(
+    rstan_fit, data, c("beta"), c("site_id"), res_folder
+  )
+  suppressWarnings({suppressMessages({
+    nb_data <- rbind(
+      data$Y_array[, .N, by = .(sp1_id)][, .(sp_id = sp1_id, N)],
+      data$Y_array[, .N, by = .(sp2_id)][, .(sp_id = sp2_id, N)]
+    )[order(sp_id)][['N']] %>%
+      stan_sim_analyses_plot_param_error(rstan_fit, "gamma", data$gamma, .) %>%
+      ggsave(file.path(res_folder, "param_error_gamma.pdf"), ., device = "pdf")
+  })})
+}
+
+#' Analyse all interactions binomial with origin status
+#'
+analyse_stan_sim.all_binom_24 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda", "mu", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
     stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
   
   # Plot posterior error of multilevel parameters:

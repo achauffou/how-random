@@ -123,7 +123,7 @@ prepare_stan_start_values.pol_binom_02 <- function(interactions) {
 #' Pollination binomial model with bioclimatic variables
 #' 
 prepare_stan_data.pol_binom_bioclim <- function(
-  interactions, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   # Select relevant columns with complete cases:
   ints <- interactions[int_type == "Pollination"]
@@ -133,18 +133,32 @@ prepare_stan_data.pol_binom_bioclim <- function(
   }
   if (collec == TRUE) {
     ints <- ints[, .(
-      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
-      sp1_suitability = sp1_collec_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      int_strength, int_type, net_id, sp1_fun_group, sp1_id, sp1_name, 
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_collec_suitability, 
+      sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
       sp2_suitability = sp2_collec_suitability
     )]
   } else {
     ints <- ints[, .(
-      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
-      sp1_suitability = sp1_indiv_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      int_strength, int_type, net_id, sp1_fun_group, sp1_id, sp1_name, 
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_indiv_suitability, 
+      sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
       sp2_suitability = sp2_indiv_suitability
     )]
   }
-  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  if (nas_origin == 0) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp1_is_native", "sp2_is_native"
+    )])]
+  } else if (nas_origin == 1) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp2_is_native"
+    )])]
+  } else {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom"
+    )])]
+  }
   
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
@@ -179,12 +193,19 @@ prepare_stan_data.pol_binom_bioclim <- function(
   ints[, SS := scale(sp1_suitability * sp2_suitability)]
   
   # Return list of data:
+  if (include_origin == 0) {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N)]
+  } else if (include_origin == 1) {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native))]
+  } else {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+  }
   list(
     nb_sites = length(unique(ints$site_id)),
     nb_pla = length(unique(ints$pla_id)),
     nb_pol = length(unique(ints$pol_id)),
     nb_int = nrow(ints),
-    Y_array = ints[, .(Y, site_id, pla_id, pol_id, N)],
+    Y_array = Y_array,
     SS = ints$SS,
     SS_mean = SS_mean,
     SS_sd = SS_sd,
@@ -197,9 +218,9 @@ prepare_stan_data.pol_binom_bioclim <- function(
 }
 
 prepare_stan_start_values.pol_binom_bioclim <- function(
-  interactions, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
-  data <- prepare_stan_data.pol_binom_bioclim(interactions, min_bioclim_occs, collec)
+  data <- prepare_stan_data.pol_binom_bioclim(interactions, min_bioclim_occs, collec, nas_origin, include_origin)
   list(
     alpha = 0,
     lambda_bar = 0,
@@ -217,7 +238,7 @@ prepare_stan_start_values.pol_binom_bioclim <- function(
 #' Pollination binomial model with bioclimatic variables
 #' 
 prepare_stan_data.pol_binom_bioclim_sep <- function(
-  interactions, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   # Select relevant columns with complete cases:
   ints <- interactions[int_type == "Pollination"]
@@ -227,18 +248,32 @@ prepare_stan_data.pol_binom_bioclim_sep <- function(
   }
   if (collec == TRUE) {
     ints <- ints[, .(
-      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
-      sp1_suitability = sp1_collec_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      int_strength, int_type, net_id, sp1_fun_group, sp1_id, sp1_name, 
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_collec_suitability, 
+      sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
       sp2_suitability = sp2_collec_suitability
     )]
   } else {
     ints <- ints[, .(
-      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
-      sp1_suitability = sp1_indiv_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      int_strength, int_type, net_id, sp1_fun_group, sp1_id, sp1_name, 
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_indiv_suitability, 
+      sp2_fun_group, sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
       sp2_suitability = sp2_indiv_suitability
     )]
   }
-  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  if (nas_origin == 0) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp1_is_native", "sp2_is_native"
+    )])]
+  } else if (nas_origin == 1) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp2_is_native"
+    )])]
+  } else {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom"
+    )])]
+  }
   
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
@@ -276,12 +311,19 @@ prepare_stan_data.pol_binom_bioclim_sep <- function(
   ints[, S2 := scale(sp2_suitability)]
   
   # Return list of data:
+  if (include_origin == 0) {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N)]
+  } else if (include_origin == 1) {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native))]
+  } else {
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+  }
   list(
     nb_sites = length(unique(ints$site_id)),
     nb_pla = length(unique(ints$pla_id)),
     nb_pol = length(unique(ints$pol_id)),
     nb_int = nrow(ints),
-    Y_array = ints[, .(Y, site_id, pla_id, pol_id, N)],
+    Y_array = Y_array,
     S_pla = ints$S1,
     S_pla_mean = S1_mean,
     S_pla_sd = S1_sd,
@@ -297,9 +339,9 @@ prepare_stan_data.pol_binom_bioclim_sep <- function(
 }
 
 prepare_stan_start_values.pol_binom_bioclim_sep <- function(
-  interactions, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
-  data <- prepare_stan_data.pol_binom_bioclim_sep(interactions, min_bioclim_occs, collec)
+  data <- prepare_stan_data.pol_binom_bioclim_sep(interactions, min_bioclim_occs, collec, nas_origin, include_origin)
   list(
     alpha = 0,
     lambda_bar = 0,
@@ -317,7 +359,7 @@ prepare_stan_start_values.pol_binom_bioclim_sep <- function(
 #' All interactions binomial model with bioclimatic variables
 #' 
 prepare_stan_data.all_binom_bioclim <- function(
-  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   ints <- interactions
   # Select relevant columns with complete cases:
@@ -328,17 +370,31 @@ prepare_stan_data.all_binom_bioclim <- function(
   if (collec == TRUE) {
     ints <- ints[, .(
       int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
-      sp1_kingdom, sp1_suitability = sp1_collec_suitability, sp2_fun_group, 
-      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_collec_suitability
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_collec_suitability, 
+      sp2_fun_group, sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
+      sp2_suitability = sp2_collec_suitability
     )]
   } else {
     ints <- ints[, .(
       int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
-      sp1_kingdom, sp1_suitability = sp1_indiv_suitability, sp2_fun_group, 
-      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_indiv_suitability
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_indiv_suitability, 
+      sp2_fun_group, sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
+      sp2_suitability = sp2_indiv_suitability
     )]
   }
-  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  if (nas_origin == 0) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp1_is_native", "sp2_is_native"
+    )])]
+  } else if (nas_origin == 1) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp2_is_native"
+    )])]
+  } else {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom"
+    )])]
+  }
   
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
@@ -398,13 +454,20 @@ prepare_stan_data.all_binom_bioclim <- function(
   ints[, SS := scale(sp1_suitability * sp2_suitability)]
   
   # Return list of data:
+  if (include_origin == 0) {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N)]
+  } else if (include_origin == 1) {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native))]
+  } else {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+  }
   list(
     nb_sites = length(site_names),
     nb_spp = length(sp_names),
     nb_int = nrow(ints),
     nb_types = length(type_names),
     nb_groups = length(group_names),
-    Y_array = ints[, .(Y, site_id, sp1_id, sp2_id, N)],
+    Y_array = Y_array,
     site_type = site_type,
     sp_group = sp_group,
     SS = ints$SS,
@@ -420,10 +483,10 @@ prepare_stan_data.all_binom_bioclim <- function(
 }
 
 prepare_stan_start_values.all_binom_bioclim <- function(
-  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   data <- prepare_stan_data.all_binom_bioclim(
-    interactions, min_nb_ints, min_bioclim_occs, collec
+    interactions, min_nb_ints, min_bioclim_occs, collec, nas_origin, include_origin
   )
   list(
     alpha = rep(0, data$nb_types),
@@ -440,7 +503,7 @@ prepare_stan_start_values.all_binom_bioclim <- function(
 #' All interactions binomial model with separate terms for bioclimatic variables
 #' 
 prepare_stan_data.all_binom_bioclim_sep <- function(
-  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   ints <- interactions
   # Select relevant columns with complete cases:
@@ -451,17 +514,31 @@ prepare_stan_data.all_binom_bioclim_sep <- function(
   if (collec == TRUE) {
     ints <- ints[, .(
       int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
-      sp1_kingdom, sp1_suitability = sp1_collec_suitability, sp2_fun_group, 
-      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_collec_suitability
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_collec_suitability, 
+      sp2_fun_group, sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
+      sp2_suitability = sp2_collec_suitability
     )]
   } else {
     ints <- ints[, .(
       int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
-      sp1_kingdom, sp1_suitability = sp1_indiv_suitability, sp2_fun_group, 
-      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_indiv_suitability
+      sp1_kingdom, sp1_is_native, sp1_suitability = sp1_indiv_suitability, 
+      sp2_fun_group, sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_is_native, 
+      sp2_suitability = sp2_indiv_suitability
     )]
   }
-  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  if (nas_origin == 0) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp1_is_native", "sp2_is_native"
+    )])]
+  } else if (nas_origin == 1) {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom", "sp2_is_native"
+    )])]
+  } else {
+    ints <- ints[complete.cases(ints[, -c(
+      "sp1_kingdom", "sp2_kingdom"
+    )])]
+  }
   
   # Use binary interactions:
   ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
@@ -528,13 +605,20 @@ prepare_stan_data.all_binom_bioclim_sep <- function(
   )]
   
   # Return list of data:
+  if (include_origin == 0) {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N)]
+  } else if (include_origin == 1) {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native))]
+  } else {
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+  }
   list(
     nb_sites = length(site_names),
     nb_spp = length(sp_names),
     nb_int = nrow(ints),
     nb_types = length(type_names),
     nb_groups = length(group_names),
-    Y_array = ints[, .(Y, site_id, sp1_id, sp2_id, N)],
+    Y_array = Y_array,
     site_type = site_type,
     sp_group = sp_group,
     S1 = ints$S1,
@@ -551,10 +635,10 @@ prepare_stan_data.all_binom_bioclim_sep <- function(
 }
 
 prepare_stan_start_values.all_binom_bioclim_sep <- function(
-  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE, nas_origin = 0, include_origin = 0
 ) {
   data <- prepare_stan_data.all_binom_bioclim_sep(
-    interactions, min_nb_ints, min_bioclim_occs, collec
+    interactions, min_nb_ints, min_bioclim_occs, collec, nas_origin, include_origin
   )
   list(
     alpha = rep(0, data$nb_types),
