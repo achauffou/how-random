@@ -339,6 +339,28 @@ analyse_stan_res.pol_binom_08 <- function(
 }
 stan_res_mods.pol_binom_08 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
+#' Analyse pollination binomial with two terms for bioclimatic suitability
+#'
+analyse_stan_res.pol_binom_09 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_pla", "lambda_pol", "beta", "gamma_pla", "gamma_pol",
+      "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.pol_binom_09 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+
 
 # Functions to analyse all interactions binomial Stan results ==================
 #' Miscellaneous analyses for all interactions binomial Stan results
@@ -513,3 +535,24 @@ analyse_stan_res.all_binom_08 <- function(
                                   res_folder, prev_modules)
 }
 stan_res_mods.all_binom_08 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with two terms for bioclimatic suitability
+#'
+analyse_stan_res.all_binom_09 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_09 <- c("post_param_plots", stan_res_mods.misc_all_binom)

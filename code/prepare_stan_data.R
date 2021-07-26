@@ -214,6 +214,106 @@ prepare_stan_start_values.pol_binom_bioclim <- function(
   )
 }
 
+#' Pollination binomial model with bioclimatic variables
+#' 
+prepare_stan_data.pol_binom_bioclim_sep <- function(
+  interactions, min_bioclim_occs = NULL, collec = FALSE
+) {
+  # Select relevant columns with complete cases:
+  ints <- interactions[int_type == "Pollination"]
+  if (!is.null(min_bioclim_occs)) {
+    ints <- ints[sp1_nb_bioclim >= min_bioclim_occs & 
+                   sp2_nb_bioclim >= min_bioclim_occs]
+  }
+  if (collec == TRUE) {
+    ints <- ints[, .(
+      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
+      sp1_suitability = sp1_collec_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      sp2_suitability = sp2_collec_suitability
+    )]
+  } else {
+    ints <- ints[, .(
+      int_strength, net_id, sp1_id, sp1_name, sp1_kingdom, 
+      sp1_suitability = sp1_indiv_suitability, sp2_id, sp2_name, sp2_kingdom, 
+      sp2_suitability = sp2_indiv_suitability
+    )]
+  }
+  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  
+  # Use binary interactions:
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
+  
+  # Merge replicates together:
+  ints[, ':='(Y = sum(Y), N = .N), by = .(net_id, sp1_id, sp2_id)]
+  ints <- unique(ints, by = c("net_id", "sp1_id", "sp2_id"))
+  
+  # Remove sites and species that do not have both zeros and ones:
+  ints[, ones_sites := sum(Y), by = .(net_id)]
+  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+  ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
+  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
+  ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
+  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
+  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  
+  # Prepare sites, plant and pollinators IDs:
+  ints[, pla_id := .GRP, by = .(sp1_id)]
+  ints[, pol_id := .GRP, by = .(sp2_id)]
+  ints[, site_id := .GRP, by = .(net_id)]
+  pla_ids <- ints[, .(out = unique(sp1_id)), by = pla_id][order(pla_id)][['out']]
+  pla_names <- ints[, .(out = unique(sp1_name)), by = pla_id][order(pla_id)][['out']]
+  pol_ids <- ints[, .(out = unique(sp2_id)), by = pol_id][order(pol_id)][['out']]
+  pol_names <- ints[, .(out = unique(sp2_name)), by = pol_id][order(pol_id)][['out']]
+  site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
+  
+  # Compute standardized product of suitabilities:
+  S1_mean <- mean(ints[['sp1_suitability']])
+  S1_sd <- sd(ints[['sp1_suitability']])
+  ints[, S1 := scale(sp1_suitability)]
+  S2_mean <- mean(ints[['sp2_suitability']])
+  S2_sd <- sd(ints[['sp2_suitability']])
+  ints[, S2 := scale(sp2_suitability)]
+  
+  # Return list of data:
+  list(
+    nb_sites = length(unique(ints$site_id)),
+    nb_pla = length(unique(ints$pla_id)),
+    nb_pol = length(unique(ints$pol_id)),
+    nb_int = nrow(ints),
+    Y_array = ints[, .(Y, site_id, pla_id, pol_id, N)],
+    S_pla = ints$S1,
+    S_pla_mean = S1_mean,
+    S_pla_sd = S1_sd,
+    S_pol = ints$S2,
+    S_pol_mean = S2_mean,
+    S_pol_sd = S2_sd,
+    site_names = site_names,
+    pla_ids = pla_ids,
+    pla_names = pla_names,
+    pol_ids = pol_ids,
+    pol_names = pol_names
+  )
+}
+
+prepare_stan_start_values.pol_binom_bioclim_sep <- function(
+  interactions, min_bioclim_occs = NULL, collec = FALSE
+) {
+  data <- prepare_stan_data.pol_binom_bioclim_sep(interactions, min_bioclim_occs, collec)
+  list(
+    alpha = 0,
+    lambda_bar = 0,
+    zbeta = rep(0, data$nb_sites),
+    zgamma_pla = rep(0, data$nb_pla),
+    zgamma_pol = rep(0, data$nb_pol),
+    zlambda = rep(0, data$nb_sites),
+    sigma_beta = 0.1,
+    sigma_gamma_pla = 0.1,
+    sigma_gamma_pol = 0.1,
+    sigma_lambda = 0.1
+  )
+}
+
 #' All interactions binomial model with bioclimatic variables
 #' 
 prepare_stan_data.all_binom_bioclim <- function(
@@ -323,6 +423,137 @@ prepare_stan_start_values.all_binom_bioclim <- function(
   interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
 ) {
   data <- prepare_stan_data.all_binom_bioclim(
+    interactions, min_nb_ints, min_bioclim_occs, collec
+  )
+  list(
+    alpha = rep(0, data$nb_types),
+    lambda_bar = rep(0, data$nb_types),
+    zbeta = rep(0, data$nb_sites),
+    zgamma = rep(0, data$nb_spp),
+    zlambda = rep(0, data$nb_sites),
+    sigma_beta = 0.1,
+    sigma_gamma = rep(0.1, 2 * data$nb_types),
+    sigma_lambda = rep(0.1, data$nb_types)
+  )
+}
+
+#' All interactions binomial model with separate terms for bioclimatic variables
+#' 
+prepare_stan_data.all_binom_bioclim_sep <- function(
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+) {
+  ints <- interactions
+  # Select relevant columns with complete cases:
+  if (!is.null(min_bioclim_occs)) {
+    ints <- ints[sp1_nb_bioclim >= min_bioclim_occs & 
+                   sp2_nb_bioclim >= min_bioclim_occs]
+  }
+  if (collec == TRUE) {
+    ints <- ints[, .(
+      int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
+      sp1_kingdom, sp1_suitability = sp1_collec_suitability, sp2_fun_group, 
+      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_collec_suitability
+    )]
+  } else {
+    ints <- ints[, .(
+      int_strength, int_type, net_id, sp1_fun_group, sp1ID = sp1_id, sp1_name, 
+      sp1_kingdom, sp1_suitability = sp1_indiv_suitability, sp2_fun_group, 
+      sp2ID = sp2_id, sp2_name, sp2_kingdom, sp2_suitability = sp2_indiv_suitability
+    )]
+  }
+  ints <- ints[complete.cases(ints[, -c("sp1_kingdom", "sp2_kingdom")])]
+  
+  # Use binary interactions:
+  ints[, ':='(Y = ifelse(int_strength > 0, 1, 0))]
+  
+  # Merge replicates together:
+  ints[, ':='(Y = sum(Y), N = .N), by = .(net_id, sp1ID, sp2ID)]
+  ints <- unique(ints, by = c("net_id", "sp1ID", "sp2ID"))
+  
+  # Remove sites and species that do not have both zeros and ones:
+  ints[, ones_sites := sum(Y), by = .(net_id)]
+  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+  ints[, ones_sp1 := sum(Y), by = .(sp1ID)]
+  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1ID)]
+  ints[, ones_sp2 := sum(Y), by = .(sp2ID)]
+  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2ID)]
+  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  
+  # Use only interaction types with enough data:
+  type_names <- ints[, .N, by = .(int_type)][N > min_nb_ints][["int_type"]]
+  ints <- ints[int_type %in% type_names]
+  
+  # Prepare species IDs:
+  ints[, sp1_id := .GRP, by = .(sp1ID, int_type, sp1_fun_group)]
+  sp1_ids <- ints[, .(out = unique(sp1ID)), by = sp1_id][order(sp1_id)][['out']]
+  sp1_names <- ints[, .(out = unique(sp1_name)), by = sp1_id][order(sp1_id)][['out']]
+  ints[, sp2_id := .GRP + length(sp1_ids), by = .(sp2ID, int_type, sp2_fun_group)]
+  sp2_ids <- ints[, .(out = unique(sp2ID)), by = sp2_id][order(sp2_id)][['out']]
+  sp2_names <- ints[, .(out = unique(sp2_name)), by = sp2_id][order(sp2_id)][['out']]
+  sp_ids <- c(sp1_ids, sp2_ids)
+  sp_names <- c(sp1_names, sp2_names)
+  
+  # Prepare sites IDs:
+  ints[, site_id := .GRP, by = .(net_id)]
+  site_names <- ints[, .(out = unique(net_id)), by = site_id][order(site_id)][['out']]
+  
+  # Prepare interaction types and functional groups IDs:
+  ints[, type_id := .GRP, by = .(int_type)]
+  type_names <- ints[, .(out = unique(int_type)), by = type_id][order(type_id)][['out']]
+  ints[, group1_id := type_id]
+  ints[, group2_id := length(type_names) + type_id]
+  group1_names <- ints[, .(out = unique(sp1_fun_group)), by = group1_id][order(group1_id)][['out']]
+  group2_names <- ints[, .(out = unique(sp2_fun_group)), by = group2_id][order(group2_id)][['out']]
+  group_names <- c(group1_names, group2_names)
+  group_types <- c(type_names, type_names)
+  
+  # Get the interaction type of each site and functional group of each species:
+  sp_group <- c(
+    ints[, .(out = unique(group1_id)), by = sp1_id][order(sp1_id)][['out']],
+    ints[, .(out = unique(group2_id)), by = sp2_id][order(sp2_id)][['out']]
+  )
+  site_type <- ints[, .(out = unique(type_id)), by = site_id][order(site_id)][['out']]
+  
+  # Compute standardized product of suitabilities:
+  S1_mean <- ints[, .(res = mean(sp1_suitability)), by = .(group1_id)][order(group1_id)][['res']]
+  S1_sd <- ints[, .(res = sd(sp1_suitability)), by = .(group1_id)][order(group1_id)][['res']]
+  S2_mean <- ints[, .(res = mean(sp2_suitability)), by = .(group2_id)][order(group2_id)][['res']]
+  S2_sd <- ints[, .(res = sd(sp2_suitability)), by = .(group2_id)][order(group2_id)][['res']]
+  S_mean <- c(S1_mean, S2_mean)
+  S_sd <- c(S1_sd, S2_sd)
+  ints[, ':='(
+    S1 = (sp1_suitability - S_mean[group1_id]) / S_sd[group1_id],
+    S2 = (sp2_suitability - S_mean[group2_id]) / S_sd[group2_id]
+  )]
+  
+  # Return list of data:
+  list(
+    nb_sites = length(site_names),
+    nb_spp = length(sp_names),
+    nb_int = nrow(ints),
+    nb_types = length(type_names),
+    nb_groups = length(group_names),
+    Y_array = ints[, .(Y, site_id, sp1_id, sp2_id, N)],
+    site_type = site_type,
+    sp_group = sp_group,
+    S1 = ints$S1,
+    S2 = ints$S2,
+    S_mean = S_mean,
+    S_sd = S_sd,
+    site_names = site_names,
+    sp_ids = sp_ids,
+    sp_names = sp_names,
+    type_names = type_names,
+    group_names = group_names,
+    group_types = group_types
+  )
+}
+
+prepare_stan_start_values.all_binom_bioclim_sep <- function(
+  interactions, min_nb_ints = 100, min_bioclim_occs = NULL, collec = FALSE
+) {
+  data <- prepare_stan_data.all_binom_bioclim_sep(
     interactions, min_nb_ints, min_bioclim_occs, collec
   )
   list(
