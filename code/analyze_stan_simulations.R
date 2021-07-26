@@ -233,6 +233,23 @@ analyse_stan_sim.pol_binom_03 <- function(
   )
 }
 
+#' Analyse pollination binomial with intercepts and seperate suitability terms
+#'
+analyse_stan_sim.pol_binom_09 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder
+) {
+  # Plot posterior distribution and true value of parameters:
+  c("alpha", "lambda_pla", "lambda_pol", "beta", "gamma_pla", "gamma_pol",
+    "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+    stan_sim_analyses_plot_save_params_post_true(rstan_fit, data, ., res_folder)
+  
+  # Plot posterior error of multilevel parameters:
+  stan_sim_analyses_plot_save_params_errors(
+    rstan_fit, data, c("beta", "gamma_pla", "gamma_pol"),
+    c("site_id", "pla_id", "pol_id", "site_id", "site_id"), res_folder
+  )
+}
+
 #' Analyse all interactions binomial with intercepts and slopes
 #'
 analyse_stan_sim.all_binom_03 <- function(

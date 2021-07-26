@@ -277,6 +277,108 @@ generate_stan_start_values.pol_binom_03 <- function(
   )
 }
 
+#' Generate data for pollination interactions with two suitability terms
+#' 
+generate_stan_data.pol_binom_09 <- function(
+  nb_sites, nb_pla, nb_pol, p_sample =  "1.0", rm_empty = TRUE
+) {
+  # Generate optimal suitability:
+  S_opt_pla <- runif(nb_pla, 0, 1)
+  S_opt_pol <- runif(nb_pol, 0, 1)
+  env_sit <- runif(nb_sites, 0, 1)
+  S_pla <- 1 - abs(outer(S_opt_pla, env_sit, "-"))
+  S_pol <- 1 - abs(outer(S_opt_pol, env_sit, "-"))
+  
+  # Create data.table with all interactions:
+  data <- lapply(1:nb_sites, function(x) {
+    site_prop <- eval(parse(text = as.character(p_sample)))
+    data <- expand.grid( 
+      site_id = x,
+      pla_id = sample(1:nb_pla, max(round(nb_pla * site_prop), 1)), 
+      pol_id = sample(1:nb_pol, max(round(nb_pol * site_prop), 1))
+    ) %>% data.table::as.data.table()
+  }) %>% data.table::rbindlist()
+  data[, ':='(
+    S_pla = S_pla[cbind(pla_id, site_id)],
+    S_pol = S_pol[cbind(pol_id, site_id)]
+  )]
+  
+  # Standardize predictor variables:
+  data[, ':='(
+    S_pla = scale(S_pla),
+    S_pol = scale(S_pol)
+  )]
+  
+  # Sample parameters (center intercept parameters):
+  alpha <- rbeta(1, 2, 4) * -1
+  beta <- rnorm(nb_sites, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
+  gamma_pla <- rnorm(nb_pla, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
+  gamma_pol <- rnorm(nb_pol, 0, 1) %>% scale(scale = FALSE) %>% as.vector()
+  lambda_pla <- rbeta(1, 2, 4)
+  lambda_pol <- rbeta(1, 2, 4)
+  
+  # Compute response variable:
+  data[, p := boot::inv.logit(
+    alpha + beta[site_id] + gamma_pla[pla_id] + gamma_pol[pol_id] +
+      lambda_pla * S_pla + lambda_pol * S_pol
+  )]
+  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
+  
+  # Remove empty rows/columns:
+  if (rm_empty == TRUE) {
+    data[, sum_pla_ints := sum(Y), by = .(site_id, pla_id)]
+    data[, sum_pol_ints := sum(Y), by = .(site_id, pol_id)]
+    data <- data[sum_pla_ints > 0 & sum_pol_ints > 0]
+  }
+  
+  # Update parameters and data if some species or sites were removed by filters:
+  inc_sites <- sort(unique(data$site_id))
+  inc_pla <- sort(unique(data$pla_id))
+  inc_pol <- sort(unique(data$pol_id))
+  beta <- beta[inc_sites]
+  gamma_pla <- gamma_pla[inc_pla]
+  gamma_pol <- gamma_pol[inc_pol]
+  data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
+  data[, pla_id := which(inc_pla == unique(pla_id)), by = .(pla_id)]
+  data[, pol_id := which(inc_pol == unique(pol_id)), by = .(pol_id)]
+  
+  # Return data specified as a list:
+  list(
+    nb_sites = length(inc_sites),
+    nb_pla = length(inc_pla),
+    nb_pol = length(inc_pol),
+    nb_int = nrow(data),
+    Y_array = data[, .(Y, site_id, pla_id, pol_id, rep = as.integer(1))],
+    S_pla = data$S_pla,
+    S_pol = data$S_pol,
+    alpha = alpha + mean(beta) + mean(gamma_pla) + mean(gamma_pol),
+    lambda_pla = lambda_pla,
+    lambda_pol = lambda_pol,
+    sigma_beta = sd(beta),
+    sigma_gamma_pla = sd(gamma_pla),
+    sigma_gamma_pol = sd(gamma_pol),
+    beta = beta %>% scale(scale = FALSE) %>% as.vector(),
+    gamma_pla = gamma_pla %>% scale(scale = FALSE) %>% as.vector(),
+    gamma_pol = gamma_pol %>% scale(scale = FALSE) %>% as.vector()
+  )
+}
+
+generate_stan_start_values.pol_binom_09 <- function(
+  nb_sites, nb_pla, nb_pol, p_sample = "1.0", rm_empty = TRUE
+) {
+  list(
+    alpha = 0,
+    lambda_pla = 0,
+    lambda_pol = 0,
+    zbeta = rep(0, nb_sites),
+    zgamma_pla = rep(0, nb_pla),
+    zgamma_pol = rep(0, nb_pol),
+    sigma_beta = 0.1,
+    sigma_gamma_pla = 0.1,
+    sigma_gamma_pol = 0.1
+  )
+}
+
 #' Generate data for all interaction types binomial with intercepts and slopes
 #' 
 generate_stan_data.all_binom_03 <- function(
