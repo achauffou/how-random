@@ -666,3 +666,163 @@ generate_stan_start_values.all_binom_04 <- function(
     sigma_gamma = rep(0.1, 2 * nb_types)
   )
 }
+
+#' Generate data for all interaction types binomial with two suitability terms
+#' 
+generate_stan_data.all_binom_09 <- function(
+  nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
+) {
+  # Assign all species and sites to an interaction type and group:
+  site_type <- sample(1:nb_types, nb_sites, replace = TRUE) %>% sort()
+  sp_group <- sample(1:(2 * nb_types), nb_spp, replace = TRUE) %>% sort()
+  
+  # Sample parameters:
+  alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
+  lambda <- rbeta(nb_types * 2, 4, 2) - 0.1
+  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
+  zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
+  zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
+  
+  # Compute non-centered parametrization:
+  beta <- zbeta * sigma_beta
+  gamma <- zgamma * sigma_gamma[sp_group]
+  
+  # Generate optimal suitability:
+  S_opt <- runif(nb_spp, 0, 1)
+  env_sit <- runif(nb_sites, 0, 1)
+  S <- 1 - abs(outer(S_opt, env_sit, "-"))
+  
+  # Generate data interaction type by interaction type:
+  data <- lapply(1:nb_types, function(type) {
+    # Get IDs of species and sites that belong to this interaction type:
+    sites <- which(site_type == type)
+    spp_1 <- which(sp_group == type * 2 - 1)
+    spp_2 <- which(sp_group == type * 2)
+    
+    # Create data.table with all interactions:
+    data <- lapply(sites, function(x) {
+      site_prop <- eval(parse(text = as.character(p_sample)))
+      if (length(spp_1) > 1) {
+        the_spp_1 <- sample(spp_1, max(round(length(spp_1) * site_prop), 1))
+      } else {
+        the_spp_1 <- spp_1
+      }
+      if (length(spp_2) > 1) {
+        the_spp_2 <- sample(spp_2, max(round(length(spp_2) * site_prop), 1))
+      } else {
+        the_spp_2 <- spp_2
+      }
+      data <- expand.grid(
+        site_id = x,
+        sp1_id = the_spp_1, 
+        sp2_id = the_spp_2
+      ) %>% data.table::as.data.table()
+    }) %>% data.table::rbindlist()
+  }) %>% data.table::rbindlist()
+  
+  # Calculate standardized bioclimatic suitability product of interactions:
+  data[, ':='(
+    sp1_group = sp_group[sp1_id],
+    sp2_group = sp_group[sp2_id],
+    S1 = S[cbind(sp1_id, site_id)],
+    S2 = S[cbind(sp2_id, site_id)]
+  )]
+  S1_mean <- data[, .(S1_mean = mean(S1)), by = .(sp1_group)][order(sp1_group)][['S1_mean']]
+  S1_sd <- data[, .(S1_sd = sd(S1)), by = .(sp1_group)][order(sp1_group)][['S1_sd']]
+  S2_mean <- data[, .(S2_mean = mean(S2)), by = .(sp2_group)][order(sp2_group)][['S2_mean']]
+  S2_sd <- data[, .(S2_sd = sd(S2)), by = .(sp2_group)][order(sp2_group)][['S2_sd']]
+  S_mean <- numeric(2 * nb_types)
+  S_sd <- numeric(2 * nb_types)
+  for (i in 1:nb_types) {
+    S_mean[2 * i - 1] <- S1_mean[i]
+    S_mean[2 * i] <- S2_mean[i]
+    S_sd[2 * i - 1] <- S1_sd[i]
+    S_sd[2 * i] <- S2_sd[i]
+  }
+  data[, ':='(
+    S1 = (S1 - S_mean[sp1_group]) / S_sd[sp1_group],
+    S2 = (S2 - S_mean[sp2_group]) / S_sd[sp2_group]
+  )]
+  
+  # Compute response variable:
+  data[, p := boot::inv.logit(
+    alpha[site_type[site_id]] + beta[site_id] + gamma[sp1_id] + gamma[sp2_id] + 
+      lambda[sp_group[sp1_id]] * S1 + lambda[sp_group[sp2_id]] * S2
+  )]
+  data[, Y := purrr::map_int(p, ~rbinom(1, 1, .))]
+  
+  # Remove empty rows/columns:
+  if (rm_empty == TRUE) {
+    data[, sum_sp1_ints := sum(Y), by = .(site_id, sp1_id)]
+    data[, sum_sp2_ints := sum(Y), by = .(site_id, sp2_id)]
+    data <- data[sum_sp1_ints > 0 & sum_sp2_ints > 0]
+  }
+  
+  # Update parameters and data if some species or sites were removed by filters:
+  inc_sites <- sort(unique(data$site_id))
+  inc_spp <- sort(unique(c(data$sp1_id, data$sp2_id)))
+  data[, site_id := which(inc_sites == unique(site_id)), by = .(site_id)]
+  data[, sp1_id := which(inc_spp == unique(sp1_id)), by = .(sp1_id)]
+  data[, sp2_id := which(inc_spp == unique(sp2_id)), by = .(sp2_id)]
+  zbeta <- zbeta[inc_sites]
+  zgamma <- zgamma[inc_spp]
+  beta <- beta[inc_sites]
+  gamma <- gamma[inc_spp]
+  site_type <- site_type[inc_sites]
+  sp_group <- sp_group[inc_spp]
+  sigma_beta <- sd(beta)
+  for (int in 1:nb_types) {
+    alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
+      mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
+    if (length(gamma[sp_group == 2 * int - 1]) > 1) {
+      sigma_gamma[2 * int - 1] <- sd(gamma[sp_group == 2 * int - 1])
+    } else {
+      sigma_gamma[2 * int - 1] <- -1
+    }
+    if (length(gamma[sp_group == 2 * int]) > 1) {
+      sigma_gamma[2 * int] <- sd(gamma[sp_group == 2 * int])
+    } else {
+      sigma_gamma[2 * int] <- -1
+    }
+  }
+  zbeta <- zbeta %>% scale() %>% as.vector()
+  zgamma <-zgamma %>% scale() %>% as.vector()
+  beta <- zbeta * sigma_beta
+  gamma <- zgamma * sigma_gamma[sp_group]
+  
+  # Return data specified as a list:
+  list(
+    nb_sites = length(inc_sites),
+    nb_spp = length(inc_spp),
+    nb_int = nrow(data),
+    nb_types = nb_types,
+    nb_groups = 2 * nb_types,
+    Y_array = data[, .(Y, site_id, sp1_id, sp2_id, rep = as.integer(1))],
+    site_type = site_type,
+    sp_group = sp_group,
+    S1 = data$S1,
+    S2 = data$S2,
+    S_mean = S_mean,
+    S_sd = S_sd,
+    alpha = alpha,
+    lambda = lambda,
+    sigma_beta = sigma_beta,
+    sigma_gamma = sigma_gamma,
+    beta = beta,
+    gamma = gamma
+  )
+}
+
+generate_stan_start_values.all_binom_09 <- function(
+  nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
+) {
+  list(
+    alpha = rep(0, nb_types),
+    lambda = rep(0, 2 * nb_types),
+    zbeta = rep(0, nb_sites),
+    zgamma = rep(0, nb_spp),
+    sigma_beta = 0.1,
+    sigma_gamma = rep(0.1, 2 * nb_types)
+  )
+}
