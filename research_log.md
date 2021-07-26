@@ -1,6 +1,30 @@
 # Research Log
 *Alain Chauffoureaux*
 
+#### 26 July 2021
+##### Modifications to the bioclimatic suitability models:
+During a meeting with Bernat today, it was decided to do the following modifications to the models:
+* Remove herbivory interactions. Sadly, it seems that there is too few data for this interaction type to include it.
+* Add one model with suitability included as two different terms.
+
+##### Origin status:
+I have now collected data on the origin status of species that interact.
+Altogether, 3,632 / 9,010 species had available distribution data in at least one of the database queried.
+For these species with available information, I could deduce the origin status at all sites where they are present:
+
+|Status|Nb of species/site combinations|
+|-----|-----|
+|Native|4601|
+|Unknown|302|
+|Introduced|172|
+|Neighbouring native area|87|
+|Neighbouring introduced area|4|
+|Conflict betweent the two databases|14|
+
+I will now try two different models that include information on the origin status:
+1. One model in which the origin status of both partners is taken into account as an intercept, that is *... + mu[functional_group[sp1]] \* is_native[sp1, site_id] + mu[functional_group[sp2]] \* is_native[sp2, site_id]*. Just as I did for the *sigma_gamma*, there would be as many *mu* parameters as functional groups but they would be independent (no pooling). With this model, I would end up with 3406/4189 seed dispersal interactions and 941/18507 pollination interactions (compared to the current amount of data).
+2. It is also possible to include a *mu* parameter only for the plants. Doing so would enable to keep much more interactions: 16501/18507 pollination interactions, 3670/4189 seed dispersal interactions.
+
 #### 29 June 2021
 ##### Meeting with Bernat:
 After a few weeks of data simulations, it is possible to start data analyses.
