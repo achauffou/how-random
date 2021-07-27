@@ -24,7 +24,7 @@ compare_all_waics <- function(specs, res_folder) {
 
   # Apply WAIC comparison to all groups of models with the same data:
   purrr::map(unique_comp_groups, function(x) {
-    the_specs <- specs[which(data_comp_group == x)]
+    the_specs <- specs[which(comp_groups == x)]
     compare_similar_waics(the_specs, res_folder)
   })
 }
@@ -59,7 +59,7 @@ compare_all_looics <- function(specs, res_folder) {
   
   # Apply LOOIC comparison to all groups of models with the same data:
   purrr::map(unique_comp_groups, function(x) {
-    the_specs <- specs[which(data_comp_group == x)]
+    the_specs <- specs[which(comp_groups == x)]
     compare_similar_looics(the_specs, res_folder)
   })
 }
