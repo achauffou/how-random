@@ -54,15 +54,12 @@ compare_similar_waics <- function(specs, res_folder) {
 #'
 compare_all_looics <- function(specs, res_folder) {
   # Get all analyses data generation models and arguments:
-  data_gen_specs <- data.table::data.table(
-    model = sapply(specs, function(x) x$data_generation_model),
-    args = as.character(lapply(specs, function(x) x$data_generation_args))
-  )
-  unique_data_gen_specs <- data_gen_specs[, .N, by = .(model, args)][N > 1]
+  comp_groups <- sapply(specs, function(x) x$data_comp_group)
+  unique_comp_groups <- comp_groups[duplicated(comp_groups)] %>% unique()
   
   # Apply LOOIC comparison to all groups of models with the same data:
-  purrr::map2(unique_data_gen_specs$model, unique_data_gen_specs$args, function(x, y) {
-    the_specs <- specs[which(data_gen_specs$model == x & data_gen_specs$args == y)]
+  purrr::map(unique_comp_groups, function(x) {
+    the_specs <- specs[which(data_comp_group == x)]
     compare_similar_looics(the_specs, res_folder)
   })
 }
@@ -71,11 +68,7 @@ compare_all_looics <- function(specs, res_folder) {
 #'
 compare_similar_looics <- function(specs, res_folder) {
   # Get hash name of the data generation specifications:
-  hash_name <- specs[[1]]$data_generation_args %>%
-    as.character() %>%
-    openssl::md5() %>%
-    substr(1, 8) %>%
-    paste(specs[[1]]$data_generation_model, ., sep = "_")
+  hash_name <- specs[[1]]$data_comp_group
   
   # Read LOOIC objects:
   looics <- lapply(specs, function(spec) {
