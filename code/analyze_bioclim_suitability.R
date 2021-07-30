@@ -239,6 +239,9 @@ sample_bioclim_suitability_sensitivity <- function(
   table_name = "thinned", aggregation_level = "species", nb_samples = 50,
   grid_resolution = 200, nb_cells_to_sample = 10
 ) {
+  # Create output folder if it does not exist:
+  dir.create(save_folder, showWarnings = FALSE, recursive = TRUE)
+  
   # Get species GBIF and Web of Life occurrences:
   gbif_bioclim <- get_sp_gbif_bioclim(
     sp_name, sp_kingdom, gbif_keys, db_path, 
