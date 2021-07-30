@@ -41,11 +41,15 @@ compare_similar_waics <- function(specs, res_folder) {
   })
   names(waics) <- purrr::map_chr(specs, ~ .$name)
   
-  # Perform and save comparison:
-  loo::loo_compare(waics) %>%
-    saveRDS(file = file.path(
-      res_folder, "comparisons", paste0("waic_", hash_name, ".rds")
-    ))
+  # Perform, plot and save comparison:
+  comp <- loo::loo_compare(waics)
+  suppressMessages({plot(comp) %>%
+    ggsave(file.path(
+      res_folder, "comparisons", paste0("waic_", hash_name, ".pdf")
+    ), ., device = "pdf")})
+  saveRDS(comp, file = file.path(
+    res_folder, "comparisons", paste0("waic_", hash_name, ".rds")
+  ))
 }
 
 
@@ -76,9 +80,73 @@ compare_similar_looics <- function(specs, res_folder) {
   })
   names(looics) <- purrr::map_chr(specs, ~ .$name)
   
-  # Perform and save comparison:
-  loo::loo_compare(looics) %>%
-    saveRDS(file = file.path(
-      res_folder, "comparisons", paste0("looic_", hash_name, ".rds")
-    ))
+  # Perform, plot and save comparison:
+  comp <- loo::loo_compare(looics)
+  suppressMessages({plot(comp) %>%
+    ggsave(file.path(
+      res_folder, "comparisons", paste0("looic_", hash_name, ".pdf")
+    ), ., device = "pdf")})
+  saveRDS(comp, file = file.path(
+    res_folder, "comparisons", paste0("looic_", hash_name, ".rds")
+  ))
+}
+
+
+# Plot models comparison =======================================================
+#' Method to plot objects of class compare.loo
+#' 
+plot.compare.loo <- function(comp, keep = NULL) {
+  # Get name of the information criterion:
+  IC_name <- toupper(colnames(comp)[7])
+  
+  # If models to keep are specified, drop the others:
+  if (!is.null(keep)) {
+    comp <- comp[keep,]
+  }
+  
+  # Prepare plot data:
+  plt_data <- data.table::data.table(
+    model = rownames(comp),
+    value = comp[, 7],
+    se_value = comp[, 8],
+    diff = -2 * comp[, 1],
+    se_diff = 2 * comp[, 2]
+  )
+  plt_data[1, ':='(diff = NA, se_diff = NA)]
+  plt_data[, ':='(model_grp = -.GRP), by = .(model)]
+  plt_data[, ':='(
+    se_value_min = value - se_value,
+    se_value_max = value + se_value,
+    diff_value = min(value) + diff,
+    se_diff_value_min = min(value) + diff - se_diff,
+    se_diff_value_max = min(value) + diff + se_diff
+  )]
+  
+  # Plot comparison:
+  ggplot(plt_data) +
+    geom_vline(aes(xintercept = min(plt_data$value)), color = "grey", size= 0.5) +
+    geom_point(aes(x = value, y = model_grp), shape = 1) +
+    geom_linerange(aes(xmin = se_value_min, xmax = se_value_max, y = model_grp)) +
+    geom_point(
+      aes(x = diff_value, y = model_grp + 0.5), 
+      data = plt_data[-1], 
+      shape = 2,
+      color = "grey"
+    ) +
+    geom_linerange(
+      aes(xmin = se_diff_value_min, xmax = se_diff_value_max, y = model_grp + 0.5), 
+      data = plt_data[-1],
+      color = "grey"
+    ) +
+    scale_x_continuous(name = "deviance") +
+    scale_y_continuous(name = NULL, breaks = plt_data$model_grp, labels = plt_data$model) +
+    ggtitle(IC_name) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5), 
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      panel.grid.major.y = element_line(color = "grey", linetype = "dotted", size = 0.5),
+      panel.grid.minor.y = element_blank()
+    )
 }
