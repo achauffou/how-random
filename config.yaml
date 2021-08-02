@@ -176,6 +176,39 @@ stan_simulations_specs:
       iter_sampling: 2000
       refresh: 250
 stan_analyses_specs:
+  - name: pol_binom_00a
+    data_generation_model: pol_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+    data_comp_group: pol_bioclim
+    stan_model: pol_binom_00
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: pol_binom_01a
+    data_generation_model: pol_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+    data_comp_group: pol_bioclim
+    stan_model: pol_binom_01
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: pol_binom_02a
+    data_generation_model: pol_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+    data_comp_group: pol_bioclim
+    stan_model: pol_binom_02
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
   - name: pol_binom_03a
     data_generation_model: pol_binom_bioclim
     data_generation_args:
@@ -330,6 +363,42 @@ stan_analyses_specs:
       include_origin: 2
     data_comp_group: pol_bioclim_origin2
     stan_model: pol_binom_29
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: all_binom_00a
+    data_generation_model: all_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+      min_nb_ints: 1000
+    data_comp_group: all_bioclim
+    stan_model: all_binom_00
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: all_binom_01a
+    data_generation_model: all_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+      min_nb_ints: 1000
+    data_comp_group: all_bioclim
+    stan_model: all_binom_01
+    chains: 4
+    stan_sample_args:
+      iter_warmup: 1000
+      iter_sampling: 2000
+      refresh: 250
+  - name: all_binom_02a
+    data_generation_model: all_binom_bioclim
+    data_generation_args:
+      collec: FALSE
+      min_nb_ints: 1000
+    data_comp_group: all_bioclim
+    stan_model: all_binom_02
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
