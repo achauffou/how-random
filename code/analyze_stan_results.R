@@ -217,6 +217,70 @@ analyse_stan_res.misc_pol_binom <- function(
 }
 stan_res_mods.misc_pol_binom <- c("bayes_R2", "waic", "looic")
 
+#' Analyse pollination binomial with overall intercept only
+#'
+analyse_stan_res.pol_binom_00 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.pol_binom_00 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+
+#' Analyse pollination binomial with overall and site intercepts only
+#'
+analyse_stan_res.pol_binom_01 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "beta", "sigma_beta") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.pol_binom_01 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+
+#' Analyse pollination binomial with overall, site and species intercepts
+#'
+analyse_stan_res.pol_binom_02 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "beta", "gamma_pla", "gamma_pol",
+      "sigma_beta", "sigma_gamma_pla", "sigma_gamma_pol") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous pollination results analyses:
+  analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.pol_binom_02 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+
 #' Analyse pollination binomial with intercepts and slopes
 #'
 analyse_stan_res.pol_binom_03 <- function(
@@ -536,6 +600,69 @@ analyse_stan_res.misc_all_binom <- function(
   }
 }
 stan_res_mods.misc_all_binom <- c("bayes_R2", "waic", "looic")
+
+#' Analyse all interactions binomial with overall intercept only
+#'
+analyse_stan_res.all_binom_00 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_00 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with overall and site intercepts
+#'
+analyse_stan_res.all_binom_01 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "beta", "sigma_beta") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_01 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
+#' Analyse all interactions binomial with overall, site and species intercepts
+#'
+analyse_stan_res.all_binom_02 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "beta", "gamma", "sigma_beta", "sigma_gamma") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_02 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
 #' Analyse all interactions binomial with intercepts and slopes
 #'
