@@ -40,7 +40,7 @@ model{
 generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
-    alpha
+    rep_vector(alpha, nb_int)
   );
   
   // Compute pointwise log-likelihood
