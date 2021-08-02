@@ -465,18 +465,13 @@ analyse_stan_res.misc_all_binom <- function(
   if (!"bayes_R2" %in% prev_modules) {
     the_array <- data$Y_array
     the_array[, ':='(
-      sp1_group = data$sp_group[sp1_id],
-      sp2_group = data$sp_group[sp2_id] - length(data$group_names) / 2,
       site_type = data$site_type[site_id]
     )]
     calc_bayes_R2_stats(
-      rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "sp1_group",
-                              "sp2_group", "site_type"),
+      rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type"),
       list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
            sp2_id = data$sp_names[data$sp_group %% 2 == 0],
            site_id = data$site_names,
-           sp1_group = data$group_names[1:(length(data$group_names)/2)],
-           sp2_group = data$group_names[((length(data$group_names)/2)+1):length(data$group_names)],
            site_type = data$type_names)
     ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
     readr::write_lines("bayes_R2", prev_path, append = TRUE)
