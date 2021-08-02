@@ -217,24 +217,6 @@ analyse_stan_res.misc_pol_binom <- function(
 }
 stan_res_mods.misc_pol_binom <- c("bayes_R2", "waic", "looic")
 
-#' Analyse pollination binomial with intercepts only
-#'
-analyse_stan_res.pol_binom_02 <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
-) {
-  # Path the previous analyses modules:
-  prev_path <- file.path(res_folder, "prev_analyses.txt")
-  
-  # Plot posterior distribution and true value of parameters:
-  if (!"post_param_plots" %in% prev_modules) {
-    c("alpha", "beta", "gamma_pla", "gamma_pol", "sigma_beta", 
-      "sigma_gamma_pla", "sigma_gamma_pol") %>%
-      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
-    readr::write_lines("post_param_plots", prev_path, append = TRUE)
-  }
-}
-stan_res_mods.pol_binom_02 <- c("post_param_plots")
-
 #' Analyse pollination binomial with intercepts and slopes
 #'
 analyse_stan_res.pol_binom_03 <- function(
