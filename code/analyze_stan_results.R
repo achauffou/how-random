@@ -476,7 +476,7 @@ analyse_stan_res.misc_all_binom <- function(
            sp2_id = data$sp_names[data$sp_group %% 2 == 0],
            site_id = data$site_names,
            sp1_group = data$group_names[1:(length(data$group_names)/2)],
-           sp2_group = data$group_names[(length(data$group_names)/2):length(data$group_names)],
+           sp2_group = data$group_names[((length(data$group_names)/2)+1):length(data$group_names)],
            site_type = data$type_names)
     ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
     readr::write_lines("bayes_R2", prev_path, append = TRUE)
