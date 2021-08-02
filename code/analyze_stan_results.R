@@ -159,18 +159,45 @@ calc_looic <- function(fit) {
 #' Miscellaneous analyses for pollination binomial Stan results
 #' 
 analyse_stan_res.misc_pol_binom <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules, include_origin = 0
 ) {
   # Path the previous analyses modules:
   prev_path <- file.path(res_folder, "prev_analyses.txt")
 
   # Compute and save the R-squared statistics by group:
   if (!"bayes_R2" %in% prev_modules) {
-    calc_bayes_R2_stats(
-      rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"),
-      list(pla_id = data$pla_names, pol_id = data$pol_names,
-           site_id = data$site_names)
-    ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    if (include_origin == 0) {
+      calc_bayes_R2_stats(
+        rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id"),
+        list(pla_id = data$pla_names, pol_id = data$pol_names,
+             site_id = data$site_names)
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    } else if (include_origin == 1) {
+      the_array <- data$Y_array
+      the_array[, ':='(
+        sp1_invasive = sp1_invasive + 1
+      )]
+      calc_bayes_R2_stats(
+        rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id", "sp1_invasive"),
+        list(pla_id = data$pla_names, pol_id = data$pol_names,
+             site_id = data$site_names, sp1_invasive = c("Native", "Introduced"))
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    } else {
+      the_array <- data$Y_array
+      the_array[, ':='(
+        sp1_invasive = sp1_invasive + 1,
+        sp2_invasive = sp2_invasive + 1,
+        invasive = sp1_invasive + sp2_invasive + 1
+      )]
+      calc_bayes_R2_stats(
+        rstan_fit, data$Y_array, c("pla_id", "pol_id", "site_id", "sp1_invasive",
+                                   "sp2_invasive", "invasive"),
+        list(pla_id = data$pla_names, pol_id = data$pol_names,
+             site_id = data$site_names, sp1_invasive = c("Native", "Introduced"),
+             sp2_invasive = c("Native", "Introduced"),
+             invasive = c("None", "Only one", "Both"))
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    }
     readr::write_lines("bayes_R2", prev_path, append = TRUE)
   }
 
@@ -379,7 +406,7 @@ analyse_stan_res.pol_binom_14 <- function(
   
   # Perform miscellaneous pollination results analyses:
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 1)
 }
 stan_res_mods.pol_binom_14 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
@@ -402,7 +429,7 @@ analyse_stan_res.pol_binom_19 <- function(
   
   # Perform miscellaneous pollination results analyses:
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 1)
 }
 stan_res_mods.pol_binom_19 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
@@ -424,7 +451,7 @@ analyse_stan_res.pol_binom_24 <- function(
   
   # Perform miscellaneous pollination results analyses:
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 2)
 }
 stan_res_mods.pol_binom_24 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
@@ -447,7 +474,7 @@ analyse_stan_res.pol_binom_29 <- function(
   
   # Perform miscellaneous pollination results analyses:
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 2)
 }
 stan_res_mods.pol_binom_29 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
@@ -456,24 +483,59 @@ stan_res_mods.pol_binom_29 <- c("post_param_plots", stan_res_mods.misc_pol_binom
 #' Miscellaneous analyses for all interactions binomial Stan results
 #' 
 analyse_stan_res.misc_all_binom <- function(
-  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules, include_origin = 0
 ) {
   # Path the previous analyses modules:
   prev_path <- file.path(res_folder, "prev_analyses.txt")
   
   # Compute and save the R-squared statistics by group:
   if (!"bayes_R2" %in% prev_modules) {
-    the_array <- data$Y_array
-    the_array[, ':='(
-      site_type = data$site_type[site_id]
-    )]
-    calc_bayes_R2_stats(
-      rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type"),
-      list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
-           sp2_id = data$sp_names[data$sp_group %% 2 == 0],
-           site_id = data$site_names,
-           site_type = data$type_names)
-    ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    if (include_origin == 0) {
+      the_array <- data$Y_array
+      the_array[, ':='(
+        site_type = data$site_type[site_id]
+      )]
+      calc_bayes_R2_stats(
+        rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type"),
+        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
+             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+             site_id = data$site_names,
+             site_type = data$type_names)
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    } else if (include_origin == 1) {
+      the_array <- data$Y_array
+      the_array[, ':='(
+        site_type = data$site_type[site_id],
+        sp1_invasive = sp1_invasive + 1
+      )]
+      calc_bayes_R2_stats(
+        rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", "sp1_invasive"),
+        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
+             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+             site_id = data$site_names,
+             site_type = data$type_names,
+             sp1_invasive = c("Native", "Introduced"))
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    } else {
+      the_array <- data$Y_array
+      the_array[, ':='(
+        site_type = data$site_type[site_id],
+        sp1_invasive = sp1_invasive + 1,
+        sp2_invasive = sp2_invasive + 1,
+        invasive = sp1_invasive + sp2_invasive + 1
+      )]
+      calc_bayes_R2_stats(
+        rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", 
+                                "sp1_invasive", "sp2_invasive", "invasive"),
+        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
+             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+             site_id = data$site_names,
+             site_type = data$type_names,
+             sp1_invasive = c("Native", "Introduced"),
+             sp2_invasive = c("Native", "Introduced"),
+             invasive = c("None", "Only one", "Both"))
+      ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
+    }
     readr::write_lines("bayes_R2", prev_path, append = TRUE)
   }
   
@@ -659,7 +721,7 @@ analyse_stan_res.all_binom_14 <- function(
   
   # Perform miscellaneous all interactions results analyses:
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 1)
 }
 stan_res_mods.all_binom_14 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
@@ -680,7 +742,7 @@ analyse_stan_res.all_binom_19 <- function(
   
   # Perform miscellaneous all interactions results analyses:
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 1)
 }
 stan_res_mods.all_binom_19 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
@@ -701,7 +763,7 @@ analyse_stan_res.all_binom_24 <- function(
   
   # Perform miscellaneous all interactions results analyses:
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 2)
 }
 stan_res_mods.all_binom_24 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
@@ -722,6 +784,6 @@ analyse_stan_res.all_binom_29 <- function(
   
   # Perform miscellaneous all interactions results analyses:
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
-                                  res_folder, prev_modules)
+                                  res_folder, prev_modules, include_origin = 2)
 }
 stan_res_mods.all_binom_29 <- c("post_param_plots", stan_res_mods.misc_all_binom)
