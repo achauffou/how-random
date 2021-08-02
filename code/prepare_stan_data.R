@@ -196,9 +196,9 @@ prepare_stan_data.pol_binom_bioclim <- function(
   if (include_origin == 0) {
     Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N)]
   } else if (include_origin == 1) {
-    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native))]
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, sp1_invasive = as.integer(!sp1_is_native))]
   } else {
-    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, sp1_invasive = as.integer(!sp1_is_native), sp2_invasive = as.integer(!sp2_is_native))]
   }
   list(
     nb_sites = length(unique(ints$site_id)),
@@ -314,9 +314,9 @@ prepare_stan_data.pol_binom_bioclim_sep <- function(
   if (include_origin == 0) {
     Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N)]
   } else if (include_origin == 1) {
-    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native))]
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, sp1_invasive = as.integer(!sp1_is_native))]
   } else {
-    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+    Y_array <- ints[, .(Y, site_id, pla_id, pol_id, N, sp1_invasive = as.integer(!sp1_is_native), sp2_invasive = as.integer(!sp2_is_native))]
   }
   list(
     nb_sites = length(unique(ints$site_id)),
@@ -457,9 +457,9 @@ prepare_stan_data.all_binom_bioclim <- function(
   if (include_origin == 0) {
     Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N)]
   } else if (include_origin == 1) {
-    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native))]
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, sp1_invasive = as.integer(!sp1_is_native))]
   } else {
-    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, sp1_invasive = as.integer(!sp1_is_native), sp2_invasive = as.integer(!sp2_is_native))]
   }
   list(
     nb_sites = length(site_names),
@@ -608,9 +608,9 @@ prepare_stan_data.all_binom_bioclim_sep <- function(
   if (include_origin == 0) {
     Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N)]
   } else if (include_origin == 1) {
-    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native))]
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, sp1_invasive = as.integer(!sp1_is_native))]
   } else {
-    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, as.integer(sp1_is_native), as.integer(sp2_is_native))]
+    Y_array <- ints[, .(Y, site_id, sp1_id, sp2_id, N, sp1_invasive = as.integer(!sp1_is_native), sp2_invasive = as.integer(!sp2_is_native))]
   }
   list(
     nb_sites = length(site_names),
