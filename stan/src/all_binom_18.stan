@@ -1,8 +1,8 @@
 functions{
   // Partial sum enables within-chain parallel computation of log-likelihood
   real partial_sum(
-    int[,] y_slice, int start, int end, real[] alpha, vector beta, vector lambda, 
-    vector S1, vector S2, int[] site_type, int[] sp_group, vector mu
+    int[,] y_slice, int start, int end, real[] alpha, vector beta, vector gamma, 
+    vector lambda, vector S1, vector S2, int[] site_type, int[] sp_group, vector mu
   ) {
     real lp = 0.0;
     int y[end - start + 1] = y_slice[, 1];
@@ -14,6 +14,7 @@ functions{
     for (i in 1:(end - start + 1)) {
       lp += binomial_logit_lpmf(
         y[i] | n[i], alpha[site_type[site_id[i]]] + beta[site_id[i]] + 
+        gamma[sp1_id[i]] + gamma[sp2_id[i]] + 
         lambda[sp_group[sp1_id[i]]] * S1[start + i - 1] +
         lambda[sp_group[sp2_id[i]]] * S2[start + i - 1] +
         sp1_nat[i] * mu[sp_group[sp1_id[i]]]
@@ -40,12 +41,17 @@ parameters{
   vector[nb_groups] lambda;
   vector[nb_types] mu;
   vector[nb_sites] zbeta;
+  vector[nb_spp] zgamma;
   real<lower=0> sigma_beta[nb_types];
+  real<lower=0> sigma_gamma[nb_groups];
 }
 transformed parameters{
   // Non-centered parametrization
   vector[nb_sites] beta;
+  vector[nb_spp] gamma;
   beta = zbeta .* to_vector(sigma_beta[site_type]);
+  for (i in 1:nb_spp)
+    gamma[i] = zgamma[i] * sigma_gamma[sp_group[i]];
 }
 model{
   // Priors
@@ -53,22 +59,24 @@ model{
   lambda ~ normal(0, 1.3);
   mu ~ normal(0, 1.3);
   sigma_beta ~ exponential(1);
+  sigma_gamma ~ exponential(1);
   zbeta ~ std_normal();
+  zgamma ~ std_normal();
   
   // Within-chain parallelization grainsize (1 lets Stan choose it)
   int grainsize = 1;
   
   // Compute log-likelihood sum in parallel
   target += reduce_sum(
-    partial_sum, Y_array, grainsize, alpha, beta, lambda, S1, S2, site_type, 
-    sp_group, mu
+    partial_sum, Y_array, grainsize, alpha, beta, gamma, lambda, S1, S2, 
+    site_type, sp_group, mu
   );
 }
 generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
-    to_vector(alpha[site_type[Y_array[, 2]]]) + beta[Y_array[, 2]] + 
-    lambda[sp_group[Y_array[, 3]]] .* S1 + 
+    to_vector(alpha[site_type[Y_array[, 2]]]) + beta[Y_array[, 2]] + gamma[Y_array[, 3]] + 
+    gamma[Y_array[, 4]] + lambda[sp_group[Y_array[, 3]]] .* S1 + 
     lambda[sp_group[Y_array[, 4]]] .* S2 + 
     mu[sp_group[Y_array[, 3]]] .* to_vector(Y_array[, 6])
   );

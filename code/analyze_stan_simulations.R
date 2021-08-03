@@ -235,7 +235,7 @@ analyse_stan_sim.pol_binom_03 <- function(
 
 #' Analyse pollination binomial with intercepts and seperate suitability terms
 #'
-analyse_stan_sim.pol_binom_09 <- function(
+analyse_stan_sim.pol_binom_08 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder
 ) {
   # Plot posterior distribution and true value of parameters:
@@ -318,7 +318,7 @@ analyse_stan_sim.all_binom_04 <- function(
 
 #' Analyse all interactions binomial with intercepts and two lambda terms
 #'
-analyse_stan_sim.all_binom_09 <- function(
+analyse_stan_sim.all_binom_08 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder
 ) {
   # Plot posterior distribution and true value of parameters:

@@ -2,7 +2,8 @@ functions{
   // Partial sum enables within-chain parallel computation of log-likelihood
   real partial_sum(
     int[,] y_slice, int start, int end, real alpha, vector beta, 
-    real lambda_pla, real lambda_pol, vector S_pla, vector S_pol
+    vector gamma_pla, vector gamma_pol, real lambda_pla, real lambda_pol, 
+    vector S_pla, vector S_pol
   ) {
     real lp = 0.0;
     int y[end - start + 1] = y_slice[, 1];
@@ -12,8 +13,9 @@ functions{
     int n[end - start + 1] = y_slice[, 5];
     for (i in 1:(end - start + 1)) {
       lp += binomial_logit_lpmf(
-        y[i] | n[i], alpha + beta[site_id[i]] + 
-        lambda_pla * S_pla[start + i - 1] + lambda_pol * S_pol[start + i - 1]
+        y[i] | n[i], alpha + beta[site_id[i]] + gamma_pla[pla_id[i]] + 
+        gamma_pol[pol_id[i]] + lambda_pla * S_pla[start + i - 1] +
+        lambda_pol * S_pol[start + i - 1]
       );
     }
     return lp;
@@ -34,12 +36,20 @@ parameters{
   real lambda_pla;
   real lambda_pol;
   vector[nb_sites] zbeta;
+  vector[nb_pla] zgamma_pla;
+  vector[nb_pol] zgamma_pol;
   real<lower=0> sigma_beta;
+  real<lower=0> sigma_gamma_pla;
+  real<lower=0> sigma_gamma_pol;
 }
 transformed parameters{
   // Non-centered parametrization
   vector[nb_sites] beta;
+  vector[nb_pla] gamma_pla;
+  vector[nb_pol] gamma_pol;
   beta = zbeta * sigma_beta;
+  gamma_pla = zgamma_pla * sigma_gamma_pla;
+  gamma_pol = zgamma_pol * sigma_gamma_pol;
 }
 model{
   // Priors
@@ -47,21 +57,26 @@ model{
   lambda_pla ~ normal(0, 1.3);
   lambda_pla ~ normal(0, 1.3);
   sigma_beta ~ exponential(1);
+  sigma_gamma_pla ~ exponential(1);
+  sigma_gamma_pol ~ exponential(1);
   zbeta ~ std_normal();
+  zgamma_pla ~ std_normal();
+  zgamma_pol ~ std_normal();
   
   // Within-chain parallelization grainsize (1 lets Stan choose it)
   int grainsize = 1;
   
   // Compute log-likelihood sum in parallel
   target += reduce_sum(
-    partial_sum, Y_array, grainsize, alpha, beta, lambda_pla, lambda_pol, 
-    S_pla, S_pol
+    partial_sum, Y_array, grainsize, alpha, beta, gamma_pla, gamma_pol, 
+    lambda_pla, lambda_pol, S_pla, S_pol
   );
 }
 generated quantities{
   // Compute pointwise link (probability of interaction)
   vector[nb_int] link = inv_logit(
-    alpha + beta[Y_array[, 2]] + lambda_pla * S_pla + lambda_pol * S_pol
+    alpha + beta[Y_array[, 2]] + gamma_pla[Y_array[, 3]] + 
+    gamma_pol[Y_array[, 4]] + lambda_pla * S_pla + lambda_pol * S_pol
   );
   
   // Compute pointwise log-likelihood

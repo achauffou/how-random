@@ -370,7 +370,7 @@ stan_res_mods.pol_binom_06 <- c("post_param_plots", stan_res_mods.misc_pol_binom
 
 #' Analyse pollination neutral with two terms for bioclimatic suitability
 #'
-analyse_stan_res.pol_binom_08 <- function(
+analyse_stan_res.pol_binom_0A <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -387,11 +387,11 @@ analyse_stan_res.pol_binom_08 <- function(
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules)
 }
-stan_res_mods.pol_binom_08 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+stan_res_mods.pol_binom_0A <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with two terms for bioclimatic suitability
 #'
-analyse_stan_res.pol_binom_09 <- function(
+analyse_stan_res.pol_binom_08 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -409,7 +409,7 @@ analyse_stan_res.pol_binom_09 <- function(
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules)
 }
-stan_res_mods.pol_binom_09 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+stan_res_mods.pol_binom_08 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with single lambda for all sites (2 origins)
 #'
@@ -436,7 +436,7 @@ stan_res_mods.pol_binom_14 <- c("post_param_plots", stan_res_mods.misc_pol_binom
 
 #' Analyse pollination neutral with two terms for bioclimatic suitability (1 origin)
 #'
-analyse_stan_res.pol_binom_18 <- function(
+analyse_stan_res.pol_binom_1A <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -453,11 +453,11 @@ analyse_stan_res.pol_binom_18 <- function(
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 1)
 }
-stan_res_mods.pol_binom_18 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+stan_res_mods.pol_binom_1A <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with two terms for bioclimatic suitability (1 origin)
 #'
-analyse_stan_res.pol_binom_19 <- function(
+analyse_stan_res.pol_binom_18 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -476,7 +476,7 @@ analyse_stan_res.pol_binom_19 <- function(
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 1)
 }
-stan_res_mods.pol_binom_19 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+stan_res_mods.pol_binom_18 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 #' Analyse pollination binomial with single lambda for all sites (2 origins)
 #'
@@ -502,7 +502,7 @@ stan_res_mods.pol_binom_24 <- c("post_param_plots", stan_res_mods.misc_pol_binom
 
 #' Analyse pollination binomial with two terms for bioclimatic suitability (2 origins)
 #'
-analyse_stan_res.pol_binom_29 <- function(
+analyse_stan_res.pol_binom_28 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -521,7 +521,7 @@ analyse_stan_res.pol_binom_29 <- function(
   analyse_stan_res.misc_pol_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 2)
 }
-stan_res_mods.pol_binom_29 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
+stan_res_mods.pol_binom_28 <- c("post_param_plots", stan_res_mods.misc_pol_binom)
 
 
 # Functions to analyse all interactions binomial Stan results ==================
@@ -750,7 +750,7 @@ stan_res_mods.all_binom_06 <- c("post_param_plots", stan_res_mods.misc_all_binom
 
 #' Analyse all interactions neutral with two terms for bioclimatic suitability
 #'
-analyse_stan_res.all_binom_08 <- function(
+analyse_stan_res.all_binom_0A <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -767,11 +767,11 @@ analyse_stan_res.all_binom_08 <- function(
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules)
 }
-stan_res_mods.all_binom_08 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+stan_res_mods.all_binom_0A <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
 #' Analyse all interactions binomial with two terms for bioclimatic suitability
 #'
-analyse_stan_res.all_binom_09 <- function(
+analyse_stan_res.all_binom_08 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -788,7 +788,7 @@ analyse_stan_res.all_binom_09 <- function(
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules)
 }
-stan_res_mods.all_binom_09 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+stan_res_mods.all_binom_08 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
 #' Analyse all interactions binomial with single lambda for all sites (1 origin)
 #'
@@ -813,7 +813,7 @@ stan_res_mods.all_binom_14 <- c("post_param_plots", stan_res_mods.misc_all_binom
 
 #' Analyse all interactions neutral with two terms for bioclimatic suitability (1 origin)
 #'
-analyse_stan_res.all_binom_18 <- function(
+analyse_stan_res.all_binom_1A <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -830,11 +830,11 @@ analyse_stan_res.all_binom_18 <- function(
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 1)
 }
-stan_res_mods.all_binom_18 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+stan_res_mods.all_binom_1A <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
 #' Analyse all interactions binomial with two terms for bioclimatic suitability (1 origin)
 #'
-analyse_stan_res.all_binom_19 <- function(
+analyse_stan_res.all_binom_18 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -851,7 +851,7 @@ analyse_stan_res.all_binom_19 <- function(
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 1)
 }
-stan_res_mods.all_binom_19 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+stan_res_mods.all_binom_18 <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
 #' Analyse all interactions binomial with single lambda for all sites (2 origins)
 #'
@@ -876,7 +876,7 @@ stan_res_mods.all_binom_24 <- c("post_param_plots", stan_res_mods.misc_all_binom
 
 #' Analyse all interactions binomial with two terms for bioclimatic suitability (2 origins)
 #'
-analyse_stan_res.all_binom_29 <- function(
+analyse_stan_res.all_binom_28 <- function(
   spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
 ) {
   # Path the previous analyses modules:
@@ -893,4 +893,4 @@ analyse_stan_res.all_binom_29 <- function(
   analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
                                   res_folder, prev_modules, include_origin = 2)
 }
-stan_res_mods.all_binom_29 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+stan_res_mods.all_binom_28 <- c("post_param_plots", stan_res_mods.misc_all_binom)

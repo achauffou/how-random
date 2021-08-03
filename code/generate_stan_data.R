@@ -186,7 +186,7 @@ generate_stan_start_values.pol_binom_03 <- function(
 
 #' Generate data for pollination interactions with two suitability terms
 #' 
-generate_stan_data.pol_binom_09 <- function(
+generate_stan_data.pol_binom_08 <- function(
   nb_sites, nb_pla, nb_pol, p_sample =  "1.0", rm_empty = TRUE
 ) {
   # Generate optimal suitability:
@@ -270,7 +270,7 @@ generate_stan_data.pol_binom_09 <- function(
   )
 }
 
-generate_stan_start_values.pol_binom_09 <- function(
+generate_stan_start_values.pol_binom_08 <- function(
   nb_sites, nb_pla, nb_pol, p_sample = "1.0", rm_empty = TRUE
 ) {
   list(
@@ -690,7 +690,7 @@ generate_stan_start_values.all_binom_04 <- function(
 
 #' Generate data for all interaction types binomial with two suitability terms
 #' 
-generate_stan_data.all_binom_09 <- function(
+generate_stan_data.all_binom_08 <- function(
   nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
 ) {
   # Assign all species and sites to an interaction type and group:
@@ -835,7 +835,7 @@ generate_stan_data.all_binom_09 <- function(
   )
 }
 
-generate_stan_start_values.all_binom_09 <- function(
+generate_stan_start_values.all_binom_08 <- function(
   nb_sites, nb_spp, nb_types, p_sample =  "1.0", rm_empty = TRUE
 ) {
   list(
