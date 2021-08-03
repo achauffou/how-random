@@ -518,7 +518,7 @@ prepare_stan_start_values.all_binom_bioclim <- function(
     zbeta = rep(0, data$nb_sites),
     zgamma = rep(0, data$nb_spp),
     zlambda = rep(0, data$nb_sites),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, data$nb_types),
     sigma_gamma = rep(0.1, 2 * data$nb_types),
     sigma_lambda = rep(0.1, data$nb_types)
   )
@@ -678,7 +678,7 @@ prepare_stan_start_values.all_binom_bioclim_sep <- function(
     zbeta = rep(0, data$nb_sites),
     zgamma = rep(0, data$nb_spp),
     zlambda = rep(0, data$nb_sites),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, data$nb_types),
     sigma_gamma = rep(0.1, 2 * data$nb_types),
     sigma_lambda = rep(0.1, data$nb_types)
   )

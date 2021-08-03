@@ -36,14 +36,14 @@ parameters{
   real lambda_bar[nb_types];
   vector[nb_sites] zbeta;
   vector[nb_sites] zlambda;
-  real<lower=0> sigma_beta;
+  real<lower=0> sigma_beta[nb_types];
   real<lower=0> sigma_lambda[nb_types];
 }
 transformed parameters{
   // Non-centered parametrization
   vector[nb_sites] beta;
   vector[nb_sites] lambda;
-  beta = zbeta * sigma_beta;
+  beta = zbeta .* to_vector(sigma_beta[site_type]);
   for (i in 1:nb_sites)
     lambda[i] = zlambda[i] * sigma_lambda[site_type[i]] + lambda_bar[site_type[i]];
 }

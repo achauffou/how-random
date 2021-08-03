@@ -38,7 +38,7 @@ parameters{
   vector[nb_sites] zbeta;
   vector[nb_spp] zgamma;
   vector[nb_sites] zlambda;
-  real<lower=0> sigma_beta;
+  real<lower=0> sigma_beta[nb_types];
   real<lower=0> sigma_gamma[nb_groups];
   real<lower=0> sigma_lambda[nb_types];
 }
@@ -47,7 +47,7 @@ transformed parameters{
   vector[nb_sites] beta;
   vector[nb_spp] gamma;
   vector[nb_sites] lambda;
-  beta = zbeta * sigma_beta;
+  beta = zbeta .* to_vector(sigma_beta[site_type]);
   for (i in 1:nb_spp)
     gamma[i] = zgamma[i] * sigma_gamma[sp_group[i]];
   for (i in 1:nb_sites)

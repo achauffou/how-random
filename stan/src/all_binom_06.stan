@@ -35,12 +35,12 @@ parameters{
   real alpha[nb_types];
   vector[nb_types] lambda;
   vector[nb_sites] zbeta;
-  real<lower=0> sigma_beta;
+  real<lower=0> sigma_beta[nb_types];
 }
 transformed parameters{
   // Non-centered parametrization
   vector[nb_sites] beta;
-  beta = zbeta * sigma_beta;
+  beta = zbeta .* to_vector(sigma_beta[site_type]);
 }
 model{
   // Priors

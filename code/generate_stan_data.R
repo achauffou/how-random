@@ -412,7 +412,7 @@ generate_stan_data.all_binom_03 <- function(
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
   lambda_bar <- rbeta(nb_types, 4, 2) + 0.1
-  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_beta <- rbeta(nb_types, 2, 3) + 0.5
   sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
   sigma_lambda <- rbeta(nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
@@ -420,7 +420,7 @@ generate_stan_data.all_binom_03 <- function(
   zlambda <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   
   # Compute non-centered parametrization:
-  beta <- zbeta * sigma_beta
+  beta <- zbeta * sigma_beta[site_type]
   gamma <- zgamma * sigma_gamma[sp_group]
   lambda <- zlambda * sigma_lambda[site_type] + lambda_bar[site_type]
   
@@ -489,8 +489,8 @@ generate_stan_data.all_binom_03 <- function(
   lambda <- lambda[inc_sites]
   site_type <- site_type[inc_sites]
   sp_group <- sp_group[inc_spp]
-  sigma_beta <- sd(beta)
   for (int in 1:nb_types) {
+    sigma_beta[int] <- sd(beta[site_type == int])
     alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
       mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
     if (length(gamma[sp_group == 2 * int - 1]) > 1) {
@@ -544,7 +544,7 @@ generate_stan_start_values.all_binom_03 <- function(
     zbeta = rep(0, nb_sites),
     zgamma = rep(0, nb_spp),
     zlambda = rep(0, nb_sites),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, nb_types),
     sigma_gamma = rep(0.1, 2 * nb_types),
     sigma_lambda = rep(0.1, nb_types)
   )
@@ -562,13 +562,13 @@ generate_stan_data.all_binom_04 <- function(
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
   lambda <- rbeta(nb_types, 4, 2) - 0.1
-  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_beta <- rbeta(nb_types, 2, 3) + 0.5
   sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
   
   # Compute non-centered parametrization:
-  beta <- zbeta * sigma_beta
+  beta <- zbeta * sigma_beta[site_type]
   gamma <- zgamma * sigma_gamma[sp_group]
   
   # Generate optimal suitability:
@@ -635,8 +635,8 @@ generate_stan_data.all_binom_04 <- function(
   gamma <- gamma[inc_spp]
   site_type <- site_type[inc_sites]
   sp_group <- sp_group[inc_spp]
-  sigma_beta <- sd(beta)
   for (int in 1:nb_types) {
+    sigma_beta[int] <- sd(beta[site_type == int])
     alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
       mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
     if (length(gamma[sp_group == 2 * int - 1]) > 1) {
@@ -683,7 +683,7 @@ generate_stan_start_values.all_binom_04 <- function(
     lambda_bar = rep(0, nb_types),
     zbeta = rep(0, nb_sites),
     zgamma = rep(0, nb_spp),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, nb_types),
     sigma_gamma = rep(0.1, 2 * nb_types)
   )
 }
@@ -700,13 +700,13 @@ generate_stan_data.all_binom_09 <- function(
   # Sample parameters:
   alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
   lambda <- rbeta(nb_types * 2, 4, 2) - 0.1
-  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_beta <- rbeta(nb_types, 2, 3) + 0.5
   sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
   
   # Compute non-centered parametrization:
-  beta <- zbeta * sigma_beta
+  beta <- zbeta * sigma_beta[site_type]
   gamma <- zgamma * sigma_gamma[sp_group]
   
   # Generate optimal suitability:
@@ -792,8 +792,8 @@ generate_stan_data.all_binom_09 <- function(
   gamma <- gamma[inc_spp]
   site_type <- site_type[inc_sites]
   sp_group <- sp_group[inc_spp]
-  sigma_beta <- sd(beta)
   for (int in 1:nb_types) {
+    sigma_beta[int] <- sd(beta[site_type == int])
     alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
       mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
     if (length(gamma[sp_group == 2 * int - 1]) > 1) {
@@ -843,7 +843,7 @@ generate_stan_start_values.all_binom_09 <- function(
     lambda = rep(0, 2 * nb_types),
     zbeta = rep(0, nb_sites),
     zgamma = rep(0, nb_spp),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, nb_types),
     sigma_gamma = rep(0.1, 2 * nb_types)
   )
 }
@@ -861,13 +861,13 @@ generate_stan_data.all_binom_24 <- function(
   alpha <- rbeta(nb_types, 4, 2) * -1.5 - 1.0
   lambda <- rbeta(nb_types, 4, 2) - 0.1
   mu <- - rbeta(2 * nb_types, 2, 3) - 0.25
-  sigma_beta <- rbeta(1, 2, 3) + 0.5
+  sigma_beta <- rbeta(nb_types, 2, 3) + 0.5
   sigma_gamma <- rbeta(2 * nb_types, 2, 3) + 0.5
   zbeta <- rnorm(nb_sites, 0, 1) %>% scale() %>% as.vector()
   zgamma <- rnorm(nb_spp, 0, 1) %>% scale() %>% as.vector()
   
   # Compute non-centered parametrization:
-  beta <- zbeta * sigma_beta
+  beta <- zbeta * sigma_beta[site_type]
   gamma <- zgamma * sigma_gamma[sp_group]
   
   # Generate optimal suitability:
@@ -940,8 +940,8 @@ generate_stan_data.all_binom_24 <- function(
   gamma <- gamma[inc_spp]
   site_type <- site_type[inc_sites]
   sp_group <- sp_group[inc_spp]
-  sigma_beta <- sd(beta)
   for (int in 1:nb_types) {
+    sigma_beta[int] <- sd(beta[site_type == int])
     alpha[int] <- alpha[int] + mean(beta[site_type == int]) + 
       mean(gamma[sp_group == int * 2 - 1]) + mean(gamma[sp_group == int * 2])
     if (length(gamma[sp_group == 2 * int - 1]) > 1) {
@@ -990,7 +990,7 @@ generate_stan_start_values.all_binom_24 <- function(
     mu = rep(0, nb_types * 2),
     zbeta = rep(0, nb_sites),
     zgamma = rep(0, nb_spp),
-    sigma_beta = 0.1,
+    sigma_beta = rep(0.1, nb_types),
     sigma_gamma = rep(0.1, 2 * nb_types)
   )
 }
