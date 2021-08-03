@@ -168,14 +168,22 @@ prepare_stan_data.pol_binom_bioclim <- function(
   ints <- unique(ints, by = c("net_id", "sp1_id", "sp2_id"))
   
   # Remove sites and species that do not have both zeros and ones:
-  ints[, ones_sites := sum(Y), by = .(net_id)]
-  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
-  ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
-  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
-  ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
-  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
-  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
-                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  trial <- 0
+  while (trial < 100) {
+    ints[, ones_sites := sum(Y), by = .(net_id)]
+    ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+    ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
+    ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
+    ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
+    ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
+    if (all(ints[
+      , .(ones_sites, zeros_sites, ones_sp1, zeros_sp1, ones_sp2, zeros_sp2)
+    ] > 0)) break
+    ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                   zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+    trial <- trial + 1
+  }
+  if (trial > 99) stop("Too many trials to prune data without both zeros and ones!")
   
   # Prepare sites, plant and pollinators IDs:
   ints[, pla_id := .GRP, by = .(sp1_id)]
@@ -283,14 +291,22 @@ prepare_stan_data.pol_binom_bioclim_sep <- function(
   ints <- unique(ints, by = c("net_id", "sp1_id", "sp2_id"))
   
   # Remove sites and species that do not have both zeros and ones:
-  ints[, ones_sites := sum(Y), by = .(net_id)]
-  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
-  ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
-  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
-  ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
-  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
-  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
-                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  trial <- 0
+  while (trial < 100) {
+    ints[, ones_sites := sum(Y), by = .(net_id)]
+    ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+    ints[, ones_sp1 := sum(Y), by = .(sp1_id)]
+    ints[, zeros_sp1 := sum(Y == 0), by = .(sp1_id)]
+    ints[, ones_sp2 := sum(Y), by = .(sp2_id)]
+    ints[, zeros_sp2 := sum(Y == 0), by = .(sp2_id)]
+    if (all(ints[
+      , .(ones_sites, zeros_sites, ones_sp1, zeros_sp1, ones_sp2, zeros_sp2)
+    ] > 0)) break
+    ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                   zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+    trial <- trial + 1
+  }
+  if (trial > 99) stop("Too many trials to prune data without both zeros and ones!")
   
   # Prepare sites, plant and pollinators IDs:
   ints[, pla_id := .GRP, by = .(sp1_id)]
@@ -404,14 +420,22 @@ prepare_stan_data.all_binom_bioclim <- function(
   ints <- unique(ints, by = c("net_id", "sp1ID", "sp2ID"))
   
   # Remove sites and species that do not have both zeros and ones:
-  ints[, ones_sites := sum(Y), by = .(net_id)]
-  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
-  ints[, ones_sp1 := sum(Y), by = .(sp1ID)]
-  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1ID)]
-  ints[, ones_sp2 := sum(Y), by = .(sp2ID)]
-  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2ID)]
-  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
-                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  trial <- 0
+  while (trial < 100) {
+    ints[, ones_sites := sum(Y), by = .(net_id)]
+    ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+    ints[, ones_sp1 := sum(Y), by = .(sp1ID)]
+    ints[, zeros_sp1 := sum(Y == 0), by = .(sp1ID)]
+    ints[, ones_sp2 := sum(Y), by = .(sp2ID)]
+    ints[, zeros_sp2 := sum(Y == 0), by = .(sp2ID)]
+    if (all(ints[
+      , .(ones_sites, zeros_sites, ones_sp1, zeros_sp1, ones_sp2, zeros_sp2)
+    ] > 0)) break
+    ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                   zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+    trial <- trial + 1
+  }
+  if (trial > 99) stop("Too many trials to prune data without both zeros and ones!")
   
   # Use only interaction types with enough data:
   type_names <- ints[, .N, by = .(int_type)][N > min_nb_ints][["int_type"]]
@@ -548,14 +572,22 @@ prepare_stan_data.all_binom_bioclim_sep <- function(
   ints <- unique(ints, by = c("net_id", "sp1ID", "sp2ID"))
   
   # Remove sites and species that do not have both zeros and ones:
-  ints[, ones_sites := sum(Y), by = .(net_id)]
-  ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
-  ints[, ones_sp1 := sum(Y), by = .(sp1ID)]
-  ints[, zeros_sp1 := sum(Y == 0), by = .(sp1ID)]
-  ints[, ones_sp2 := sum(Y), by = .(sp2ID)]
-  ints[, zeros_sp2 := sum(Y == 0), by = .(sp2ID)]
-  ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
-                 zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+  trial <- 0
+  while (trial < 100) {
+    ints[, ones_sites := sum(Y), by = .(net_id)]
+    ints[, zeros_sites := sum(Y == 0), by = .(net_id)]
+    ints[, ones_sp1 := sum(Y), by = .(sp1ID)]
+    ints[, zeros_sp1 := sum(Y == 0), by = .(sp1ID)]
+    ints[, ones_sp2 := sum(Y), by = .(sp2ID)]
+    ints[, zeros_sp2 := sum(Y == 0), by = .(sp2ID)]
+    if (all(ints[
+      , .(ones_sites, zeros_sites, ones_sp1, zeros_sp1, ones_sp2, zeros_sp2)
+    ] > 0)) break
+    ints <- ints[ones_sites > 0 & zeros_sites > 0 & ones_sp1 > 0 & 
+                   zeros_sp1 > 0 & ones_sp2 > 0 & zeros_sp2 > 0]
+    trial <- trial + 1
+  }
+  if (trial > 99) stop("Too many trials to prune data without both zeros and ones!")
   
   # Use only interaction types with enough data:
   type_names <- ints[, .N, by = .(int_type)][N > min_nb_ints][["int_type"]]
