@@ -769,6 +769,28 @@ analyse_stan_res.all_binom_0A <- function(
 }
 stan_res_mods.all_binom_0A <- c("post_param_plots", stan_res_mods.misc_all_binom)
 
+#' Analyse all interactions binomial with two terms per site for bioclimatic suitability
+#'
+analyse_stan_res.all_binom_07 <- function(
+  spec, data, start, cmdstan_fit, rstan_fit, res_folder, prev_modules
+) {
+  # Path the previous analyses modules:
+  prev_path <- file.path(res_folder, "prev_analyses.txt")
+  
+  # Plot posterior distribution and true value of parameters:
+  if (!"post_param_plots" %in% prev_modules) {
+    c("alpha", "lambda_bar", "beta", "gamma", "lambda", "sigma_beta", 
+      "sigma_gamma", "sigma_lambda") %>%
+      stan_analyses_plot_save_params_post(rstan_fit, ., res_folder)
+    readr::write_lines("post_param_plots", prev_path, append = TRUE)
+  }
+  
+  # Perform miscellaneous all interactions results analyses:
+  analyse_stan_res.misc_all_binom(spec, data, start, cmdstan_fit, rstan_fit, 
+                                  res_folder, prev_modules)
+}
+stan_res_mods.all_binom_07 <- c("post_param_plots", stan_res_mods.misc_all_binom)
+
 #' Analyse all interactions binomial with two terms for bioclimatic suitability
 #'
 analyse_stan_res.all_binom_08 <- function(
