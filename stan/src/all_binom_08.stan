@@ -42,7 +42,6 @@ parameters{
 transformed parameters{
   // Non-centered parametrization
   vector[nb_sites] beta;
-  vector[nb_spp] gamma;
   beta = zbeta * sigma_beta;
 }
 model{
