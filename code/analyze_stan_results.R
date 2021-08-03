@@ -542,8 +542,8 @@ analyse_stan_res.misc_all_binom <- function(
       )]
       calc_bayes_R2_stats(
         rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type"),
-        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
-             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+        list(sp1_id = data$sp_names,
+             sp2_id = data$sp_names,
              site_id = data$site_names,
              site_type = data$type_names)
       ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
@@ -555,8 +555,8 @@ analyse_stan_res.misc_all_binom <- function(
       )]
       calc_bayes_R2_stats(
         rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", "sp1_invasive"),
-        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
-             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+        list(sp1_id = data$sp_names,
+             sp2_id = data$sp_names,
              site_id = data$site_names,
              site_type = data$type_names,
              sp1_invasive = c("Native", "Introduced"))
@@ -572,8 +572,8 @@ analyse_stan_res.misc_all_binom <- function(
       calc_bayes_R2_stats(
         rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", 
                                 "sp1_invasive", "sp2_invasive", "invasive"),
-        list(sp1_id = data$sp_names[data$sp_group %% 2 == 1],
-             sp2_id = data$sp_names[data$sp_group %% 2 == 0],
+        list(sp1_id = data$sp_names,
+             sp2_id = data$sp_names,
              site_id = data$site_names,
              site_type = data$type_names,
              sp1_invasive = c("Native", "Introduced"),
