@@ -551,15 +551,23 @@ analyse_stan_res.misc_all_binom <- function(
       the_array <- data$Y_array
       the_array[, ':='(
         site_type = data$site_type[site_id],
-        sp1_invasive = sp1_invasive + 1
+        sp1_invasive = sp1_invasive + 1,
+        sp1_invasive_by_type = data$site_type[site_id] * 2 - 1 + sp1_invasive
       )]
+      inv_by_type_names <- character(data$nb_types * 2)
+      for (i in 1:data$nb_types) {
+        inv_by_type_names[2 * i - 1] <- paste0(data$type_names[i], " - native")
+        inv_by_type_names[2 * i] <- paste0(data$type_names[i], " - introduced")
+      }
       calc_bayes_R2_stats(
-        rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", "sp1_invasive"),
+        rstan_fit, the_array, c("sp1_id", "sp2_id", "site_id", "site_type", 
+                                "sp1_invasive", "sp1_invasive_by_type"),
         list(sp1_id = data$sp_names,
              sp2_id = data$sp_names,
              site_id = data$site_names,
              site_type = data$type_names,
-             sp1_invasive = c("Native", "Introduced"))
+             sp1_invasive = c("Native", "Introduced"),
+             sp1_invasive_by_type = inv_by_type_names)
       ) %>% saveRDS(file = file.path(res_folder, "bayes_R2_stats.rds"))
     } else {
       the_array <- data$Y_array
