@@ -328,19 +328,6 @@ stan_analyses_specs:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
-  - name: pol_binom_08c
-    data_generation_model: pol_binom_bioclim_sep
-    data_generation_args:
-      collec: FALSE
-      nas_origin: 2
-      include_origin: 0
-    data_comp_group: pol_bioclim_origin2
-    stan_model: pol_binom_08
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
   - name: pol_binom_14a
     data_generation_model: pol_binom_bioclim
     data_generation_args:
@@ -349,19 +336,6 @@ stan_analyses_specs:
       include_origin: 1
     data_comp_group: pol_bioclim_origin1
     stan_model: pol_binom_14
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_binom_24a
-    data_generation_model: pol_binom_bioclim
-    data_generation_args:
-      collec: FALSE
-      nas_origin: 2
-      include_origin: 2
-    data_comp_group: pol_bioclim_origin2
-    stan_model: pol_binom_24
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
@@ -388,19 +362,6 @@ stan_analyses_specs:
       include_origin: 1
     data_comp_group: pol_bioclim_origin1
     stan_model: pol_binom_18
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: pol_binom_28a
-    data_generation_model: pol_binom_bioclim_sep
-    data_generation_args:
-      collec: FALSE
-      nas_origin: 2
-      include_origin: 2
-    data_comp_group: pol_bioclim_origin2
-    stan_model: pol_binom_28
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
@@ -568,20 +529,6 @@ stan_analyses_specs:
       iter_warmup: 1000
       iter_sampling: 2000
       refresh: 250
-  - name: all_binom_08c
-    data_generation_model: all_binom_bioclim_sep
-    data_generation_args:
-      collec: FALSE
-      min_nb_ints: 1000
-      nas_origin: 2
-      include_origin: 0
-    data_comp_group: all_bioclim_origin2
-    stan_model: all_binom_08
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
   - name: all_binom_14a
     data_generation_model: all_binom_bioclim
     data_generation_args:
@@ -591,20 +538,6 @@ stan_analyses_specs:
       include_origin: 1
     data_comp_group: all_bioclim_origin1
     stan_model: all_binom_14
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: all_binom_24a
-    data_generation_model: all_binom_bioclim
-    data_generation_args:
-      collec: FALSE
-      min_nb_ints: 1000
-      nas_origin: 2
-      include_origin: 2
-    data_comp_group: all_bioclim_origin2
-    stan_model: all_binom_24
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
@@ -633,20 +566,6 @@ stan_analyses_specs:
       include_origin: 1
     data_comp_group: all_bioclim_origin1
     stan_model: all_binom_18
-    chains: 4
-    stan_sample_args:
-      iter_warmup: 1000
-      iter_sampling: 2000
-      refresh: 250
-  - name: all_binom_28a
-    data_generation_model: all_binom_bioclim_sep
-    data_generation_args:
-      collec: FALSE
-      min_nb_ints: 1000
-      nas_origin: 2
-      include_origin: 2
-    data_comp_group: all_bioclim_origin2
-    stan_model: all_binom_28
     chains: 4
     stan_sample_args:
       iter_warmup: 1000
