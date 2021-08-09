@@ -4,13 +4,13 @@
 analyse_stan_sim <- function(spec, data, start, fits) {
   # Determine results folder and read RDS files:
   res_folder <- dirname(fits[[1]])
-  cmdstan_fit <- readRDS(fits[[1]])
-  rstan_fit <- readRDS(fits[[2]])
-  data <- readRDS(data)
-  start <-  readRDS(start)
 
   # Analyse simulation outcome:
   if (!file.exists(file.path(res_folder, "last_analysis.txt"))) {
+    cmdstan_fit <- readRDS(fits[[1]])
+    rstan_fit <- readRDS(fits[[2]])
+    data <- readRDS(data)
+    start <-  readRDS(start)
     fun_name <- paste0("analyse_stan_sim.", spec$stan_model)
     if (exists(fun_name)) {
       fun_name %>%
