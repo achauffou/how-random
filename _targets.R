@@ -672,6 +672,16 @@ results_interpretation_targets <- list(
   tar_target(
     stan_comparisons,
     compare_stan_res(stan_analyses_specs, results_stan_folder, stan_analyses)
+  ),
+  tar_target(
+    bioclim_sensitivity_plot,
+    plot_bioclim_sensitivity_illustration(
+      bioclim_sensitivity_errors, 
+      file.path(manuscript_figures_folder, "clim_sensitivity.pdf"),
+      width = 12,
+      height = 9,
+      units = "cm"
+    )
   )
 )
 
