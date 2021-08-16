@@ -147,6 +147,7 @@ plot.compare.loo <- function(comp, keep = NULL) {
       panel.grid.major.x = element_blank(),
       panel.grid.minor.x = element_blank(),
       panel.grid.major.y = element_line(color = "grey", linetype = "dotted", size = 0.5),
-      panel.grid.minor.y = element_blank()
+      panel.grid.minor.y = element_blank(),
+      plot.margin = grid::unit(c(2.5, 5, 2.5, 5), "mm")
     )
 }

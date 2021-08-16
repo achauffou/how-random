@@ -16,3 +16,50 @@ plot_bioclim_sensitivity_illustration <- function(errors, file_path, case = "ind
   })})
   plt
 }
+
+#' Plot graphs for the models comparison
+#' 
+plot_models_comp <- function(file_path, comp_folder, last_comp_update, ...) {
+  dirname(file_path) %>% 
+    purrr::map(~ dir.create(., showWarnings = FALSE, recursive = TRUE))
+  
+  # All models without origin status:
+  plt_data1 <- readRDS(file.path(comp_folder, "looic_all_bioclim.rds"))
+  rownames(plt_data1) <- c(
+    "Non-neutral, two unpooled CS terms",
+    "Non-neutral, one pooled CS term",
+    "Non-neutral, no CS term",
+    "Non-neutral, two pooled CS terms",
+    "Non-neutral, one unpooled CS term",
+    "Neutral, one pooled CS term",
+    "Neutral, one unpooled CS term",
+    "Neutral, two unpooled CS terms",
+    "Neutral, no CS term",
+    "Null model, per-type intercept only"
+  )
+  suppressMessages({suppressWarnings({
+    plt1 <- plot(plt_data1)
+    ggsave(file_path[1], plt1, device = "pdf", ...)
+  })})
+  
+  # Non-neutral models without origin status:
+  suppressMessages({suppressWarnings({
+    plt2 <- plot(plt_data1, keep = 1:5)
+    ggsave(file_path[2], plt2, device = "pdf", ...)
+  })})
+  
+  # Non-neutral models with origin status:
+  plt_data2 <- readRDS(file.path(comp_folder, "looic_all_bioclim_origin1.rds"))
+  rownames(plt_data2) <- c(
+    "No origin status, two unpooled CS terms",
+    "Origin status, two unpooled CS terms",
+    "No origin status, one unpooled CS term",
+    "Origin status, one unpooled CS term",
+    "Origin status, neutral, two unpooled CS terms"
+  )
+  suppressMessages({suppressWarnings({
+    plt3 <- plot(plt_data2, keep = 1:4)
+    ggsave(file_path[3], plt3, device = "pdf", ...)
+  })})
+  list(plt1, plt2, plt3)
+}

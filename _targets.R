@@ -682,6 +682,21 @@ results_interpretation_targets <- list(
       height = 9,
       units = "cm"
     )
+  ),
+  tar_target(
+    models_comp_plots,
+    plot_models_comp(
+      c(
+        file.path(manuscript_figures_folder, "looic_comp_wo_origin.pdf"),
+        file.path(manuscript_figures_folder, "looic_comp_wo_origin_nn.pdf"),
+        file.path(manuscript_figures_folder, "looic_comp_w_origin.pdf")
+      ),
+      file.path(results_stan_folder, "comparisons"),
+      stan_comparisons,
+      width = 12,
+      height = 9,
+      units = "cm"
+    )
   )
 )
 
