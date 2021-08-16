@@ -4,6 +4,7 @@ data/cache/**
 data/processed/**
 results/**
 stan/bin/**
+manuscript/**/figures/**
 
 # R gitignore -----
 # Ignore _targets directory
