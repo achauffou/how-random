@@ -63,3 +63,60 @@ plot_models_comp <- function(file_path, comp_folder, last_comp_update, ...) {
   })})
   list(plt1, plt2, plt3)
 }
+
+#' Plot the posterior distribution of sigma_beta and sigma_gamma
+#' 
+plot_sigma_beta_gamma_distr <- function(fit_path, file_path, ...) {
+  dir.create(dirname(file_path), showWarnings = FALSE, recursive = TRUE)
+  fit <- readRDS(fit_path)
+  suppressMessages({suppressWarnings({
+    plt <- rstan::plot(fit, pars = c("sigma_beta", "sigma_gamma")) +
+      scale_y_continuous(breaks = 1:6, expand = c(0.05, 0.05), labels = c(
+        latex2exp::TeX("Seed dispersers $\\sigma_\\gamma$"),
+        latex2exp::TeX("Pollinators $\\sigma_\\gamma$"),
+        latex2exp::TeX("Plants (seed dispersal) $\\sigma_\\gamma$"),
+        latex2exp::TeX("Plants (pollination) $\\sigma_\\gamma$"),
+        latex2exp::TeX("Seed dispersal $\\sigma_\\beta$"),
+        latex2exp::TeX("Pollination $\\sigma_\\beta$")
+      )) +
+      theme(plot.margin = grid::unit(c(5, 5, 5, 5), unit = "mm"))
+    ggsave(file_path, plt, device = "pdf", width = 12, height = 6, units = "cm")
+  })})
+  file_path
+}
+
+#' Plot the posterior distribution of lambda parameters
+#' 
+plot_lambda_distr <- function(fit_path, file_path, ...) {
+  dir.create(dirname(file_path), showWarnings = FALSE, recursive = TRUE)
+  fit <- readRDS(fit_path)
+  suppressMessages({suppressWarnings({
+    plt <- rstan::plot(fit, pars = c("lambda")) +
+      scale_y_continuous(breaks = 1:4, expand = c(0.05, 0.05), labels = c(
+        latex2exp::TeX("Plants (seed dispersal) $\\lambda$"),
+        latex2exp::TeX("Plants (pollination) $\\lambda$"),
+        latex2exp::TeX("Seed dispersal $\\lambda$"),
+        latex2exp::TeX("Pollination $\\lambda$")
+      )) +
+      theme(plot.margin = grid::unit(c(5, 5, 5, 5), unit = "mm"))
+    ggsave(file_path, plt, device = "pdf", width = 12, height = 6, units = "cm")
+  })})
+  file_path
+}
+
+#' Plot the posterior distribution of eta parameters
+#' 
+plot_eta_distr <- function(fit_path, file_path, ...) {
+  dir.create(dirname(file_path), showWarnings = FALSE, recursive = TRUE)
+  fit <- readRDS(fit_path)
+  suppressMessages({suppressWarnings({
+    plt <- rstan::plot(fit, pars = c("mu")) +
+      scale_y_continuous(breaks = 1:2, expand = c(0.05, 0.05), labels = c(
+        latex2exp::TeX("Plants (seed dispersal) $\\eta$"),
+        latex2exp::TeX("Plants (pollination) $\\eta$")
+      )) +
+      theme(plot.margin = grid::unit(c(5, 5, 5, 5), unit = "mm"))
+    ggsave(file_path, plt, device = "pdf", width = 12, height = 4, units = "cm")
+  })})
+  file_path
+}

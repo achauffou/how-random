@@ -697,6 +697,36 @@ results_interpretation_targets <- list(
       height = 9,
       units = "cm"
     )
+  ),
+  tar_target(
+    sigma_beta_gamma_plot,
+    plot_sigma_beta_gamma_distr(
+      file.path(results_stan_folder, "all_binom_08a", "rstan-fit.rds"),
+      file.path(manuscript_figures_folder, "sigma_beta_gamma.pdf"),
+      width = 12,
+      height = 9,
+      units = "cm"
+    )
+  ),
+  tar_target(
+    lambda_plot,
+    plot_lambda_distr(
+      file.path(results_stan_folder, "all_binom_08a", "rstan-fit.rds"),
+      file.path(manuscript_figures_folder, "lambda.pdf"),
+      width = 12,
+      height = 9,
+      units = "cm"
+    )
+  ),
+  tar_target(
+    eta_plot,
+    plot_eta_distr(
+      file.path(results_stan_folder, "all_binom_18a", "rstan-fit.rds"),
+      file.path(manuscript_figures_folder, "eta.pdf"),
+      width = 12,
+      height = 9,
+      units = "cm"
+    )
   )
 )
 
