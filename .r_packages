@@ -2,6 +2,7 @@ CoordinateCleaner
 countrycode
 ecospat
 geojsonio
+latex2exp
 progress
 targets
 taxize
