@@ -26,16 +26,16 @@ plot_models_comp <- function(file_path, comp_folder, last_comp_update, ...) {
   # All models without origin status:
   plt_data1 <- readRDS(file.path(comp_folder, "looic_all_bioclim.rds"))
   rownames(plt_data1) <- c(
-    "Non-neutral, two unpooled CS terms",
-    "Non-neutral, one pooled CS term",
-    "Non-neutral, no CS term",
-    "Non-neutral, two pooled CS terms",
-    "Non-neutral, one unpooled CS term",
-    "Neutral, one pooled CS term",
-    "Neutral, one unpooled CS term",
-    "Neutral, two unpooled CS terms",
-    "Neutral, no CS term",
-    "Null model, per-type intercept only"
+    "(5c) non-neutral, two unpooled CS terms",
+    "(5b) non-neutral, one pooled CS term",
+    "(3) non-neutral, no CS term",
+    "(5d) non-neutral, two pooled CS terms",
+    "(5a) non-neutral, one unpooled CS term",
+    "(4b) neutral, one pooled CS term",
+    "(4a) neutral, one unpooled CS term",
+    "(4c) neutral, two unpooled CS terms",
+    "(2) neutral, no CS term",
+    "(1) null model, per-type intercept only"
   )
   suppressMessages({suppressWarnings({
     plt1 <- plot(plt_data1)
@@ -45,21 +45,21 @@ plot_models_comp <- function(file_path, comp_folder, last_comp_update, ...) {
   # Non-neutral models without origin status:
   suppressMessages({suppressWarnings({
     plt2 <- plot(plt_data1, keep = 1:5)
-    ggsave(file_path[2], plt2, device = "pdf", ...)
+    ggsave(file_path[2], plt2, device = "pdf", width = 12, height = 6, units = "cm")
   })})
   
   # Non-neutral models with origin status:
   plt_data2 <- readRDS(file.path(comp_folder, "looic_all_bioclim_origin1.rds"))
   rownames(plt_data2) <- c(
-    "No origin status, two unpooled CS terms",
-    "Origin status, two unpooled CS terms",
-    "No origin status, one unpooled CS term",
-    "Origin status, one unpooled CS term",
-    "Origin status, neutral, two unpooled CS terms"
+    "(5c) no origin status, two unpooled CS terms",
+    "(6c) origin status, two unpooled CS terms",
+    "(5a) no origin status, one unpooled CS term",
+    "(6a) origin status, one unpooled CS term",
+    "(7c) origin status, neutral, two unpooled CS terms"
   )
   suppressMessages({suppressWarnings({
     plt3 <- plot(plt_data2, keep = 1:4)
-    ggsave(file_path[3], plt3, device = "pdf", ...)
+    ggsave(file_path[3], plt3, device = "pdf", width = 12, height = 5, units = "cm")
   })})
   list(plt1, plt2, plt3)
 }
