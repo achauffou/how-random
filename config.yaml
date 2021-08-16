@@ -20,6 +20,7 @@ folder_structure:
   results_analyses: results/analyses
   results_bioclim: results/bioclim
   results_simulations: results/simulations
+  manuscript_figures: manuscript/figures
 fun_groups_plausible_kingdoms:
   Anemone: [Animalia]
   Ant: [Animalia]

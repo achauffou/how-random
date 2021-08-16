@@ -57,6 +57,7 @@ read_YAML_config_targets <- list(
   tar_target(results_bioclim_folder, config$folder_structure$results_bioclim),
   tar_target(results_sim_folder, config$folder_structure$results_simulations),
   tar_target(results_stan_folder, config$folder_structure$results_analyses),
+  tar_target(manuscript_figures_folder, config$folder_structure$manuscript_figures),
   tar_target(fun_groups_plausible_kingdoms, config$fun_groups_plausible_kingdoms),
   tar_target(itis_download_url, config$itis_download_url),
   tar_target(min_locations_per_species, config$min_locations_per_species),
