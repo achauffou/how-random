@@ -93,10 +93,10 @@ plot_lambda_distr <- function(fit_path, file_path, ...) {
   suppressMessages({suppressWarnings({
     plt <- rstan::plot(fit, pars = c("lambda")) +
       scale_y_continuous(breaks = 1:4, expand = c(0.05, 0.05), labels = c(
+        latex2exp::TeX("Seed dispersers $\\lambda$"),
+        latex2exp::TeX("Pollinators $\\lambda$"),
         latex2exp::TeX("Plants (seed dispersal) $\\lambda$"),
-        latex2exp::TeX("Plants (pollination) $\\lambda$"),
-        latex2exp::TeX("Seed dispersal $\\lambda$"),
-        latex2exp::TeX("Pollination $\\lambda$")
+        latex2exp::TeX("Plants (pollination) $\\lambda$")
       )) +
       theme(plot.margin = grid::unit(c(5, 5, 5, 5), unit = "mm"))
     ggsave(file_path, plt, device = "pdf", width = 12, height = 6, units = "cm")
@@ -111,12 +111,12 @@ plot_eta_distr <- function(fit_path, file_path, ...) {
   fit <- readRDS(fit_path)
   suppressMessages({suppressWarnings({
     plt <- rstan::plot(fit, pars = c("mu")) +
-      scale_y_continuous(breaks = 1:2, expand = c(0.05, 0.05), labels = c(
+      scale_y_continuous(breaks = 1:2, expand = c(0.1, 0.1), labels = c(
         latex2exp::TeX("Plants (seed dispersal) $\\eta$"),
         latex2exp::TeX("Plants (pollination) $\\eta$")
       )) +
       theme(plot.margin = grid::unit(c(5, 5, 5, 5), unit = "mm"))
-    ggsave(file_path, plt, device = "pdf", width = 12, height = 4, units = "cm")
+    ggsave(file_path, plt, device = "pdf", width = 12, height = 3, units = "cm")
   })})
   file_path
 }
