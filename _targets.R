@@ -693,7 +693,7 @@ results_interpretation_targets <- list(
       ),
       file.path(results_stan_folder, "comparisons"),
       stan_comparisons,
-      width = 12,
+      width = 16,
       height = 9,
       units = "cm"
     )

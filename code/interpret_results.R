@@ -26,15 +26,15 @@ plot_models_comp <- function(file_path, comp_folder, last_comp_update, ...) {
   # All models without origin status:
   plt_data1 <- readRDS(file.path(comp_folder, "looic_all_bioclim.rds"))
   rownames(plt_data1) <- c(
-    "(5c) non-neutral, two unpooled CS terms",
-    "(5b) non-neutral, one pooled CS term",
-    "(3) non-neutral, no CS term",
-    "(5d) non-neutral, two pooled CS terms",
-    "(5a) non-neutral, one unpooled CS term",
-    "(4b) neutral, one pooled CS term",
-    "(4a) neutral, one unpooled CS term",
-    "(4c) neutral, two unpooled CS terms",
-    "(2) neutral, no CS term",
+    "(5c) site + species identity + two unpooled CS terms",
+    "(5b) site + species identity one pooled CS term",
+    "(3) site + species identity + no CS term",
+    "(5d) site + species identity + two pooled CS terms",
+    "(5a) site + species identity + one unpooled CS term",
+    "(4b) site + one pooled CS term",
+    "(4a) site + one unpooled CS term",
+    "(4c) site + two unpooled CS terms",
+    "(2) site",
     "(1) null model, per-type intercept only"
   )
   suppressMessages({suppressWarnings({
