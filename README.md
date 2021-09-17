@@ -49,6 +49,14 @@ This project can parallelize some tasks to reduce computation time. To use more 
 NCPUS=<number_of_cores>
 ```
 
+### 7. Run the project pipeline
+This project maintains the workflow without repeating up-to-date tasks with the R package [targets](https://books.ropensci.org/targets/). To run or update the project pipeline, follow these steps:
+1. Start the docker container of the project
+2. Access the RStudio server
+3. Ensure that you are located at the root folder of the project
+4. Load the target library with the command `library(targets)`
+5. Run the command `tar_make()` from the target package to run the pipline
+
 ## Contribution
 ### Accessing Rstudio server
 Once the project docker container is running, it is possible to develop and run R code directly from Rstudio server. It can be accessed via port 8787 of the local host: [localhost:8787](localhost:8787). To access it on another port, modify the `docker run` command port mapping argument accordingly.
